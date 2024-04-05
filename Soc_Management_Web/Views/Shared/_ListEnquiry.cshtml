@@ -1,0 +1,75 @@
+﻿
+<div class="col-md-12" style="margin-right:0px;margin-left:0px;width:110%">
+
+    <div class="row">
+        <div class="col-md-12" style="margin-right:0px;margin-left:0px;">
+            <div class="panel panel-primary">
+                <div class="panel-heading" style="text-align:left">
+                    <h3>LIST ENQUIRY</h3>
+                </div>
+                <div class="panel-body">
+                    
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <hr />
+                            <table id="tablelistenquery" class="table table-condensed table-striped table-responsive" style="width:100%;padding:2%">
+                                <thead>
+                                    <tr>
+                                        <th>Sl No</th>
+                                        <th>Inquery No</th>
+                                        <th>Inquery Date</th>
+                                        <th>Customer</th>
+                                        <th>Amount</th>
+                                        <th>Mobile No</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablejobdetails">
+                                 
+                                </tbody>
+                            </table>
+
+                            
+                        </div>
+                </div>
+                    </div>
+                </div>
+    </div>
+</div>
+    </div>
+
+<script>
+    displaydata();
+    function displaydata() {
+        var Jobdata = {
+            TranId: 0,
+            Id: 0,
+            Type: 'Enquiry'
+        }
+        $.ajax({
+            url: "/InquiryTransaction/GetEnqueryDetails",
+            type: "GET",
+            dataType: "json",
+            data: Jobdata,
+            success: function (data) {
+                $("#tablejobdetails tbody").empty();
+                var i = 0;
+                $.each(data.etrItmObj, function (data, value) {
+                    i = i + 1;
+                    var newRowContent = '<tr><td>' + i
+                        + '</td><td>' + value.inquiryNo + '</td><td>' + value.inquiryDate + '</td><td>' + value.customer + '</td><td>'
+                        + value.inqAmount + '</td><td>' + value.mobileNo + '</td><td> </td></tr>'
+              
+
+                    $("#tablejobdetails tbody").append(newRowContent);
+
+
+
+                });
+                //new DataTable('#tablelistenquery')
+            }
+
+        });
+    }
+</script>

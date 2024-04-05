@@ -1,0 +1,151 @@
+﻿@model Soc_Management_Web.Models.LocationOrderModel
+<div class="col-md-12" style="margin-right:0px;margin-left:0px;width:110%">
+
+    <div class="row">
+        <div class="col-md-12" style="margin-right:0px;margin-left:0px;">
+            <div class="panel panel-primary">
+                <div class="panel-heading" style="text-align:left">
+                    <h3>LOCATION</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-2" style="text-align:left">
+                            <label>Type : </label>
+                        </div>
+                        <div class="col-md-4">
+                            @Html.DropDownListFor(x => x.RecType, Model.TypeList, "Select",
+                                                                new { @class = "form-control search ", @tabindex = "4", id = "RecorType", onfocus = "this.select()", })
+                            <div id="subjectValidation" style="color: red;"></div>
+                        </div>
+                        <div class="col-md-6">
+                            @Html.CheckBoxFor(m => m.AllPhotos, new { @tabindex = "11", @style = "margin-left: 1pc;", @id = "AllPhotos" }) &nbsp;All Photos
+                            @Html.CheckBoxFor(m => m.Allvieos, new { @tabindex = "11", @style = "margin-left: 1pc;", @id = "Allvieos" }) &nbsp;All Videos
+                        </div>
+
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-2" style="text-align:left">
+                            <label>Video Location : </label>
+                        </div>
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.VideoLocaton, new { @class = "form-control form-control-lg", @placeholder = "Video Locaton", @tabindex = "10", @id = "txtVideoLocaton" })
+                            <div id="subjectValidation" style="color: red;"></div>
+                        </div>
+                        <div class="col-md-2" style="text-align:left">
+                            <label>Photos Location : </label>
+                        </div>
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.PhotosLocation, new { @class = "form-control form-control-lg", @placeholder = "Photos Location", @tabindex = "10", @id = "txtPhotosLocation" })
+                        </div>
+
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col-md-2" style="text-align:left">
+                            <label>Video Qty : </label>
+                        </div>
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.VideoQty, new { @class = "form-control form-control-lg", @placeholder = "0", @tabindex = "10", @id = "txtVideoQty" })
+                        </div>
+                        <div class="col-md-2" style="text-align:left">
+                            <label>Photos Qty : </label>
+                        </div>
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.PhotosQty, new { @class = "form-control form-control-lg", @placeholder = "0", @tabindex = "10", @id = "txtPhotosQty" })
+                        </div>
+
+                    </div>
+                    
+                    <div class="row mt-2" >
+                        <div class="col-md-2" style="text-align:left">
+                            <label>Remarks : </label>
+                        </div>
+                        <div class="col-md-4">
+                            @Html.TextAreaFor(m => m.Remarks, new { @class = "form-control form-control-lg",  @tabindex = "10", @id = "txtRemarks" })
+                        </div>
+                        <div class="col-md-2" style="text-align:left">
+                            <label>File Formate Size : </label>
+                        </div>
+                        <div class="col-md-4">
+                            @Html.TextBoxFor(m => m.Fileformatedetails, new { @class = "form-control form-control-lg", @tabindex = "10", @id = "txtFileformatedetails" })
+                            <br />
+                            <button type="button" class="btn btn-primary" id="btnsavelocation">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+<script>
+
+    $('#btnsavelocation').on('click', function () {
+        console.log("call save btn")
+         var RecorType =$("#RecorType").val();
+        var AllPhotos = $("#AllPhotos").prop('checked');;
+        var Allvieos = $("#Allvieos").prop('checked');;
+        var VideoLocaton = $("#txtVideoLocaton").val();
+        var PhotosLocation = $("#txtPhotosLocation").val();
+        var VideoQty = $("#txtVideoQty").val();
+        var PhotosQty = $("#txtPhotosQty").val();
+        var Remarks = $("#txtRemarks").val();
+        var Fileformatedetails = $("#txtFileformatedetails").val();
+
+
+         var model = {
+             LocationId :@Model.LocationId,
+             OrderId : @ViewBag.InqueryId,
+             RecType: RecorType,
+             AllPhotos: AllPhotos,
+             Allvieos: Allvieos,
+             VideoLocaton: VideoLocaton,
+             PhotosLocation: PhotosLocation,
+             VideoQty: VideoQty,
+             PhotosQty: PhotosQty,
+             Fileformatedetails:Fileformatedetails,
+             Remarks: Remarks
+               }
+
+            $.ajax({
+                url: '@Url.Action("Savelocation", "Order")',
+                type: 'POST',
+                dataType: 'json',
+                data: model,
+                success: function (data) {
+                    console.log(data)
+                    if (data.success == true) {
+                        if (data.result == 'Saved') {
+                            alert("Data Saved");
+                        } else {
+                            alert("Data Updated");
+                        }
+                        
+                    } 
+                    else if (data.obj == "2") {
+                        alert("Try again");
+                    }
+                    ReloadPartialView();
+                }
+            })
+
+    })
+
+
+
+
+    function ReloadPartialView() {
+    var inqId = @ViewBag.InqueryId;
+
+    //$.ajax({
+    //    url: "/Order/HeaderFotterLoad",
+    //    type: "GET",
+    //    data: { id: inqId },
+    //    success: function (result) {
+    //        // Replace the content of the existing partial view container
+    //        $('#HeaderFotterdeails').html(result);
+    //    }
+    //});
+}
+</script>

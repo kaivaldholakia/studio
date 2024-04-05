@@ -1,0 +1,567 @@
+﻿@model List<Soc_Management_Web.Models.InclusiveExclusiveModel>
+<div class="col-md-6" style="margin-right:0px;margin-left:0px;">
+    <div class="panel panel-primary">
+        <div class="panel-heading" style="text-align:left">
+            <h3>INCLUSIVE </h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-3" style="text-align:left">
+                    <label>Inclusive Terms</label>
+                </div>
+                <div class="col-md-5">
+                    <input type="text" class="form-control" id="txtinclusiveterm" />
+                    <input type="hidden" id="Inclusiveid" />
+                    <input type="hidden" id="txtinclusivehien" />
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn-info btn" id="btninclusivesave"><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
+                    <button class="btn-info btn" id="btnFindInclusive" type="button">Find</button>
+                    <button type="button" class="btn-danger btn" id="btncanceljd">X</button>
+
+
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <hr />
+                    <table id="tblinclusive" class="table table-condensed table-striped  table-responsive" style="padding: 2% 2% 2% 2% ">
+                        <thead>
+                            <tr>
+                                <th >Sl No</th>
+                                @*<th style="display:none">Item</th>*@
+                                <th>Desc</th>
+                                <th >Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="width:100%;padding:1%;overflow:auto">
+                            @foreach (var item in Model.Where(x => x.Type == "Inclusive"))
+                            {
+                                <tr>
+                                    <td>@item.sl</td>
+                                    @*<td  style="display:none">@item.Item</td>*@
+                                    <td class="text" >@item.description</td>
+                                    <td>
+                                        <i class="fa fa-edit edit-btn edit-btn2" aria-hidden="true" data-inclusiveid="@item.Id"></i>
+                                        <!-- Remove Icon -->
+                                        <i class="fa fa-trash delete-btn" aria-hidden="true" data-inclusiveid="@item.Id"></i>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="col-md-6" style="margin-right:0px;margin-left:0px;">
+    <div class="panel panel-primary">
+        <div class="panel-heading" style="text-align:left">
+            <h3>EXCLUSIVE</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-3" style="text-align:left">
+                    <label>Exclusive Terms</label>
+                </div>
+                <div class="col-md-5">
+                    <input type="text" class="form-control" id="txtExclusive" />
+                    <input type="hidden" id="exclusiveid" />
+                    <input type="hidden" id="txtexclusivehiden" />
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn-info btn" id="btnexclusivesave"><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
+                    <button class="btn-info btn" id="btnFindExclusive" type="button">Find</button>
+                    <button type="button" class="btn-danger btn" id="btncanceljd">X</button>
+
+
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <hr />
+                    <table id="tblexclusive" class="table table-condensed table-striped  table-responsive" style="padding: 2% 2% 2% 2% ">
+                        <thead>
+                            <tr>
+                                <th>Sl No</th>
+                                @*<th style="display: none">Terms</th>*@
+                                <th>Desc</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody style="width:80%;padding:1%;overflow:auto">
+                            @foreach (var item in Model.Where(x => x.Type == "Exclusive"))
+                            {
+                                <tr>
+                                    <td>@item.sl</td>
+                                    @*<td style="display: none">@item.Item</td>*@
+                                    <td class="text">@item.description</td>
+                                    <td>
+                                        <i class="fa fa-edit edit-btn edit-btn1" aria-hidden="true" data-exclusiveid="@item.Id"></i>
+                                        <!-- Remove Icon -->
+                                        <i class="fa fa-trash delete-btn delete-btn1" aria-hidden="true" data-exclusiveid="@item.Id"></i>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="modelSelectAllInclusive" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table id="tableselectallInclusive" class="table table-condensed table-striped" style="overflow:auto">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" name="select_all" value="1" id="example-select-allInclusive"></th>
+                                        <th>Sl No</th>
+                                        <th style="display:none">Id</th>
+                                        <th style="display:none">Term</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="width:100%;overflow:auto" >
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" id="btncloseInclusive">Close</button>
+                <button type="button" id="SaveAllInclusive" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modelSelectAllExclusive" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table id="tableselectallExclusive" class="table table-condensed table-striped" style="overflow:auto">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" name="select_all" value="1" id="example-select-allExclusive"></th>
+                                        <th>Sl No</th>
+                                        <th style="display:none">Id</th>
+                                        <th style="display:none">Term</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="width:70%;overflow:auto" >
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" id="btncloseExclusive">Close</button>
+                <button type="button" id="SaveAllExclusive" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div> 
+<style>
+    .text {
+        display: block;
+        width:300px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    .text1 {
+        display: block;
+        width: 100px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+</style>
+<script type="text/javascript">
+    // Inclusive
+    $('#btnFindInclusive').on('click', function () {
+        $('#modelSelectAllInclusive').modal('show');
+        $.ajax({
+            url: "/InquiryTransaction/GetForAllSelection",
+            type: "GET",
+            data: {
+                Types: 'INC'
+            },
+            success: function (data) {
+                $("#tableselectallInclusive tbody").empty();
+                $.each(data.result, function (data, value) {
+                    console.log(value.item)
+                    var newRowContent = '<tr><td><input type="checkbox" onchange="CheckuncheckInclusive()" value=' + value.id + ' id=' + value.id + '/></td><td>' + value.sl + '</td><td style="display:none">' + value.id + '</td><td style="display:none">' + value.item
+                        + '</td><td class="text" >'
+                        + value.description + '</td></tr>'
+
+                    $("#tableselectallInclusive tbody").append(newRowContent);
+
+
+
+                });
+                new DataTable('#tableselectallInclusive', {
+                    "bPaginate": true, "pageLength": 7
+                });
+
+            }
+        });
+    });
+    $('#btncloseInclusive').on('click', function () {
+        $('#modelSelectAllInclusive').modal('hide');
+    });
+
+  
+    $('#SaveAllInclusive').on('click', function () {
+        var checkedValues ='';
+        $('#tableselectallInclusive tr input[type="checkbox"]:checked').each(function () {
+            if (checkedValues == '') {
+                checkedValues = $(this).val();
+            } else {
+                checkedValues = checkedValues+","+ $(this).val();
+            }
+        });
+         var inqId = @ViewBag.InqueryId;
+        $.ajax({
+            url: "/InquiryTransaction/SaveSelectAll",
+            type: "GET",
+            data: {
+                Ids: checkedValues,
+                Type: 'INC',
+                TranId: inqId
+            },
+            success: function (data) {
+                alert("Data Saved")
+                $('#modelSelectAllInclusive').modal('hide');
+                ReloadPartialView()
+
+            }
+        })
+    })
+
+    function CheckuncheckInclusive() {
+
+        var f = false;
+        $('#tableselectallInclusive tr input[type="checkbox"]').each(function () {
+            if (!$(this).prop('checked')) {
+                f = true;
+            }
+
+        });
+        if (f == true) {
+            $('#example-select-allInclusive').prop('checked', false);
+        } else {
+            $('#example-select-allInclusive').prop('checked', true);
+        }
+    }
+    $('#example-select-allInclusive').on('click', function () {
+
+        $('#tableselectallInclusive').DataTable().destroy();
+        var dataTable = $('#tableselectallInclusive').DataTable({
+            scrollY: '300px', // Set the height
+            scrolly: true,    // Enable horizontal scrolling
+            scrollCollapse: true,
+            paging: false      // Disable pagination (optional)
+        });
+        var d = $(this).is(':checked');
+        // Iterate over all pages
+        $('#tableselectallInclusive tr input[type="checkbox"]').each(function () {
+            // Select checkboxes on each page
+            if (d == true) {
+                $(this).prop('checked', true);
+            } else {
+                $(this).prop('checked', false);
+            }
+
+        });
+
+
+    });
+    // Exclusive
+    $('#btnFindExclusive').on('click', function () {
+        $('#modelSelectAllExclusive').modal('show');
+        $.ajax({
+            url: "/InquiryTransaction/GetForAllSelection",
+            type: "GET",
+            data: {
+                Types: 'EXE'
+            },
+            success: function (data) {
+                $("#tableselectallExclusive tbody").empty();
+                var i = 0;
+                $.each(data.result, function (data, value) {
+                    i = i + 1;
+                    var newRowContent = '<tr><td><input type="checkbox" onchange="CheckuncheckExclusive()" value=' + value.id + ' id=' + value.id + '/></td><td>' + i + '</td><td style="display:none">' + value.id + '</td><td style="display:none">' + value.item
+                        + '</td><td class="text" >'
+                        + value.description + '</td></tr>'
+
+                    $("#tableselectallExclusive tbody").append(newRowContent);
+
+
+
+                });
+                new DataTable('#tableselectallExclusive ', {
+                    "bPaginate": true, "pageLength": 7
+                });
+
+            }
+        });
+    });
+    $('#btncloseExclusive').on('click', function () {
+        $('#modelSelectAllExclusive').modal('hide');
+    });
+    function CheckuncheckExclusive() {
+
+        var f = false;
+        $('#tableselectallExclusive tr input[type="checkbox"]').each(function () {
+            if (!$(this).prop('checked')) {
+                f = true;
+            }
+
+        });
+        if (f == true) {
+            $('#example-select-allExclusive').prop('checked', false);
+        } else {
+            $('#example-select-allExclusive').prop('checked', true);
+        }
+    }
+    $('#example-select-allExclusive').on('click', function () {
+
+        $('#tableselectallExclusive').DataTable().destroy();
+        var dataTable = $('#tableselectallExclusive').DataTable({
+            scrollY: '300px', // Set the height
+            scrolly: true,    // Enable horizontal scrolling
+            scrollCollapse: true,
+            paging: false      // Disable pagination (optional)
+        });
+        var d = $(this).is(':checked');
+        // Iterate over all pages
+        $('#tableselectallExclusive tr input[type="checkbox"]').each(function () {
+            // Select checkboxes on each page
+            if (d == true) {
+                $(this).prop('checked', true);
+            } else {
+                $(this).prop('checked', false);
+            }
+
+        });
+
+
+    });
+    $('#SaveAllExclusive').on('click', function () {
+        
+        var checkedValues ='';
+        $('#tableselectallExclusive tr input[type="checkbox"]:checked').each(function () {
+            if (checkedValues == '') {
+                checkedValues = $(this).val();
+            } else {
+                checkedValues = checkedValues+","+ $(this).val();
+            }
+        });
+         var inqId = @ViewBag.InqueryId;
+        $.ajax({
+            url: "/InquiryTransaction/SaveSelectAll",
+            type: "GET",
+            data: {
+                Ids: checkedValues,
+                Type: 'EXC',
+                TranId: inqId
+            },
+            success: function (data) {
+                $('#modelSelectAllExclusive').modal('hide');
+                ReloadPartialView()
+
+            }
+        })
+    })
+    $('#tblinclusive,#tblexclusive').DataTable({
+        responsive: true,
+        paging: true,
+        searching: true
+        // Add other DataTable options as needed
+    });
+
+    textboxAutoComplete(1, 'txtinclusiveterm','txtinclusivehien');
+    textboxAutoComplete(2, 'txtExclusive','txtexclusivehiden');
+
+    function textboxAutoComplete(type,textboxid,txtdescripion) {
+        $.ajax({
+            url: "/Dropdown/GetTermsAndCOndition?type=" + type+"",
+            type: "POST",
+            dataType: "json",
+            success: function (data) {
+                debugger
+                $("#" + textboxid).autocomplete({
+                    source: data,
+                    minLength: 1,
+                    select: function (event, ui) {
+                        $("#" + textboxid).val(ui.item.value);
+                        $("#" + txtdescripion).val(ui.item.value);
+                        return false;
+                    }
+                });
+                console.log(data)
+            }
+        });
+    }
+    function ReloadPartialView() {
+    var inqId = @ViewBag.InqueryId;
+
+    $.ajax({
+        url: "/InquiryTransaction/InclusiveexclusivetabLoad",
+        type: "GET",
+        data: { id: inqId },
+        success: function (result) {
+            // Replace the content of the existing partial view container
+            $('#Inclusiveexclusivedetails').html(result);
+        }
+    });
+
+    }
+    function saveInclusive(item, Id, types, flag) {
+            var TranId =@ViewBag.InqueryId;
+            var data = {
+                Tranid: TranId,
+                Id: Id,
+                Item: item == '' ? "" : item,
+                Type: types,
+                flag: flag,
+                description:item
+            }
+            $.ajax({
+                url: "/InquiryTransaction/SaveInclusiveExclusive",
+                type: "POST",
+                data: data,
+                success: function (result) {
+                    if (result.obj =='Added') {
+                       // alert("Data Saved")
+
+                    } else if (result.obj == 'Updated') {
+                       // alert("Data Updated")
+                    } else if (result.obj == 'Deleted') {
+                      //  alert("Data Deleted")
+                    } else {
+                        alert("saved Faild try again")
+                    }
+                    ReloadPartialView();
+                }
+            });
+    }
+    // Inclusive
+    $('#btninclusivesave').on('click', function () {
+
+
+        var item = $('#txtinclusiveterm').val();
+        var Id = $("#Inclusiveid").val();
+        var description = '';
+
+        if ($("txtinclusivehien").val() == '' || $("txtinclusivehien").val() == undefined || $("txtinclusivehien").val() == null) {
+            description = $('#txtinclusiveterm').val();
+        } else {
+            description = $('#txtinclusivehien').val();
+        }
+        if (item == undefined || item == "") {
+            $("#txtinclusiveterm").css("border-color", "red");
+            $("#txtinclusiveterm").focus();
+        } else {
+            saveInclusive(item, Id, "Inclusive", 1, description);
+        }
+        
+
+
+    })
+    $(document).on('click', '.edit-btn2', function () {
+            
+            var sl = $(this).closest('tr').find('td:eq(0)').text();
+            var Item = $(this).closest('tr').find('td:eq(1)').text();
+            var description = $(this).closest('tr').find('td:eq(2)').text();
+            var Id = $(this).data('inclusiveid');
+
+
+            // Populate the textboxes with the data
+            $('#txtinclusiveterm').val(Item);
+            $('#Inclusiveid').val(Id);
+            $('#txtinclusivehien').val(description);
+        });
+    $(document).on('click', '.delete-btn', function () {
+
+        var Item = $(this).closest('tr').find('td:eq(1)').text();
+        //var description = $(this).closest('tr').find('td:eq(2)').text();
+        var Id = $(this).data('inclusiveid');
+
+
+
+        saveInclusive('', Id, "Inclusive",2,'');
+    });
+
+    // Exclusive
+    $('#btnexclusivesave').on('click', function () {
+    
+
+        var item = $('#txtExclusive').val();
+        var Id = $("#exclusiveid").val();
+        var description = "";
+        if ($("txtexclusivehiden").val() == '' || $("txtexclusivehiden").val() == undefined || $("txtexclusivehiden").val() == null) {
+            description = $('#txtExclusive').val();
+        } else {
+            description = $('#txtexclusivehiden').val();
+        }
+        if (item == undefined || item == "") {
+            $("#txtExclusive").css("border-color", "red");
+            $("#txtExclusive").focus();
+        } else {
+            saveInclusive(item, Id, "Exclusive", 1, description);
+        }
+
+
+    })
+    $(document).on('click', '.edit-btn1', function () {
+        
+        var sl = $(this).closest('tr').find('td:eq(0)').text();
+        var Item = $(this).closest('tr').find('td:eq(1)').text();
+        var description = $(this).closest('tr').find('td:eq(2)').text();
+        var Id = $(this).data('exclusiveid');
+
+
+        // Populate the textboxes with the data
+        $('#txtExclusive').val(Item);
+        $('#exclusiveid').val(Id);
+        $("#description").val(description);
+    });
+    $(document).on('click', '.delete-btn1', function () {
+
+        var Item = $(this).closest('tr').find('td:eq(1)').text();
+        //var description = $(this).closest('tr').find('td:eq(2)').text();
+        var Id = $(this).data('exclusiveid');
+
+
+
+        saveInclusive('', Id, "Exclusive", 2,'');
+    });
+</script>

@@ -1,0 +1,117 @@
+﻿@model Soc_Management_Web.Models.ReportFileInfo
+<style>
+    .devicer {
+        width: 100%;
+        display: block;
+        height: 5px;
+        background-color: #4b4b4d;
+    }
+
+    .devicer1 {
+        width: 100%;
+        display: block;
+        height: 2px;
+        background-color: #4b4b4d;
+    }
+</style>
+<div class="col-md-12" style="margin-right:0px;margin-left:0px;width:100%">
+    <div class="row">
+
+        <div class="col-md-2">
+            <button id="btnsendmail" class="btn btn-primary">Email <i class="fa fa-mail-bulk"></i></button>
+        </div>
+        <div class="col-md-4">
+            <a href="~/Reports/@Model.FileName" id="bndownload1" target="_blank" class="btn btn-primary">Get Full Screen</a>
+        </div>
+
+        <div class="col-md-2">
+
+        </div>
+        <div class="col-md-2">
+
+        </div>
+    </div>
+    <div class="row" style="margin-top:1%">
+        <div class="col-md-1">
+
+        </div>
+        <div class="col-md-12">
+            <iframe src="~/reports/@Model.FileName" allowfullscreen="true"
+                    width="100%" height="900px"></iframe>
+        </div>
+    </div>
+   
+
+    <!-- Modal -->
+    <div class="modal fade" id="EmailModel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                
+                <div class="modal-body">
+                    <h5> Email :  <input style="        font-size: 22px !important" type="email" id="userEmail" class="form-control" /></h5>
+                   
+                    <span id="emailError" style="color: red;"></span>
+                    <hr /> <button type="button" id="closeemailmodel" class="btn btn-secondary">Close</button>
+                    <button type="button" id="btnsendemail2" class="btn btn-primary">Send</button>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+   
+    $(document).ready(function () {
+        $('#closeemailmodel').click(function () {
+            $('#EmailModel').modal('hide');
+        });
+    });
+
+   
+    $('#bndownload').click(function (e) {
+        debugger
+        e.preventDefault();  //stop the browser from following
+        window.open('~/Reports/PIONEER_SYSTEMS_QUO_20231220154743.pdf', '_blank');
+
+       // window.location.href = 'wwwroot\Reports\PIONEER_SYSTEMS_QUO_20231220154743.pdf'
+    });
+    $('#btnsendmail').click(function () {
+
+        $('#userEmail').val('@Model.Sendto');
+        $('#EmailModel').modal('show');
+      })
+    $('#btnsendemail2').click(function () {
+        if ($('#userEmail').val() == '' || $('#userEmail').val() == undefined || $('#userEmail').val() == null) {
+            $("#emailError").text("Invalid email address");
+        }
+        else {
+            var dt = {
+                    Filepath: '',
+                    Id:@Model.Id,
+                    Filename: '@Model.FileName',
+                    Title: '@Model.Title',
+                    Bodytext: '@Model.Bodytext',
+                    Sendto: $('#userEmail').val()
+                     }
+        $.ajax({
+            url: "/InquiryTransaction/SendMail",
+            type: "POST",
+            dataType: "json",
+            data: dt,
+            success: function (data) {
+               
+                $('#EmailModel').modal('hide');
+                alert('Email Send')
+            }
+        }) 
+        }
+        
+       
+
+
+
+
+    })
+
+</script>

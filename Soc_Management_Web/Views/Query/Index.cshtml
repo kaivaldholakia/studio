@@ -1,0 +1,428 @@
+﻿
+@{
+    ViewData["Title"] = "Query";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="col-md-12">
+    <div class="card card-primary">
+        <div class="card-header">
+            <h5>Query Analyzer</h5>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label class="control-label"> Query : </label>
+                <textarea class="form-control" id="query" cols='60' rows="5" required></textarea>
+            </div>
+            <div class="col-md-12 d-flex">
+                <button class="btn btn-success m-2" onclick="RunQuery()">Run (F2)</button>
+                <button class="btn btn-success m-2" onclick="SplitQuery()">Save (F10)</button>
+                <button class="btn btn-success m-2" onclick="SplitQuery()">Save As ALT+F10</button>
+                <button class="btn btn-success m-2" onclick="LoadData()">Load (F4)</button>
+                <button class="btn btn-success m-2" onclick="ExportToExcel()">Export to excel (ALT+E)</button>
+            </div>
+
+            <div class="row mt-3 d-none" id="AddNewQueryDiv">
+                <div class="col-12 text-left mb-3">
+                    <h4>Add New Query</h4>
+                </div>
+                <div class="col-12">
+                    <div class="col-6">
+                        <div class="form-group mb-2">
+                            <label class="control-label"> Query Code : <span class="text-danger">*</span></label>
+                            <input type="text" readonly disabled class="form-control" id="txtQueryCode1" />
+                            <input type="hidden" class="form-control" id="txtQueryId" />
+                            <input type="hidden" class="form-control" id="txtQueryCode" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="col-6">
+                        <div class="form-group mb-2">
+                            <label class="control-label"> Title : <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="txtTitle" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="col-6">
+                        <div class="form-group mb-2">
+                            <label class="control-label"> Description : </label>
+                            <textarea class="form-control" rows="3" id="txtDescription"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="col-6">
+                        <div class="form-group mb-2">
+                            <label class="control-label"> Prefix :<span class="text-danger">*</span> </label>
+                            <input type="text" class="form-control" id="txtPrefix" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="col-6">
+                        <div class="form-group mb-2">
+                            <label class="control-label"> Fields : <span class="text-danger">*</span></label>
+                            <textarea class="form-control" rows="3" id="txtFields"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="col-6">
+                        <div class="form-group mb-2">
+                            <label class="control-label"> Sufix : <span class="text-danger">*</span></label>
+                            <textarea class="form-control" rows="3" id="txtSuffix"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="row ml-1">
+                        <div class="col-1">
+                            <div class="form-group mb-2">
+                                <label class="control-label"> Flag : <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control w-10" id="txtFlg" />
+                            </div>
+                        </div>
+                        <div class="col-3 mt-4">
+                            <b>M = Member Query A = Admin Query</b>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 d-flex">
+                    <button class="btn btn-primary m-2" onclick="SaveQuery()">Save</button>
+                    <button class="btn btn-primary m-2" onclick="ClearTextbox()">Reset</button>
+                    <button class="btn btn-primary m-2" onclick="window.location.reload()">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12 table-responsive d-none" id="QueryListDiv">
+            <table class="table table-bordered" id="tableLoadData">
+                <thead>
+                    <tr>
+                        <th width="4%">
+                            #
+                        </th>
+                        <th width="6%">
+                            Actions
+                            @*<a href=""> <i class="fa fa-pen text-primary"></i></a>
+                                <a class="pl-2"> <i class="fa fa-trash text-danger"></i></a>*@
+                        </th>
+                        <th width="10%">
+                            Query Code
+                        </th>
+                        <th width="30%">
+                            Query Title
+                        </th>
+                        <th width="50%">
+                            Query Description
+                        </th>
+                        <th class="d-none">
+
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="tblLoadData">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-12 table-responsive d-none" id="RunQueryListDiv">
+            <table class="table table-bordered">
+            </table>
+
+        </div>
+    </div>
+</div>
+<script>
+    var queryCode = 0;
+    $(document).ready(function () {
+        document.getElementById('query').focus();
+    });
+  
+    function RunQuery() {
+        //$('#query').attr('data-id', '0');
+        var query = $('#query').val();
+        if (query == null || query == '' || query == undefined) {
+            alert("Please enter query!");
+            return false;
+        }
+        $('#RunQueryListDiv').removeClass('d-none')
+        $('#QueryListDiv').addClass('d-none')
+        $('#AddNewQueryDiv').addClass('d-none')
+
+        //$('#RunQueryListDiv').children('table').children('thead').remove();
+        //$('#RunQueryListDiv').children('table').children('tbody').remove();
+        $('#RunQueryListDiv .table').html("");
+        $.ajax({
+            type: "POST",
+            url: '/Query/RunQuery',
+            data: { "query": query },
+            dataType: "JSON",
+            success: function (response) {
+
+                $('#RunQueryListDiv .table').html("");
+                if (response.isDisallow == "true") {
+                    alert("Only select query will work!");
+                    return false;
+                }
+                if (response != null && response != '' && response != undefined) {
+
+                    if (response.columnsList != null && response.columnsList != '' && response.columnsList != undefined && response.columnsList.length > 0) {
+                        var columnsHTML = `<thead><tr>`;
+                        for (var x = 0; x < response.columnsList.length; x++) {
+                            columnsHTML += `<th>` + response.columnsList[x] + `</th>`;
+                        }
+                        columnsHTML += `</tr></thead>`;
+                        $('#RunQueryListDiv').children('table').append(columnsHTML);
+                    }
+
+                    if (response.rowsList != null && response.rowsList != '' && response.rowsList != undefined && response.rowsList.length > 0) {
+                        var rowsHTML = `<tbody>`;
+                        for (var x = 0; x < response.rowsList.length; x++) {
+                            var rowsList = response.rowsList[x];
+                            if (rowsList != null && rowsList != '' && rowsList != undefined && rowsList.length > 0) {
+                                rowsHTML += `<tr>`;
+                                for (var y = 0; y < rowsList.length; y++) {
+                                    rowsHTML += `<td>` + rowsList[y] + `</td>`;
+                                }
+                                rowsHTML += `</tr>`;
+                            }
+                        }
+                        rowsHTML += `</tbody>`;
+                        $('#RunQueryListDiv').children('table').append(rowsHTML);
+                    }
+                }
+            },
+            error: function (response) {
+
+            }
+        });
+    }
+
+    function SplitQuery() {
+        var query = $('#query').val();
+        var querycd = queryCode;
+        $('#RunQueryListDiv').addClass('d-none')
+        $('#QueryListDiv').addClass('d-none')
+
+        $.ajax({
+            type: "POST",
+            url: '/Query/SplitQuery',
+            data: { "query": query, "querycd1": querycd },
+            dataType: "JSON",
+            success: function (response) {
+                if (response.isDisallow == "true") {
+                    alert("Only select query will work!");
+                    return false;
+                }
+                if (response.isExists == true) {
+                    alert("You cannot save this query as the query has been not changed.");
+                    $('#RunQueryListDiv').addClass('d-none')
+                    $('#QueryListDiv').addClass('d-none')
+                    $('#AddNewQueryDiv').addClass('d-none')
+                    ClearTextbox();
+                    return false;
+                }
+                if (response != null && response != '' && response != undefined) {
+                    ClearTextbox();
+                    $('#AddNewQueryDiv').removeClass('d-none')
+                    $('#txtFlg').val("A")
+                    $('#txtQueryCode').val(response.queryCode)
+                    $('#txtQueryCode1').val(response.queryCode)
+                    $('#txtSuffix').val(response.querySufix)
+                    $('#txtFields').val(response.queryFields)
+                    $('#txtPrefix').val(response.queryPrefix)
+                    $('#txtDescription').val(response.queryDesc)
+                    $('#txtTitle').val(response.queryName)
+                    $('#txtQueryId').val(response.queryId)
+                }
+            },
+            error: function (response) {
+
+            }
+        });
+    }
+
+    function ClearTextbox() {
+        $('#txtFlg').val("")
+        $('#txtQueryCode').val("")
+        $('#txtQueryCode1').val("")
+        $('#txtSuffix').val("")
+        $('#txtFields').val("")
+        $('#txtPrefix').val("")
+        $('#txtDescription').val("")
+        $('#txtTitle').val("")
+        $('#txtQueryId').val("0")
+    }
+
+    function SaveQuery() {
+        var queryId = $('#txtQueryId').val();
+        var flg = $('#txtFlg').val();
+        var code = $('#txtQueryCode1').val();
+        var suffix = $('#txtSuffix').val();
+        var fields = $('#txtFields').val()
+        var prefix = $('#txtPrefix').val()
+        var desc = $('#txtDescription').val()
+        var title = $('#txtTitle').val()
+        if (code == null || code == "" || code == undefined || suffix == null || suffix == "" || suffix == undefined || fields == null || fields == "" || fields == undefined || suffix == null || suffix == "" || suffix == undefined || title == null || title == "" || title == undefined) {
+            alert("Please enter all compulsory fields!");
+            return false;
+        }
+        var model = {
+            "QueryId": queryId,
+            "QueryCode": code,
+            "QueryName": title,
+            "QueryDesc": desc,
+            "QueryPrefix": prefix,
+            "QueryFields": fields,
+            "QuerySufix": suffix,
+            "QueryFlg": flg
+        }
+        $.ajax({
+            type: "POST",
+            url: '/Query/SaveQuery',
+            data: { "saveQueryModel": model },
+            dataType: "JSON",
+            success: function (response) {
+                if (response) {
+                    ClearTextbox();
+                    alert("Query saved successfully!");
+                    window.location.reload();
+                }
+            },
+            error: function (response) {
+
+            }
+        });
+    }
+
+    function LoadData() {
+
+        $('#query').attr('data-id', '0');
+        $('#QueryListDiv').removeClass('d-none')
+        $('#RunQueryListDiv').addClass('d-none')
+        $('#AddNewQueryDiv').addClass('d-none')
+        $('#tblLoadData').children('tr').remove();
+        $.ajax({
+            type: "POST",
+            url: '/Query/LoadData',
+            data: {},
+            dataType: "JSON",
+            success: function (response) {
+                if (response != null && response != '' && response != undefined && response.length > 0) {
+                    $('#tblLoadData').children('tr').remove();
+                    for (var x = 0; x < response.length; x++) {
+                        $('#tblLoadData').append("<tr><td>" + (parseInt(x) + 1) + "</td><td><a href='javascript:void(0)' onclick='EditQuery(" + response[x].queryId + ")'> <i class='fa fa-pen text-primary'></i></a><a class='pl-2' href='javascript:void(0)' onclick='DeleteQuery(" + response[x].queryId + ")'><i class='fa fa-trash text-danger'></i></a></td><td>" + response[x].queryCode + "</td><td><a onclick='QueryClick(this)' data-id='" + response[x].queryId + "' href='javascript:void(0)'>" + response[x].queryName + "</a></td><td>" + response[x].queryDesc + "</td><td class='d-none'>" + response[x].queryPrefix + ' ' + response[x].queryFields + ' ' + response[x].querySufix + "</td></tr>")
+                    }
+                    $('#tableLoadData').DataTable();
+                }
+
+            },
+            error: function (response) {
+
+            }
+        });
+    }
+
+    function QueryClick(obj) {
+        var query = $(obj).parent('td').parent('tr').children('td').eq(5).html();
+        //var query1 = query.Replace('&gt;', '>')
+        //var querynew = query1.Replace('&lt;', '>')
+        var decodedText = $("<p/>").html(query).text();
+        queryCode = $(obj).parent('td').parent('tr').children('td').eq(2).html();
+        $('#query').val(decodedText);
+        $('#query').attr('data-id', $(obj).attr('data-id'));
+    }
+
+    function EditQuery(Id) {
+
+        $('#query').attr('data-id', '0');
+        $('#RunQueryListDiv').addClass('d-none')
+        $('#QueryListDiv').addClass('d-none')
+        $('#AddNewQueryDiv').removeClass('d-none')
+        ClearTextbox();
+        $.ajax({
+            type: "POST",
+            url: '/Query/EditQuery',
+            data: { "id": Id },
+            dataType: "JSON",
+            success: function (response) {
+
+                if (response != null && response != '' && response != undefined) {
+                    ClearTextbox();
+                    $('#txtFlg').val(response.queryFlg)
+                    $('#txtQueryCode').val(response.queryCode)
+                    $('#txtQueryCode1').val(response.queryCode)
+                    $('#txtSuffix').val(response.querySufix)
+                    $('#txtFields').val(response.queryFields)
+                    $('#txtPrefix').val(response.queryPrefix)
+                    $('#txtDescription').val(response.queryDesc)
+                    $('#txtQueryId').val(response.queryId)
+                    $('#txtTitle').val(response.queryName)
+                    $('#query').val(response.queryPrefix + ' ' + response.queryFields + ' ' + response.querySufix)
+                    $('#query').attr('data-id', response.queryId);
+                }
+            },
+            error: function (response) {
+
+            }
+        });
+    }
+
+    function DeleteQuery(Id) {
+        $('#query').attr('data-id', '0');
+        if (confirm("Do you want to delete?")) {
+            ClearTextbox();
+            $.ajax({
+                type: "POST",
+                url: '/Query/DeleteQuery',
+                data: { "id": Id },
+                dataType: "JSON",
+                success: function (response) {
+                    if (response) {
+                        ClearTextbox();
+                        alert("Query deleted successfully!");
+                        window.location.reload();
+                    }
+                },
+                error: function (response) {
+
+                }
+            });
+        }
+    }
+
+    function ExportToExcel() {
+        var isAllow = $('#txtQueryId').val();
+        if (isAllow != null && isAllow != '' && isAllow != undefined && isAllow != '0') {
+            window.location.href = "/Query/ExportToExcel/" + isAllow;
+        }
+    }
+</script>
+
+<script>
+    var isRecentCalledEsc = false;
+    (function (code) {
+        code(window.jQuery, document, window);
+    }(function ($, document, window) {
+        $(function () {
+            $(window)
+                .initKeyboard({ debug: 1 })
+                .on('F2', function () {
+                    RunQuery()
+                }).on('F10', function () {
+                    SplitQuery()
+                })
+                .on('Alt+F10', function () {
+                    SaveAsGridMst()
+                })
+                .on('F4', function () {
+                    LoadData()
+                }).on('ALT+E', function () {
+                    ExportToExcel()
+                })
+        });
+    }));
+</script>

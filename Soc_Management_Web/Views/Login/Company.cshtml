@@ -1,0 +1,163 @@
+﻿@model List<PIOAccount.Models.CompanyLIstModel>
+@{
+    Layout = null;
+}
+@{
+    string messageType = string.Empty;
+    string message = string.Empty;
+    if (TempData != null && TempData.Count > 0 && TempData["TempMessage"] != null && TempData["TempMessageType"] != null)
+    {
+        messageType = TempData["TempMessageType"].ToString();
+        message = TempData["TempMessage"].ToString();
+    }
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+
+    <meta name="viewport" content="width=device-width" />
+    <title>Account</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <script src="/Template/plugins/jquery/jquery.min.js"></script>
+    <script src="~/Template/plugins/select2/js/select2.full.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .bg-image-vertical {
+            position: relative;
+            overflow: hidden;
+            background-repeat: no-repeat;
+            background-position: right center;
+            background-size: auto 100%;
+            background-color: #1b1e24;
+        }
+
+        tr td,
+        tr th {
+            padding: .20rem !important
+        }
+
+        tr td {
+            color: blue;
+            cursor: pointer
+        }
+    </style>
+    <script>
+         var message = '@message';
+        var messageType = '@messageType';
+
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        })
+
+        $(document).ready(function () {
+            if (message != '' && messageType != '') {
+                Toast.fire({
+                    icon: messageType,
+                    title: message
+                })
+            }
+
+        })
+    </script>
+
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="card mt-3">
+            <div class="card-header p-0 pt-1 text-center">
+                <div class="col-md-12 text-center">
+                    <div class="row">
+                        <div class="col-md-11" style="font-family:Verdana;font-size:large;color:blue">
+                            <h4>Client List</h4>
+                        </div>
+                        <div class="col-md-1">
+                            <a href="#" onclick="onLogOut()" class="nav-link" style="font-family:Verdana;font-size:large;color:blue">
+                                <i class="far fa-circle nav-icon"></i>
+                                <img src="/Template/dist/img/Logout.png" alt="Logout" class="brand-image img-circle elevation-3" style="opacity: .8;height: 35px;">
+                            </a>
+                        </div>
+                    </div>                 
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="col-md-12">
+                    <table class="table  table-bordered">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Client
+                                </th>
+                                <th>
+                                    Code
+                                </th>
+                                <th>
+                                   Company Name
+                                </th>
+                                <th>
+                                    Start-End Date
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Count > 0)
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr onclick="location.href='/login/company?companyId=@item.Id'">
+                                        <td>
+                                            @item.ClientNm
+                                        </td>
+                                        <td>
+                                            @item.COde
+                                        </td>
+                                        <td>
+                                            @item.Name
+                                        </td>
+                                        <td>
+                                            @item.StartDate - @item.EndDate
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<script type="text/javascript">
+        function onLogOut() {
+        Swal.fire({
+            title: 'Alert?',
+            text: "Are you sure want to logout ?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '@Url.Action("LogOut","Login")';
+            }
+        });
+    }
+
+</script>

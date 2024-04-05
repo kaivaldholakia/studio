@@ -1,0 +1,713 @@
+﻿@model PIOAccount.Models.ModuleMasterModal
+@using Newtonsoft.Json;
+@{
+    ViewData["Title"] = "Menu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var childeModuleMasterList = JsonConvert.SerializeObject(Model.ModuleMasterViewModalList);
+}
+<div class="card card-primary moduleMasterFormCard">
+    <div class="card-header">
+        <h3 class="card-title">Module Master</h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                <i class="fas fa-minus"></i> (Alt+N)
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+
+        @Html.HiddenFor(x => x.ModuleId)
+        @Html.HiddenFor(x => x.ParentFK)
+        @Html.HiddenFor(x => x.IsDelete)
+
+        <div class="row">
+            <div class="col-md-4 col-12">
+                <div class="form-group">
+                    <label for="Name">Name<span class="text-danger"> *</span></label>
+                    @Html.TextBoxFor(x => x.Name, new { @class = "form-control form-control-sm", @id = "txtName", @placeholder = "Module Name", @maxlength = "50" })
+                    <span id="Name_ValidationError" class="error invalid-feedback" style="display:none">Please enter name</span>
+                </div>
+            </div>
+            <div class="col-md-4 col-12" id="masterLinkDiv">
+                <div class="form-group">
+                    <label for="Link">Link<span class="text-danger"> *</span></label>
+                    @Html.TextBoxFor(x => x.Link, new { @class = "form-control form-control-sm noSpaceAllowed", @id = "txtLink", @placeholder = "Link", @maxlength = "50" })
+                    <span id="Link_ValidationError" class="error invalid-feedback" style="display:none">Please enter link</span>
+                </div>
+            </div>
+            <div class="col-md-4 col-12">
+                <div class="form-group">
+                    <label for="Icon">Icon</label>
+                    @Html.TextBoxFor(x => x.Icon, new { @class = "form-control form-control-sm", @id = "txtIcon", @placeholder = "Icon", @maxlength = "30" })
+                </div>
+            </div>
+            <div class="col-md-4 col-12 mt-2">
+                <div class="custom-control custom-checkbox mt-4">
+                    @Html.TextBoxFor(x => x.IsMaster, new { @class = "custom-control-input", @type = "checkbox", @id = "IsMaster", @value = "" })
+                    <label for="IsMaster" class="custom-control-label">Is Masters</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="callout callout-primary mt-4" style="display:none">
+            <h5>Sub Menu List</h5>
+            <div class="row">
+                <div id="subMenuForm" class="col-md-12">
+
+                </div>
+                <div class="col-md-12 text-center">
+                    @*<i class="fa fa-minus-circle text-primary fontCursor" onclick="RemoveRows()"></i>*@
+                    <i class="fa fa-plus-circle text-primary fontCursor" onclick="AddRows()"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12 col-12 text-right">
+            <input type="button" onclick="location.href='/Module/Index'" class="btn btn-secondary mt-4 mr-2" value="Reset/Cancel (Esc)" />
+            <input type="button" class="btn btn-primary mt-4" value="Save (F10)" onclick="saveModuleData()" />
+        </div>
+    </div>
+</div>
+
+<div class="card card-primary userListCard">
+    <div class="card-header">
+        <h3 class="card-title">Module List</h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                <i class="fas fa-minus"></i>
+            </button>
+        </div>
+    </div>
+    <div class="card-body body2">
+        <div class="table-responsive">
+            <table class="table table-bordered dataTable w-100" id="moduleListDatatable">
+                <thead>
+                    <tr>
+                        <th width="5%">
+                            Sr.No
+                        </th>
+                        <th style="width:70px">
+                            Actions
+                        </th>
+                        <th>
+                            Module Name
+                        </th>
+                        <th>
+                            Link
+                        </th>
+                        <th>
+                            Icon
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+        var moduleId = $("#ModuleId").val();
+        var moduleParentFK = $("#ParentFK").val();
+        var moduleIsDelete = $("#IsDelete").val();
+
+        var moduleDataTable;
+
+        $(document).ready(function () {
+            $("#IsMaster").change(function () {
+                $('#subMenuForm').children('div').remove();
+                if (this.checked) {
+                    $("#txtLink").val("");
+                    $("#masterLinkDiv").css("display", "None");
+                    $('#subMenuForm').append(getSubMenuHTMLString(1))
+                    $('#subMenuForm').parent('div').parent('div').show();
+                }
+                else {
+                    $("#masterLinkDiv").css("display", "block");
+                    $('#subMenuForm').parent('div').parent('div').hide();
+                }
+            });
+
+            $('#txtName').keyup(function () {
+                var inputValue = $(this).val();
+                if (inputValue != null && inputValue != undefined && inputValue != '') {
+                    $(this).removeClass("is-invalid");
+                    $(this).next().css("display", "none");
+                }
+                else {
+                    $(this).removeClass("is-invalid").addClass("is-invalid");
+                    $(this).next().css("display", "block");
+                }
+            });
+
+            $('#txtLink').keyup(function () {
+                var inputValue = $(this).val();
+                if (inputValue != null && inputValue != undefined && inputValue != '') {
+                    $(this).removeClass("is-invalid");
+                    $(this).next().css("display", "none");
+                }
+                else {
+                    $(this).removeClass("is-invalid").addClass("is-invalid");
+                    $(this).next().css("display", "block");
+                }
+            });
+
+            BindModuleDataInTable()
+
+            $('.btn-tool').click(function () {
+                if ($(this).children('i').hasClass('fa-plus')) {
+                    setTimeout(function () {
+                        $('#txtName').focus();
+                    }, 100)
+
+                }
+            })
+
+            if (moduleId != null && moduleId != undefined && moduleId != '' && moduleId != 0) {
+                $('#subMenuForm').children('div').remove();
+                if ('@Model.IsMaster' == 'True' && '@Model.ParentFK' == '') {
+                    $('#IsMaster').prop('checked', true);
+                     $("#txtLink").val("");
+                    $("#masterLinkDiv").css("display", "None");
+
+                    var childModuleMasterListJson = '@childeModuleMasterList';
+                    if (childModuleMasterListJson != null && childModuleMasterListJson != undefined && childModuleMasterList != '') {
+                        var childModuleMasterList = JSON.parse(childModuleMasterListJson.replace(/&quot;/g, '"'));
+
+                        if (childModuleMasterList != null && childModuleMasterList != undefined && childModuleMasterList != '' && childModuleMasterList.length > 0) {
+                            childModuleMasterList.forEach(function (moduleData, moduleIndex) {
+                                bindSubMenuDetails(moduleData, moduleIndex)
+                            });
+                        }
+                    }
+                }
+                else {
+                    $('#IsMaster').prop('checked', false);
+                    $("#masterLinkDiv").css("display", "block");
+                    $('#subMenuForm').parent('div').parent('div').hide();
+                }
+            }
+        });
+
+        function saveModuleData() {
+            var errorCount = 0;
+            var moduleSubModel = [];
+            var moduleName = $("#txtName").val();
+            var moduleLink = $("#txtLink").val();
+            var moduleIcon = $("#txtIcon").val();
+            var isMasterModule = false;
+
+            if ($("#IsMaster").prop('checked') == true) {
+                isMasterModule = true;
+
+                var subModuleCount = $('#subMenuForm').children('div').length;
+
+                if (subModuleCount != null && subModuleCount != undefined && subModuleCount != '' && subModuleCount > 0) {
+                    for (var rowNo = 1; rowNo <= subModuleCount; rowNo++) {
+                        var cmModuleName = $("#txtName_" + rowNo).val();
+                        var cmModuleLink = $("#txtLink_" + rowNo).val();
+
+                        if (cmModuleName != null && cmModuleName != undefined && cmModuleName != '') {
+                            $("#txtName_" + rowNo).removeClass("is-invalid");
+                            $("#txtName_ValidationError_" + rowNo).css("display", "none");
+                        }
+                        else {
+                            errorCount++;
+                            $("#txtName_" + rowNo).removeClass("is-invalid").addClass("is-invalid");
+                            $("#txtName_ValidationError_" + rowNo).css("display", "block");
+                        }
+
+                        if (cmModuleLink != null && cmModuleLink != undefined && cmModuleLink != '') {
+                            $("#txtLink_" + rowNo).removeClass("is-invalid");
+                            $("#txtLink_ValidationError_" + rowNo).css("display", "none");
+                        }
+                        else {
+                            errorCount++;
+                            $("#txtLink_" + rowNo).removeClass("is-invalid").addClass("is-invalid");
+                            $("#txtLink_ValidationError_" + rowNo).css("display", "block");
+                        }
+                    }
+                }
+            }
+
+            if (moduleName != null && moduleName != undefined && moduleName != '') {
+                $("#Name").removeClass("is-invalid");
+                $("#Name_ValidationError").css("display", "none");
+            }
+            else {
+                errorCount++;
+                $("#Name").removeClass("is-invalid").addClass("is-invalid");
+                $("#Name_ValidationError").css("display", "block");
+            }
+
+            if ($("#IsMaster").prop('checked') == false) {
+                if (moduleLink != null && moduleLink != undefined && moduleLink != '') {
+                    $("#Link").removeClass("is-invalid");
+                    $("#Link_ValidationError").css("display", "none");
+                }
+                else {
+                    errorCount++;
+                    $("#Link").removeClass("is-invalid").addClass("is-invalid");
+                    $("#Link_ValidationError").css("display", "block");
+                }
+            }
+
+            if (errorCount > 0) {
+                return false;
+            }
+            else {
+                if (isMasterModule) {
+                    var subModuleLength = $('#subMenuForm').children('div').length;
+
+                    if (subModuleLength != null && subModuleLength != undefined && subModuleLength != '' && subModuleLength > 0) {
+                        for (var curRow = 1; curRow <= subModuleLength; curRow++) {
+                            moduleSubModel.push({
+                                ModuleId: $("#txtModuleId_" + curRow).val(),
+                                Name: $("#txtName_" + curRow).val(),
+                                Link: $("#txtLink_" + curRow).val(),
+                                Icon: $("#txtIcon_" + curRow).val(),
+                                IsDelete: $("#txtIsDelete_" + curRow).val(),
+                                ParentFK: $("#txtParentFK_" + curRow).val(),
+                                IsMaster: $("#txtIsMaster_" + curRow).val(),
+                                Position: $("#txtPosition_" + curRow).val(),
+                                DashboardPosition: $("#txtDashboardPosition_" + curRow).val(),
+                            });
+                        }
+                    }
+                }
+
+                var moduleModel = {
+                    ModuleId: moduleId,
+                    Name: moduleName,
+                    Link: moduleLink,
+                    Icon: moduleIcon,
+                    IsDelete: moduleIsDelete,
+                    ParentFK: moduleParentFK,
+                    IsMaster: isMasterModule,
+                    ModuleMasterViewModalList: moduleSubModel
+                };
+
+                $.ajax({
+                    url: '@Url.Action("Index", "Module")',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: { moduleMasterModal: moduleModel},
+                    success: function (data) {
+                        if (data.success) {
+                            location.href = '/Module/Index/';
+                            //successMessage(data.message);
+                            //setTimeout(function () { location.href = '/Module/Index/'; }, 1500);
+                        }
+                        else {
+                            errorMessage(data.message);
+                        }
+                    },
+                    failure: function (response) {
+                        errorMessage(response);
+                    }
+                });
+            }
+        }
+
+        function AddRows() {
+            var input = $('#subMenuForm').children('div:last').length;
+            var isAllow = false;
+            for (var x = 1; x <= input; x++) {
+                isAllow = CheckChildModulePreValidation(x);
+            }
+
+            if (isAllow) {
+                var totalRows = $('#subMenuForm').children('div').length;
+                totalRows = totalRows + 1;
+                $('#subMenuForm').append(getSubMenuHTMLString(totalRows));
+            }
+        }
+
+        function RemoveRows() {
+            if (AllowRowDelete()) {
+                $('#subMenuForm').children('div:last').remove();
+            }
+        }
+
+        function DeleteRow(ele) {
+            if (AllowRowDelete()) {
+                Swal.fire({
+                    title: 'Alert?',
+                    text: "Are you sure want to delete row?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $(ele).parent('div').parent('div').remove();
+                        ReSetRowIndex();
+                    }
+                });
+            }
+        }
+
+        function AllowRowDelete() {
+            if (($('#subMenuForm').children('div').length) <= 1) {
+                errorMessage("Minimum one row should be there.");
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+
+        function getSubMenuHTMLString(count) {
+            return `<div class='row'>
+                        <div class="hidden">
+                            <input type="hidden" id="txtModuleId_` + count + `" value="0"/>
+                            <input type="hidden" id="txtParentFK_` + count + `" value=""/>
+                            <input type="hidden" id="txtIsDelete_` + count + `" value="0"/>
+                            <input type="hidden" id="txtIsMaster_` + count + `" value="0"/>
+                        </div>
+                        <div class="col-md-3 col-12">
+                            <div class="form-group">
+                                <input type="text" id="txtName_` + count + `" data-IsRequired="true" class="form-control form-control-sm" placeholder="Module Name"/>
+                                <span id="txtName_ValidationError_` + count + `" class="error invalid-feedback" style="display:none">Please enter name</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-12">
+                            <div class="form-group">
+                                <input type="text" id="txtLink_` + count + `" data-IsRequired="true" class="form-control form-control-sm noSpaceAllowed" placeholder="Link"/>
+                                <span id="txtLink_ValidationError_` + count + `" class="error invalid-feedback" style="display:none">Please enter link</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-12">
+                            <div class="form-group">
+                                <input type="text" id="txtIcon_` + count + `" data-IsRequired="false" class="form-control form-control-sm" placeholder="Icon"/>
+
+                            </div>
+                        </div>
+                        <div class="col-md-1 col-12">
+                                        <div class="form-group">
+                                            <input type="number" id="txtPosition_` + count + `" data-IsRequired="true" class="form-control form-control-sm" placeholder="Position" />
+<span id="txtPosition_ValidationError_` + count + `" class="error invalid-feedback" style="display:none">Please enter position</span>
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 col-12">
+                                        <div class="form-group">
+                                            <input type="number" id="txtDashboardPosition_` + count + `" data-IsRequired="true" class="form-control form-control-sm" placeholder="Dashboard Position"/>
+<span id="txtDashboardPosition_ValidationError_` + count + `" class="error invalid-feedback" style="display:none">Please enter dashboard position</span>
+
+                                        </div>
+                                    </div>
+                        <div class="col-md-1 col-12">
+                            <i class="fa fa-trash text-danger fontCursor" onclick="DeleteRow(this);"></i>
+                        </div>
+                    </div>`;
+        }
+
+        function bindSubMenuDetails(moduleData, moduleIndex) {
+            moduleIndex = moduleIndex + 1;
+
+            var subModuleHtml = `<div class='row'>
+                                    <div class="hidden">
+                                        <input type="hidden" id="txtModuleId_` + moduleIndex + `" value="` + moduleData.ModuleId+`"/>
+                                        <input type="hidden" id="txtParentFK_` + moduleIndex + `" value="` + moduleData.ParentFK +`"/>
+                                        <input type="hidden" id="txtIsDelete_` + moduleIndex + `" value="` + moduleData.IsDelete +`"/>
+                                        <input type="hidden" id="txtIsMaster_` + moduleIndex + `" value="` + moduleData.IsMaster +`"/>
+                                    </div>
+                                    <div class="col-md-3 col-12">
+                                        <div class="form-group">
+                                            <input type="text" id="txtName_` + moduleIndex + `" data-IsRequired="true" class="form-control form-control-sm" placeholder="Module Name" value="` + moduleData.Name +`" />
+                                            <span id="txtName_ValidationError_` + moduleIndex + `" class="error invalid-feedback" style="display:none">Please enter name</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-12">
+                                        <div class="form-group">
+                                            <input type="text" id="txtLink_` + moduleIndex + `" data-IsRequired="true" class="form-control form-control-sm noSpaceAllowed" placeholder="Link" value="` + moduleData.Link +`" />
+                                            <span id="txtLink_ValidationError_` + moduleIndex + `" class="error invalid-feedback" style="display:none">Please enter link</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-12">
+                                        <div class="form-group">
+                                            <input type="text" id="txtIcon_` + moduleIndex + `" data-IsRequired="false" class="form-control form-control-sm" placeholder="Icon" value="` + moduleData.Icon +`" />
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 col-12">
+                                        <div class="form-group">
+                                            <input type="number" id="txtPosition_` + moduleIndex + `" data-IsRequired="false" class="form-control form-control-sm" placeholder="Position" value="` + moduleData.Position +`" />
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 col-12">
+                                        <div class="form-group">
+                                            <input type="number" id="txtDashboardPosition_` + moduleIndex + `" data-IsRequired="false" class="form-control form-control-sm" placeholder="Dashboard Position" value="` + moduleData.DashboardPosition +`" />
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 col-12">
+                                        <i class="fa fa-trash text-danger fontCursor" onclick="DeleteRow(this);"></i>
+                                    </div>
+                                </div>`;
+
+            $('#subMenuForm').append(subModuleHtml);
+
+            $('#subMenuForm').parent('div').parent('div').show();
+
+            return subModuleHtml;
+        }
+
+        function deleteModule(Id) {
+            Swal.fire({
+                title: 'Alert?',
+                text: "Are you sure want to delete record?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    location.href = '/Module/DeleteModule/' + Id;
+                }
+            });
+        }
+
+        function BindModuleDataInTable() {
+            moduleDataTable = $('#moduleListDatatable').DataTable({
+                "scrollX": true,
+                "scrollY": true,
+                "paging": true,
+                "ordering": false,
+                "filter": true,
+                "destroy": true,
+                "serverSide": true,
+                "Processing": true,
+                "bLengthChange": false,
+                "pageLength": 10,
+                "language": {
+                    "infoFiltered": ""
+                },
+                "order": [[0, "desc"]],
+                "columnDefs": [
+                    {
+                        "render": function (data, type, row, meta) {
+                            return meta.row + meta.settings._iDisplayStart + 1;
+                        },
+                        "targets": 0,
+                        'orderable': false
+                    },
+                    {
+                        "render": function (data, type, row) {
+                            var html = `<a href='/Module/Index/` + row.moduleId + `'>
+                                            <i style="font-size:20px" class="fa fa-edit"></i>
+                                        </a>
+                                        <a class="pl-2" onclick='deleteModule(` + row.moduleId  + `)'>
+                                            <i style="font-size:20px" class="fa fa-trash text-danger"></i>
+                                        </a>`;
+                            return html;
+                        },
+                        "targets": 1
+                    },
+                    {
+                        "render": function (data, type, row) {
+                            ``
+                            return row.name;
+                        },
+                        "targets": 2
+                    },
+                    {
+                        "render": function (data, type, row) {
+                            return row.link;
+                        },
+                        "targets": 3
+                    },
+                    {
+                        "render": function (data, type, row) {
+                            return row.icon;
+                        },
+                        "targets": 4
+                    }
+                ],
+                "ajax":
+                {
+                    "url": "/Module/GetModuleList/",
+                    "type": "POST",
+                    "dataType": "JSON",
+                    "beforeSend": function () {
+                        $('#moduleListDatatable > tbody').html(
+                            '<tr class="odd">' +
+                            '<td valign="top" colspan="3" class="dataTables_empty txtLoadingBar">Loading&hellip;</td>' +
+                            '</tr>'
+                        );
+                    },
+                    "error": function () {
+                        $('#moduleListDatatable > tbody').html(
+                            '<tr class="odd">' +
+                            '<td valign="top" colspan="3" class="dataTables_empty txtErrorMsg">No results found.</td>' +
+                            '</tr>'
+                        );
+                    }
+                },
+                "aoColumns": [
+                    { "mDataProp": "ModuleId" },
+                    { "mDataProp": "Name" },
+                    { "mDataProp": "Link" },
+                    { "mDataProp": "Icon" }
+                ],
+                "drawCallback": function (resultData) {
+                    if (moduleId != null && moduleId != undefined && moduleId != '' && moduleId != 0) {
+                        $('.moduleMasterFormCard').CardWidget('expand');
+                        $('#txtName').focus();
+                    }
+                    else {
+                        $('.moduleMasterFormCard').CardWidget('collapse');
+                        $('.moduleSearchText').focus();
+                    }
+                }
+            });
+
+            $('#moduleListDatatable_filter input').addClass('moduleSearchText');
+            $('#moduleListDatatable_filter input').attr('id', 'txtSearchModule');
+        }
+
+        function CheckChildModulePreValidation(index) {
+            var isValid = false;
+            var cmModuleName = $("#txtName_" + index).val();
+            var cmModuleLink = $("#txtLink_" + index).val();
+            var cmPosition = $("#txtPosition_" + index).val();
+            var cmDashboardPosition = $("#txtDashboardPosition_" + index).val();
+
+            if (cmModuleName != null && cmModuleName != undefined && cmModuleName != '') {
+                isValid = true;
+                $("#txtName_" + index).removeClass("is-invalid");
+                $("#txtName_ValidationError_" + index).css("display", "none");
+            }
+            else {
+                $("#txtName_" + index).removeClass("is-invalid").addClass("is-invalid");
+                $("#txtName_ValidationError_" + index).css("display", "block");
+            }
+
+            if (cmModuleLink != null && cmModuleLink != undefined && cmModuleLink != '') {
+                isValid = true;
+                $("#txtLink_" + index).removeClass("is-invalid");
+                $("#txtLink_ValidationError_" + index).css("display", "none");
+            }
+            else {
+                $("#txtLink_" + index).removeClass("is-invalid").addClass("is-invalid");
+                $("#txtLink_ValidationError_" + index).css("display", "block");
+            }
+
+            if (cmPosition != null && cmPosition != undefined && cmPosition != '') {
+                isValid = true;
+                $("#txtPosition_" + index).removeClass("is-invalid");
+                $("#txtPosition_ValidationError_" + index).css("display", "none");
+            }
+            else {
+                $("#txtPosition_" + index).removeClass("is-invalid").addClass("is-invalid");
+                $("#txtPosition_ValidationError_" + index).css("display", "block");
+            }
+
+            if (cmDashboardPosition != null && cmDashboardPosition != undefined && cmDashboardPosition != '') {
+                isValid = true;
+                $("#txtDashboardPosition_" + index).removeClass("is-invalid");
+                $("#txtDashboardPosition_ValidationError_" + index).css("display", "none");
+            }
+            else {
+                $("#txtDashboardPosition_" + index).removeClass("is-invalid").addClass("is-invalid");
+                $("#txtDashboardPosition_ValidationError_" + index).css("display", "block");
+            }
+
+            return isValid;
+        }
+
+        function ReSetRowIndex() {
+            var rowIndex = 1;
+            $('#subMenuForm').children('div').each(function () {
+                $(this).children('div').eq(0).children('input').eq(0).attr('id','txtModuleId_' + rowIndex);
+                $(this).children('div').eq(0).children('input').eq(1).attr('id','txtParentFK_' + rowIndex);
+                $(this).children('div').eq(0).children('input').eq(2).attr('id','txtIsDelete_' + rowIndex);
+                $(this).children('div').eq(0).children('input').eq(3).attr('id','txtIsMaster_' + rowIndex);
+
+                $(this).children('div').eq(1).children().find('input').attr('id','txtName_' + rowIndex);
+                $(this).children('div').eq(1).children().find('span').attr('id','txtName_ValidationError_' + rowIndex);
+
+                $(this).children('div').eq(2).children().find('input').attr('id','txtLink_' + rowIndex);
+                $(this).children('div').eq(2).children().find('span').attr('id','txtLink_ValidationError_' + rowIndex);
+
+                $(this).children('div').eq(3).children().find('input').attr('id','txtIcon_' + rowIndex);
+                $(this).children('div').eq(3).children().find('span').attr('id','txtIcon_ValidationError_' + rowIndex);
+
+                rowIndex = parseInt(rowIndex) + 1;
+            })
+        }
+
+</script>
+
+<script type="text/javascript">
+    var isRecentCalledEsc = false;
+
+
+    (function (code) {
+        code(window.jQuery, document, window);
+    }(function ($, document, window) {
+        $(function () {
+            $(window)
+                .initKeyboard({ debug: 1 })
+                .on('Alt+N', function () {
+                    AddNewRecordShortcut();
+                }).on('Alt+M', function () {
+                    $('body').removeClass('sidebar-collapse')
+                    $('#txtSearchSidebar').focus();
+                }).on('Escape', function () {
+                    if (!isRecentCalledEsc) {
+                        isRecentCalledEsc = true;
+                        if ($(".cardBodyContent div:nth-child(1)").find('div:nth-child(1)').find('.card-tools button').find('i').hasClass('fa-minus')) {
+                            if (confirm("Are you sure want to cancel?")) {
+                                window.location.href = '/Module/Index'
+                            }
+                            setTimeout(function () {
+                                isRecentCalledEsc = false;
+                            }, 500)
+                        }
+                    }
+                  
+                });
+
+        });
+    }));
+
+    $(function () {
+        var body = document.querySelector('body');
+        var mousetrap = new Mousetrap(body);
+        mousetrap.bind('alt+s', SaveRecord);
+        mousetrap.bind('f10', SaveRecord);
+    })
+</script>
+<script type="text/javascript">
+
+
+    function AddNewRecordShortcut() {
+        $('.moduleMasterFormCard').removeClass('collapsed-card')
+        $('.moduleMasterFormCard').children('.card-body').attr('style', 'display:');
+        $('.moduleMasterFormCard').children().find('button').children('i').removeClass('fas fa-plus');
+        $('.moduleMasterFormCard').children().find('button').children('i').addClass('fas fa-minus');
+        $('#txtName').focus();
+    }
+
+    function SaveRecord() {
+        saveModuleData()
+    }
+
+    function ResetForm() {
+        if ($(".cardBodyContent div:nth-child(1)").find('div:nth-child(1)').find('.card-tools button').find('i').hasClass('fa-minus')) {
+            if (confirm("Do you want to exit without save?")) {
+                window.location.href='/Module/Index/'
+            }
+            else {
+                $('#txtName').focus();
+            }
+        }
+    }
+</script>

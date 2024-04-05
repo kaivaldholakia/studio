@@ -1,0 +1,983 @@
+﻿@model PIOAccount.Models.ContactModel
+@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int isAdministrator = HttpContextAccessor.HttpContext.Session.GetInt32("IsAdministrator").Value;
+    List<PIOAccount.Models.ContactModel> cityList = ViewBag.cityList as List<PIOAccount.Models.ContactModel>;
+    List<SelectListItem> layoutList = ViewBag.layoutList as List<SelectListItem>;
+    List<SelectListItem> pageNoList = ViewBag.pageNoList as List<SelectListItem>;
+    var userRight = ViewBag.userRight as PIOAccount.Models.UserFormRightModel;
+    ViewData["Title"] = userRight.ModuleNm;
+    string headerAdd = "";
+    string headerList = "";
+    string gridAdd = "";
+    string gridList = "";
+    bool headerAddTrue = false;
+    bool headerListTrue = false;
+
+    if (userRight != null && (userRight.IsAdd || userRight.IsEdit) && userRight.IsList)
+    {
+        headerList = "active";
+        gridList = "show active";
+        headerAddTrue = true;
+    }
+    else if (userRight != null && (userRight.IsAdd || userRight.IsEdit))
+    {
+        headerAdd = "active";
+        gridAdd = "show active";
+        headerAddTrue = true;
+    }
+    else if (userRight != null && userRight.IsList)
+    {
+        headerList = "active";
+        gridList = "show active";
+        headerAddTrue = true;
+    }
+}
+
+
+<div class="card card-primary" style="background-color:antiquewhite">
+    <div class="card-header" style="font-family:Verdana">
+        <h6> @ViewData["Title"]</h6>
+    </div>
+    <div class="card-body">
+        <div class="card card-primary card-tabs">
+            <div class="card-header p-0 pt-1">
+                <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                    @if (userRight != null && userRight.IsList)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @headerList" id="custom-tabs-three-list-tab" data-toggle="pill" href="#custom-tabs-three-list" role="tab" aria-controls="custom-tabs-three-list" aria-selected="@headerListTrue" style="font-family:Verdana;font-size:small" onclick="GoToListTab()">List (Alt+L)</a>
+                        </li>
+                    }
+                    @if (userRight != null && (userRight.IsAdd || userRight.IsEdit))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @headerAdd" id="custom-tabs-three-add-tab" data-toggle="pill" href="#custom-tabs-three-add" role="tab" aria-controls="custom-tabs-three-add" aria-selected="@headerAddTrue" style="font-family:Verdana;font-size:small" onclick="GoToAddTab()">Add/Update (F2)</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+            <div class="card-body" style="background-color:aliceblue">
+                <div class="col-md-12">
+                    <div class="tab-content" id="custom-tabs-three-tabContent">
+                        @if (userRight != null && userRight.IsList)
+                        {
+                            <div class="tab-pane fade  @gridList" id="custom-tabs-three-list" role="tabpanel" aria-labelledby="custom-tabs-three-list-tab">
+                                <div class="table-responsive mt-2" style="font-family:Verdana;font-size:small;font-display:inherit">
+                                    <div class="col-md-12 col-12 mb-2 mt-2">
+                                        <div class="row">
+                                            <div class="col-md-1 mb-2 float-left">
+                                                <select class="form-control form-control-sm" onchange="loadData()" id="drpReportPageNoDatable">
+                                                    @for (int i = 0; i < pageNoList.Count; i++)
+                                                    {
+                                                        string checkedd = "checked";
+                                                        <option checked="@checkedd" value="@pageNoList[i].Value">@pageNoList[i].Text</option>
+                                                        checkedd = string.Empty;
+                                                    }
+
+                                                </select>
+                                            </div>
+                                            <div class="col-md-5 col-12">
+                                                <div class="row">
+                                                    <div class="col-md-6 col">
+                                                        <select class="form-control select2 drpReportLayout" onchange="loadData()">
+                                                            <option value="" ; style="width:200px">--Select Layout--</option>
+                                                            @if (layoutList != null && layoutList.Count > 0)
+                                                            {
+                                                                foreach (var item in layoutList)
+                                                                {
+                                                                    <option value="@item.Value">@item.Text </option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-2 col-auto mb-2 custommt-2-3">
+                                                        @if (isAdministrator == 1)
+                                                        {
+                                                            <button class="btn btn-dark btn-sm text-white" style="font-family:Verdana;font-size:medium" onclick="window.open('/GridMaster/Index/' + $('.drpReportLayout').val(), '_blank');">
+                                                                Edit
+                                                            </button>
+                                                        }
+                                                    </div>
+                                                    <div class="col-md-4 mb-2 custommt-2-3">
+                                                        <button class="btn btn-primary btn-sm" id="btnExportToExcel">Excel</button>
+                                                        <button class="btn btn-primary btn-sm ml-6" id="btnExportToPDF">PDF</button>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3"></div>
+                                            <div class="col-md-3 col-12 float-right">
+                                                <input type="text" class="form-control form-control-sm" placeholder="Search" id="txtReportSearchDataTable" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="dataTable">
+
+                                    </div>
+                                    <div class="pager float-right"></div>
+                                </div>
+                            </div>
+                        }
+                        @if (userRight != null && (userRight.IsAdd || userRight.IsEdit))
+                        {
+                            <div class="tab-pane fade" id="custom-tabs-three-add" role="tabpanel" aria-labelledby="custom-tabs-three-add-tab">
+                                <form method="post" class="mt-4" id="saleForm">
+
+                                    @Html.HiddenFor(x => x.SocietyId)
+
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="row">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                    Code <span class="required"></span>
+                                                </label>
+                                                <input type="hidden" name="@Model.Code" id="Code" value="@Model.Code" />
+                                                <input type="hidden" name="@Model.Code" id="Code" value="@Model.Code" />
+                                                <div class="form-outline form-white mb-2">
+                                                    @Html.TextBoxFor(x => x.Code, new { @class = "form-control form-control-lg", @placeholder = "Code", @tabindex = "1", @style = "height:35px;width:250px ", @id = "txtCode", @readonly = true })
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="row">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                    @*asp-format=" {0:dd/MM/yyyy}" >*@
+                                                    Date <span class="required"></span>
+                                                </label>
+
+                                                <div class="form-outline form-white mb-2" asp-format=" {0:dd/MM/yyyy}">
+                                                    @Html.TextBoxFor(x => x.Date, new { @class = "form-control form-control-lg", @placeholder = "Date", @tabindex = "2", @style = "height:35px;width:250px ", @type = "date", @id = "txtDate" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="row">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                    Category <span class="required">*</span>
+                                                </label>
+
+                                                <div class="form-outline form-white mb-2">
+                                                    @*@Html.TextBoxFor(x => x.Category, new { @class = "form-control form-control-lg", @placeholder = "Category", @tabindex = "3", @style = "height:35px;width:250px ", @required = "required", @id = "txtCategory" })*@
+                                                    @Html.DropDownListFor(x => x.Category, Model.lstcategory, "Select", new { @class = "form-control select3 CatgType", @tabindex = "3", onfocus = "this.select()", style = "font-family: Verdana;font-size:small; height:35px; width:180px" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="row">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                    Name <span class="required">*</span>
+                                                </label>
+                                                <div class="form-outline form-white mb-2">
+
+
+                                                    <div class="form-outline form-white mb-2">
+                                                        @Html.TextBoxFor(x => x.Name, new { @class = "form-control form-control-lg", @placeholder = "Name", @tabindex = "4", @style = "height:35px;width:250px ", @required = "required", @id = "txtName" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-md-4 ">
+                                            <div class="row">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                    Ref By
+                                                </label>
+
+                                                <div class="form-outline form-white mb-2">
+
+                                                    @Html.TextBoxFor(x => x.RefBy, new { @class = "form-control form-control-lg", @placeholder = "Ref By", @tabindex = "5", @onfocus = "this.select()", @style = "height:35px;width:250px;", @id = "txtrefby" })
+
+                                                    @*@Html.DropDownListFor(x => x.RefBy, Model.lstRefBy, "Select", new { @class = "form-control select RefBY", @tabindex = "5", onfocus = "this.select()", style = "font-family: Verdana;font-size:small; height:35px; width:250px" })*@
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="row">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                    Group
+                                                </label>
+
+                                                <div class="form-outline form-white mb-2">
+                                                    @*@Html.TextBoxFor(x => x.Group, new { @class = "form-control form-control-lg", @placeholder = "Group", @tabindex = "3", @style = "height:35px;width:250px ", @id = "txtGroup" })*@
+
+                                                    @Html.DropDownListFor(x => x.Group, Model.lstGroup, "Select", new { @class = "form-control select2 GroupType", @tabindex = "6", onfocus = "this.select()", style = "font-family: Verdana;font-size:small; height:35px; width:180px" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="container">
+                                            <div class="row">
+
+                                                <div class="col-lg-3 ">
+                                                    <label class="control-label col-md-4 col-sm-4 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="        text-align: right;max-width: 41.333333%;">
+                                                        Contact Person
+                                                    </label>
+                                                    <div class="col">
+                                                        <div class="form-outline form-white mb-1">
+                                                            @Html.TextBoxFor(x => x.Person1, new
+                                                       {
+                                                           @class = "form-control form-control-lg",
+                                                           @placeholder = "Person 1",
+                                                           @tabindex = "7",
+                                                           @style = "height:35px;width:202px ",
+
+                                                           @id = "txtContPerson1",
+                                                          // onkeypress = "return (event.charCode > 64 && event.charCode < 91) || (event.charCode > 96 && event.charCode < 123)"
+                                                       })
+                                                        </div>
+                                                    </div>
+                                                    <div class="col">
+                                                        <div class="form-outline form-white mb-1">
+                                                            @Html.TextBoxFor(x => x.Person2, new
+                                                       {
+                                                           @class = "form-control form-control-lg",
+                                                           @placeholder = "Person 2",
+                                                           @tabindex = "11",
+                                                           @style = "height:35px;width:202px ",
+
+                                                           @id = "txtContPerson2",
+                                                           //  onkeypress = "return (event.charCode > 64 && event.charCode < 91) || (event.charCode > 96 && event.charCode < 123)"
+                                                       })
+                                                        </div>
+                                                    </div>
+                                                    <div class="col">
+                                                        <div class="form-outline form-white mb-1">
+                                                            @Html.TextBoxFor(x => x.Person3, new
+                                                       {
+                                                           @class = "form-control form-control-lg",
+                                                           @placeholder = "Person 3",
+                                                           @tabindex = "15",
+                                                           @style = "height:35px;width:202px ",
+
+                                                           @id = "txtContPerson3",
+                                                           //  onkeypress = "return (event.charCode > 64 && event.charCode < 91) || (event.charCode > 96 && event.charCode < 123)"
+                                                       })
+                                                        </div>
+                                                    </div>
+                                                    <div class="col">
+                                                        <div class="form-outline form-white mb-1">
+                                                            @Html.TextBoxFor(x => x.Person4, new
+                                                       {
+                                                           @class = "form-control form-control-lg",
+                                                           @placeholder = "Person 4",
+                                                           @tabindex = "19",
+                                                           @style = "height:35px;width:202px ",
+
+                                                           @id = "txtContPerson4",
+                                                           // onkeypress = "return (event.charCode > 64 && event.charCode < 91) || (event.charCode > 96 && event.charCode < 123)"
+                                                       })
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-lg-3 ">
+                                                    <label class="control-label col-md-4 col-sm-4 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                        Mobile No
+                                                    </label>
+                                                    <div class="row">
+                                                        <div class="form-outline form-white mb-1">
+                                                            @Html.TextBoxFor(x => x.Mobileno1, new
+                                                       {
+                                                           @class = "form-control form-control-lg",
+                                                           @placeholder = "Contact 1",
+                                                           @tabindex = "8",
+                                                           @style = "height:35px;width:150px ",
+
+                                                           @id = "txtMobileNo1",
+                                                           onkeypress = "return onlyNumberKey(event)",
+                                                           @maxlength = "10"
+                                                       })
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-outline form-white mb-1">
+                                                            @Html.TextBoxFor(x => x.Mobileno2, new
+                                                            {
+                                                                @class = "form-control form-control-lg",
+                                                                @placeholder = "Contact 2",
+                                                                @tabindex = "12",
+                                                                @style = "height:35px;width:150px ",
+
+                                                            @id = "txtMobileNo2",
+                                                           onkeypress = "return onlyNumberKey(event)",
+                                                           @maxlength = "10"
+                                                       })
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-outline form-white mb-1">
+                                                            @Html.TextBoxFor(x => x.Mobileno3, new
+                                                            {
+                                                                @class = "form-control form-control-lg",
+                                                                @placeholder = "Contact 3",
+                                                                @tabindex = "16",
+                                                                @style = "height:35px;width:150px ",
+
+                                                            @id = "txtMobileNo3",
+                                                           onkeypress = "return onlyNumberKey(event)",
+                                                           @maxlength = "10"
+                                                       })
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-outline form-white mb-1">
+                                                            @Html.TextBoxFor(x => x.Mobileno4, new
+                                                       {
+                                                           @class = "form-control form-control-lg",
+                                                           @placeholder = "Contact 4",
+                                                           @tabindex = "20",
+                                                           @style = "height:35px;width:150px ",
+
+                                                           @id = "txtMobileNo4",
+                                                           onkeypress = "return onlyNumberKey(event)",
+                                                           @maxlength = "10"
+                                                       })
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-lg-3 ">
+                                                    <label class="control-label col-md-4 col-sm-4 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                        Birth Date
+                                                    </label>
+                                                    <div class="form-outline form-white mb-1" asp-format=" {0:dd/MM/yyyy}">
+                                                        @*@Html.TextBoxFor(x => x.Birthdate1, new { @class = "form-control form-control-lg", @placeholder = "Date", @tabindex = "9", @style = "height:35px;width:150px ", @type = "date", @id = "txtDate" })*@
+
+                                                        @Html.TextBoxFor(x => x.Birthdate1, new { @class = "form-control form-control-lg", @placeholder = "dd/mm", @tabindex = "9", @style = "height:35px;width:150px", @type = "date", @id = "Birthdate1", @maxlength = "5" })
+
+                                                    </div>
+
+                                                    <div class="form-outline form-white mb-1">
+                                                        @Html.TextBoxFor(x => x.Birthdate2, new { @class = "form-control form-control-lg", @tabindex = "13", @style = "height:35px;width:150px ", @type = "date", @id = "Birthdate2" })
+                                                    </div>
+                                                    <div class="form-outline form-white mb-1" asp-format=" {0:dd/MM/yyyy}">
+                                                        @Html.TextBoxFor(x => x.Birthdate3, new { @class = "form-control form-control-lg", @placeholder = "Date", @tabindex = "17", @style = "height:35px;width:150px ", @type = "date", @id = "Birthdate3" })
+                                                    </div>
+                                                    <div class="form-outline form-white mb-1" asp-format=" {0:dd/MM/yyyy}">
+                                                        @Html.TextBoxFor(x => x.Birthdate4, new { @class = "form-control form-control-lg", @placeholder = "Date", @tabindex = "21", @style = "height:35px;width:150px ", @type = "date", @id = "Birthdate4" })
+                                                    </div>
+                                                    @*<div class="row">
+                                                            <div class="form-outline form-white mb-1">
+                                                                @Html.TextBoxFor(x => x.Birthdate3, new
+                                                           {
+                                                               @class = "form-control form-control-lg",
+                                                               @placeholder = "Date 3",
+                                                               @tabindex = "7",
+                                                               @style = "height:35px;width:150px ",
+                                                               @type = "date",
+                                                               @id = "txtBirthdate3"
+                                                           })
+                                                            </div>
+                                                        </div>*@
+                                                    @*<div class="row">
+                                                            <div class="form-outline form-white mb-1">
+                                                                @Html.TextBoxFor(x => x.Birthdate4, new
+                                                           {
+                                                               @class = "form-control form-control-lg",
+                                                               @placeholder = "Date 4",
+                                                               @tabindex = "7",
+                                                               @style = "height:35px;width:150px ",
+                                                               @type = "date",
+                                                               @id = "txtBirthdate4"
+                                                           })
+                                                            </div>
+                                                        </div>*@
+                                                </div>
+
+                                                <div class="col-lg-3 ">
+                                                    <label class="control-label col-md-6 col-sm-6 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align: left;">
+                                                        Marriage Date
+                                                    </label>
+                                                    <div class="row">
+                                                        <div class="form-outline form-white mb-1">
+                                                            @Html.TextBoxFor(x => x.Marrigedate1, new
+                                                       {
+                                                           @class = "form-control form-control-lg",
+                                                           @placeholder = "Date 1",
+                                                           @tabindex = "10",
+                                                           @style = "height:35px;width:150px ",
+                                                           @type = "date",
+                                                           @id = "txtMarriagedate1"
+                                                       })
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-outline form-white mb-1">
+                                                            @Html.TextBoxFor(x => x.Marrigedate2, new
+                                                       {
+                                                           @class = "form-control form-control-lg",
+                                                           @placeholder = "Date 2",
+                                                           @tabindex = "14",
+                                                           @style = "height:35px;width:150px ",
+                                                           @type = "date",
+                                                           @id = "txtMarriagedate2",
+                                                           onkeypress = "return onlyNumberKey(event)"
+                                                       })
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-outline form-white mb-1">
+                                                            @Html.TextBoxFor(x => x.Marrigedate3, new
+                                                       {
+                                                           @class = "form-control form-control-lg",
+                                                           @placeholder = "Date 3",
+                                                           @tabindex = "18",
+                                                           @style = "height:35px;width:150px ",
+                                                           @type = "date",
+                                                           @id = "txtMarriagedate3",
+                                                           onkeypress = "return onlyNumberKey(event)"
+                                                       })
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-outline form-white mb-1">
+                                                            @Html.TextBoxFor(x => x.Marrigedate4, new
+                                                       {
+                                                           @class = "form-control form-control-lg",
+                                                           @placeholder = "Date 4",
+                                                           @tabindex = "22",
+                                                           @style = "height:35px;width:150px ",
+                                                           @type = "date",
+                                                           @id = "txtMarriagedate4",
+                                                           onkeypress = "return onlyNumberKey(event)"
+                                                       })
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+
+
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                            Phone(R) <span class="required"></span>
+                                                        </label>
+                                                        <input type="hidden" name="@Model.Phone_R" id="Code" value="@Model.Phone_R" />
+                                                        <input type="hidden" name="@Model.Category" id="SocietyId" value="@Model.Category" />
+                                                        <div class="form-outline form-white mb-2">
+                                                            @Html.TextBoxFor(x => x.Phone_R, new
+                                                            {
+                                                                @class = "form-control form-control-lg",
+                                                                @placeholder = "Phone(R)",
+                                                                @tabindex = "23",
+                                                                @style = "height:35px;width:250px ",
+                                                                @id = "txtPhone_R",
+                                                                onkeypress = "return onlyNumberKey(event)",
+                                                           @maxlength = "10"
+                                                       })
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                            Phone(O) <span class="required"></span>
+                                                        </label>
+
+                                                        <div class="form-outline form-white mb-2">
+                                                            @Html.TextBoxFor(x => x.Phone_O, new
+                                                            {
+                                                                @class = "form-control form-control-lg",
+                                                                @placeholder = "Phone(O)",
+                                                                @tabindex = "24",
+                                                                @style = "height:35px;width:250px ",
+                                                                @id = "txtPhone_O",
+                                                                onkeypress = "return onlyNumberKey(event)",
+                                                           @maxlength = "10"
+                                                       })
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+
+
+
+
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                            Email Id1 <span class="required"></span>
+                                                        </label>
+                                                        <input type="hidden" name="@Model.Code" id="Code" value="@Model.Code" tabindex="25" />
+                                                        <input type="hidden" name="@Model.Category" id="SocietyId" value="@Model.Category" tabindex="26" />
+                                                        <div class="form-outline form-white mb-2">
+                                                            @Html.TextBoxFor(x => x.Mail_id1, new { @class = "form-control form-control-lg", @placeholder = "Email Id1", @tabindex = "27", @style = "height:35px;width:250px ", @id = "txtEmailId1" })
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                            Email Id2 <span class="required"></span>
+                                                        </label>
+
+                                                        <div class="form-outline form-white mb-2">
+                                                            @Html.TextBoxFor(x => x.Mail_id2, new { @class = "form-control form-control-lg", @placeholder = "Email Id2", @tabindex = "28", @style = "height:35px;width:250px ", @id = "txtEmailId2" })
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                            Address 1 <span class="required"></span>
+                                                        </label>
+
+                                                        <div class="form-outline form-white mb-2">
+                                                            @Html.TextBoxFor(x => x.Address_line1, new { @class = "form-control form-control-lg", @placeholder = "Address Line1", @tabindex = "29", @style = "height:35px;width:250px ", @id = "txtAddress1" })
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+
+
+
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                            Address 2 <span class="required"></span>
+                                                        </label>
+                                                        <input type="hidden" name="@Model.Code" id="Code" value="@Model.Code" tabindex="30" />
+                                                        <input type="hidden" name="@Model.Category" id="SocietyId" value="@Model.Category" tabindex="31" />
+                                                        <div class="form-outline form-white mb-2">
+                                                            @Html.TextBoxFor(x => x.Address_line2, new { @class = "form-control form-control-lg", @placeholder = "Address Line2", @tabindex = "32", @style = "height:35px;width:250px ", @id = "txtAddress2" })
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                            Address 3 <span class="required"></span>
+                                                        </label>
+
+                                                        <div class="form-outline form-white mb-2">
+                                                            @Html.TextBoxFor(x => x.Address_line3, new { @class = "form-control form-control-lg", @placeholder = "Address Line3", @tabindex = "33", @style = "height:35px;width:250px ", @id = "txtAddress3" })
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                            Area <span class="required"></span>
+                                                        </label>
+
+                                                        <div class="form-outline form-white mb-2">
+
+                                                            @Html.TextBoxFor(x => x.Area, new { @class = "form-control form-control-lg", @placeholder = "Area", @tabindex = "34", @style = "height:35px;width:250px;", @id = "txtArea" })
+
+                                                            @*<input type="text" name="@Model.Area" id="txtArea" value="@Model.Area" tabindex="34" />*@
+                                                            @*<button type="button" id="areadrpadd">Add</button>*@
+                                                        </div>
+
+
+                                                    </div>
+                                                </div>
+
+
+
+
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                            City <span class="required"></span>
+                                                        </label>
+                                                        <input type="hidden" name="@Model.Code" id="Code" value="@Model.Code" tabindex="35" />
+                                                        <input type="hidden" name="@Model.Category" id="SocietyId" value="@Model.Category" tabindex="36" />
+                                                        <div class="form-outline form-white mb-2">
+                                                            @*@Html.TextBoxFor(x => x.City, new { @class = "form-control form-control-lg", @placeholder = "City", @tabindex = "3", @style = "height:35px;width:250px ",  @id = "txtCity" })*@
+
+                                                            @Html.DropDownListFor(x => x.City, Model.GetCityMasterDropdown1, "Select", new { @class = "form-control select4 City", @tabindex = "37", onfocus = "this.select()", style = "font-family: Verdana;font-size:small; height:35px; width:180px" })
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                            Pin Code <span class="required"></span>
+                                                        </label>
+
+                                                        <div class="form-outline form-white mb-2">
+                                                            @Html.TextBoxFor(x => x.Pin_code, new
+                                                            {
+                                                                @class = "form-control form-control-lg",
+                                                                @placeholder = "Pin Code",
+                                                                @tabindex = "38",
+                                                                @style = "height:35px;width:250px ",
+                                                                @id = "txtPin_Code",
+                                                           onkeypress = "return onlyNumberKey(event)",
+                                                           @maxlength = "6"
+                                                       })
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2 mt-2" style="text-align:right">
+                                                            Pan No <span class="required"></span>
+                                                        </label>
+
+                                                        <div class="form-outline form-white mb-2">
+                                                            @Html.TextBoxFor(x => x.Pan_no, new { @class = "form-control form-control-lg", @placeholder = "Pan No", @tabindex = "39", @style = "height:35px;width:250px ", @id = "txtPanNo" })
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    &nbsp;
+
+                                    &nbsp;
+                                    <div class="col-md-12">
+                                        <div class="row">
+
+                                            <div class="col-md-12 text-center">
+                                                @*@if (userRight.IsEdit && Model != null && Model.Category != 0)
+                                                    {
+                                                        <button class="btn btn-primary px-md-4 text-white" style="font-family: Nina;font-size:medium" id="btnSave">
+                                                            Other Detail
+                                                        </button>
+                                                        <a href="/ContactMaster/index" class="btn btn-warning px-md-4 text-dark" style="font-family: Nina;font-size:medium">
+                                                            Save(F10)
+                                                        </a>
+                                                    }
+                                                    else if (userRight.IsAdd && Model.Category > 0)
+                                                    {
+                                                        <button class="btn btn-primary px-md-4 text-white" style="font-family: Nina;font-size:medium" id="btnSave">
+                                                            Other Detail
+                                                        </button>
+                                                        <a href="/ContactMaster/index" class="btn btn-warning px-md-4 text-dark" style="font-family: Nina;font-size:medium">
+                                                            Save(F10)
+                                                        </a>
+                                                    }
+                                                    @if (userRight.IsEdit && Model != null && Model.Category != 0)
+                                                    {
+                                                        <button class="btn btn-primary px-md-4 text-white" style="font-family: Nina;font-size:medium" id="btnSave">
+                                                            Clear/New(F2)
+                                                        </button>
+                                                        <a href="/ContactMaster/index" class="btn btn-warning px-md-4 text-dark" style="font-family: Nina;font-size:medium">
+                                                            Find(F3)
+                                                        </a>
+                                                    }
+                                                    else if (userRight.IsAdd && Model.Category > 0)
+                                                    {
+                                                        <button class="btn btn-primary px-md-4 text-white" style="font-family: Nina;font-size:medium" id="btnNew">
+                                                            Clear/New(F2)
+                                                        </button>
+                                                        <a href="/ContactMaster/index" class="btn btn-warning px-md-4 text-dark" style="font-family: Nina;font-size:medium">
+                                                            Find(F3)
+                                                        </a>
+                                                    }*@
+
+
+                                                <button class="btn btn-primary px-md-4 text-white" style="font-family: Nina;font-size:medium" id="btnSave">
+                                                    Save
+                                                </button>
+                                                <a href="/ContactMaster/index" class="btn btn-warning px-md-4 text-dark" style="font-family: Nina;font-size:medium">
+                                                    Exit
+                                                </a>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+@*<script>
+        document.getElementById('txtbDate').addEventListener('input', function () {
+            var input = this.value.trim();
+            var regex = /^([0-2]?[0-9]|3[0-1])\/(0?[1-9]|1[0-2])$/;
+            if (!regex.test(input)) {
+                this.setCustomValidity('Invalid date format. Please use dd/mm format.');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    </script>*@
+
+<script>
+
+    $(function () {
+
+        var modelValue = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.GetStateMasterDropdown.Select(t => t.Text).ToList()));
+        $("#txtArea").autocomplete({
+            source: modelValue,
+            minLength: 1, // Minimum number of characters before suggestions are shown
+        });
+
+         var refBy = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.lstRefBy.Select(t => t.Text).ToList()));
+        $("#txtrefby").autocomplete({
+            source: refBy,
+            minLength: 1, // Minimum number of characters before suggestions are shown
+        });
+    });
+</script>
+
+<script>
+
+
+    $(document).ready(function () {
+        $('#drpclient').select2();
+        $('#drpstate').select2();
+        $('#drpcity').select2();
+        var ctyName = '@Html.Raw(Model.Name)';
+        if (ctyName != null && ctyName != '') {
+            GoToAddTab()
+        }
+        else {
+            GoToListTab()
+        }
+        var status = '@Html.Raw(ViewBag.FocusType)';
+
+    });
+
+    function GoToAddTab() {
+        $('#custom-tabs-three-list-tab').removeClass('active');
+        $('#custom-tabs-three-add-tab').addClass('active');
+
+        $('#custom-tabs-three-list').removeClass('active');
+        $('#custom-tabs-three-add').addClass('active');
+        $('#custom-tabs-three-add').addClass('show');
+    }
+    function GoToListTab() {
+        $('#custom-tabs-three-list-tab').addClass('active');
+        $('#custom-tabs-three-add-tab').removeClass('active');
+
+        $('#custom-tabs-three-list').addClass('active');
+        $('#custom-tabs-three-list').addClass('show');
+        $('#custom-tabs-three-add').removeClass('active');
+        $('#custom-tabs-three-add').removeClass('show');
+        $('#txtReportSearchDataTable').focus();
+    }
+</script>
+<script>
+    var isRecentCalledEsc = false;
+    (function (code) {
+        code(window.jQuery, document, window);
+    }(function ($, document, window) {
+        $(function () {
+            $(window)
+                .initKeyboard({ debug: 1 })
+                .on('F2', function () {
+                    GoToAddTab()
+                }).on('F10', function () {
+                    $("#btnSave").click();
+                })
+                .on('Alt+L', function () {
+                    GoToListTab();
+                })
+                .on('Alt+C', function () {
+                    if (confirm("Do you want to exit without save?")) {
+                        location.href = '/ContactMaster/Index'
+                    }
+                    else {
+                        // $('#txtCtyName').focus();
+                    }
+
+                }).on('Escape', function () {
+                    if (!isRecentCalledEsc) {
+                        isRecentCalledEsc = true;
+                        if (confirm("Do you want to exit without save?")) {
+                            location.href = '/ContactMaster/Index'
+                        }
+                        //else {
+                        //    $('#txtCtyName').focus();
+                        //}
+                        setTimeout(function () {
+                            isRecentCalledEsc = false;
+                        }, 500)
+                    }
+
+                })
+        });
+    }));
+</script>
+
+<script>
+
+    function onlyNumberKey(evt) {
+
+        // Only ASCII character in that range allowed
+        var ASCIICode = (evt.which) ? evt.which : evt.keyCode
+        if (ASCIICode > 31 && (ASCIICode < 48 || ASCIICode > 57))
+            return false;
+        return true;
+    }
+    $("#txtnoofblock,#txtunits").on("input", function () {
+        if (/^0/.test(this.value)) {
+            this.value = this.value.replace(/^0/, "")
+        }
+    })
+    var isRecentCalled = false;
+
+
+    $(function () {
+
+        loadData();
+        var pageIndex = '';
+        var pageSize = '';
+        var totalRecord = '';
+        var isDelete = '@Html.Raw(userRight.IsDelete)';
+        var isEdit = '@Html.Raw(userRight.IsEdit)';
+    })
+
+    var timer = null;
+    $('#txtReportSearchDataTable').keyup(function (e) {
+        if (e.keyCode >= 112 && e.keyCode <= 123) {
+            e.preventDefault();
+            return false;
+        }
+        else {
+            clearTimeout(timer);
+
+            timer = setTimeout(loadData, 1000)
+        }
+
+    });
+
+    function loadData(pageIndex, columnName, sortBy) {
+            isRecentCalled = true;
+            if (pageIndex == undefined || pageIndex == "" || pageIndex == "0" || pageIndex == 0) {
+                pageIndex = 1;
+            }
+            var layoutId = $('.drpReportLayout').val();
+
+            if (!layoutId) {
+                $('.drpReportLayout').val($('.drpReportLayout').children('option').eq(1).prop('value'));
+                //SetSelect2()
+
+            }
+            if (!columnName) {
+                columnName = '';
+            }
+            if (!sortBy) {
+                sortBy = '';
+            }
+            $('.dataTable').html();
+            $.ajax({
+                url: '/ContactMaster/GetReportView',
+                type: 'GET',
+                data: { pageIndex: pageIndex, pageSize: $('#drpReportPageNoDatable').val(), searchValue: $('#txtReportSearchDataTable').val(), gridMstId: $('.drpReportLayout').val(), columnName: columnName, sortby: sortBy },
+                dataType: 'HTML',
+                traditional: true, // add this
+                success: function (data) {
+                    $('.dataTable').html(data);
+                    setTimeout(function () {
+                        isRecentCalled = false;
+                    }, 2000)
+                },
+                failure: function (response) {
+                    errorMessage(response);
+                }
+            });
+    }
+
+    $('#btnExportToExcel').click(function () {
+        window.location.href = "/ContactMaster/ExportToExcelPDF?gridMstId=" + $('.drpReportLayout').val() + "&searchValue=" + $('#txtReportSearchDataTable').val() + "&type=1";
+    })
+    $('#btnExportToPDF').click(function () {
+        window.location.href = "/ContactMaster/ExportToExcelPDF?gridMstId=" + $('.drpReportLayout').val() + "&searchValue=" + $('#txtReportSearchDataTable').val() + "&type=2";
+    })
+</script>
+
+
+<script>
+    $(function () {
+        var statename = $('#CtyStaVou').children('option:selected').text()
+        if (statename)
+            $('input[name="State"]').val(statename);
+    });
+
+    $('#CtyStaVou').change(function () {
+        var statename = $('#CtyStaVou').children('option:selected').text()
+        if (statename)
+            $('input[name="State"]').val(statename);
+    });
+    function OnItemSelectChange(ele, type) {
+        var txtItemId = $(ele).val();
+        socid = txtItemId;
+
+
+        BindProductMasterDropdown(txtItemId, 0, ele, type);
+
+    }
+    function BindProductMasterDropdown(itemId, productFK, ele, type) {
+        // if (StringIsNullOrEmpty(itemId)) {
+        $.ajax({
+            url: '/ContactMaster/GetCityByState',
+            dataType: 'json',
+            data: { itemId: itemId },
+            success: function (data) {
+                if (data.productMastList != null && data.productMastList != undefined && data.productMastList.length > 0) {
+                    $(type).html("");
+                    //$(type).html("").append('<option value=""></option>');
+                    $(type).append('<option value="" selected>Select</option>');
+                    $.each(data.productMastList, function (index, val) {
+                        var optionTag = $('<option></option>');
+                        $(optionTag).val(val.value).text(val.text);
+                        $(type).append(optionTag);
+                    });
+                }
+                else {
+                    $(type).html("").append('<option value=""></option>');
+                }
+            },
+            failure: function (response) {
+                ErrorMessage(response);
+            }
+        });
+    }
+
+
+
+</script>
+<script>
+    $(document).ready(function () {
+        $(".select4, .select3, .select2, .select").select2({
+            placeholder: "---Select---",
+        });
+        $("#drparea").select2({
+            placeholder: "---Select---",
+        });
+
+
+
+
+        if ($("#txtMobileNo1").val() == 0) {
+            $("#txtMobileNo1").val("");
+        }
+        if ($("#txtMobileNo2").val() == 0) {
+            $("#txtMobileNo2").val("");
+        }
+        if ($("#txtMobileNo3").val() == 0) {
+            $("#txtMobileNo3").val("");
+        }
+        if ($("#txtMobileNo4").val() == 0) {
+            $("#txtMobileNo4").val("");
+        }
+        if ($("#txtPin_Code").val() == 0) {
+            $("#txtPin_Code").val("");
+        }
+
+        $("#areadrpadd").on("click", function () {
+            $(".select1").toggle();
+            $("#txtArea").toggle();
+
+
+        });
+    });
+</script>
+
+
+
+
+

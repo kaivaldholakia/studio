@@ -1,0 +1,569 @@
+﻿@model PIOAccount.Models.TransactionGridModel
+@{
+    ViewData["Title"] = "Transaction Grid Configuration Master";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    #tblGridTransaction input,
+    #tblGridTransaction select {
+        font-family: Verdana;
+        font-size: small;
+        height: 30px;
+        text-align: left;
+    }
+
+    #tblGridTransaction a {
+        text-align: center
+    }
+</style>
+<div class="card card-primary">
+    <div class="card-header" style="font-family:Verdana">
+        <h6> @ViewData["Title"]</h6>
+    </div>
+    <div class="card-body">
+        <div class="card card-primary card-tabs">
+            <div class="card-header p-0 pt-1">
+                <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="custom-tabs-three-list-tab" data-toggle="pill" href="#custom-tabs-three-list" role="tab" aria-controls="custom-tabs-three-list" aria-selected="true" style="font-family:Verdana;font-size:small">List (Alt+L)</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="custom-tabs-three-add-tab" data-toggle="pill" href="#custom-tabs-three-add" role="tab" aria-controls="custom-tabs-three-add" aria-selected="false" style="font-family:Verdana;font-size:small">Add/Update (F2)</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="col-md-12">
+                    <div class="tab-content" id="custom-tabs-three-tabContent">
+                        <div class="tab-pane fade show active" id="custom-tabs-three-list" role="tabpanel" aria-labelledby="custom-tabs-three-list-tab">
+                            <div class="table-responsive mt-3" style="font-family:Verdana;font-size:small;font-display:inherit">
+                                <table class="table table-bordered w-100" id="tblGridMaster">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:5% !important">
+                                                Sr.No
+                                            </th>
+                                            <th style="width:8% !important">
+                                                Actions
+                                            </th>
+                                            <th style="width:20% !important">
+                                                Menu Name
+                                            </th>
+                                            <th style="width:10% !important">
+                                                Layout Name
+                                            </th>
+                                            <th style="width:25% !important">
+                                                Style
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="custom-tabs-three-add" role="tabpanel" aria-labelledby="custom-tabs-three-add-tab">
+                            <form method="post" class="mt-1" autocomplete="off">
+                                @Html.HiddenFor(x => x.GridTransactionId)
+                                <div class="row">
+                                    <div class="col-3">
+                                        <div class="form-group">
+                                            <label class="control-label"> Menu <span class="text-danger">*</span></label>
+                                            @if (Model != null && Model.MenuList != null && Model.MenuList.Count > 0)
+                                            {
+                                                @Html.DropDownListFor(x => x.FKMenuId, Model.MenuList, "Select", new { @class = "form-control select2", @style = "font-family: Verdana;font-size:small; height:35px; width: 250px", @required = "required", @id = "txtGrdMnuVou" }) }
+                                            else
+                                            {
+                                                @Html.DropDownListFor(x => x.FKMenuId, new List<SelectListItem>(), "Select", new { @class = "form-control select2", @style = "font-family: Verdana;font-size:small; height:35px; width: 150px", @required = "required", @id = "txtGrdMnuVou" })}
+
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="form-group">
+                                            <label class="control-label"> Layout Name <span class="text-danger">*</span></label>
+                                            @Html.TextBoxFor(x => Model.LayoutName, new { @class = "form-control", @placeholder = "Layout Name", @style = "font-family: Verdana;font-size:small; height:35px; width: 250px", @required = "required" })
+
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="form-group">
+                                            <label class="control-label">Table Id <span class="text-danger">*</span></label>
+                                            @Html.TextBoxFor(x => Model.TableId, new { @class = "form-control", @placeholder = "Table Id", @style = "font-family: Verdana;font-size:small; height:35px; width: 250px", @required = "required" })
+
+                                        </div>
+                                    </div>
+
+                                    <div class="col-3">
+                                        <div class="form-group">
+                                            <label class="control-label"> Table Style </label>
+                                            @Html.TextBoxFor(x => Model.Style, new { @class = "form-control", @placeholder = "Table Common Style", @style = "font-family: Verdana;font-size:small; height:35px; width: 250px" })
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12 gridViewTableResponsiveTransactionGridForm" style="font-family:Verdana;font-size:small;font-display:inherit">
+                                    <table class="table table-bordered overflow-auto table-head-fixed dynamicDataTableTransactionGridForm table-responsive"  id="tblGridTransaction">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:2% !important">
+                                                    Sr
+                                                </th>
+                                                <th style="width:10% !important">
+                                                    Table Header <span class="text-danger">*</span>
+                                                </th>
+                                                <th style="width:10% !important">
+                                                    Field Name Property <span class="text-danger">*</span>
+                                                </th>
+                                                <th style="width:10% !important">
+                                                    Field Type <span class="text-danger">*</span>
+                                                </th>
+                                                <th style="width:6% !important">
+                                                    Position <span class="text-danger">*</span>
+                                                </th>
+                                                <th style="width:6% !important">
+                                                    Width(px) <span class="text-danger">*</span>
+                                                </th>
+                                                <th style="width:5% !important">
+                                                    Decimal
+                                                </th>
+                                                <th style="width:10% !important">
+                                                    Align <span class="text-danger">*</span>
+                                                </th>
+                                                <th style="width:3% !important">
+                                                    Total Y/N
+                                                </th>
+                                                <th style="width:3% !important">
+                                                    Hide Y/N
+                                                </th>
+                                                <th style="width:3% !important">
+                                                    Can Grow Y/N
+                                                </th>
+                                                <th style="width:10% !important">
+                                                    Suppress If Value
+                                                </th>
+                                                <th style="width:20% !important">
+                                                    Style
+                                                </th>
+                                                <th style="width:5% !important">
+                                                    Del.
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (Model != null && Model.GridTransactionId > 0)
+                                            {
+                                                for (int i = 0; i < Model.TransactionList.Count; i++)
+                                                {
+                                                    <tr class="AddRows">
+                                                        <td style="width:2% !important">
+                                                            @(i+1)
+                                                        </td>
+                                                        <td style="width:10% !important">
+                                                            @Html.TextBoxFor(x => x.TransactionList[i].TableHeaderName, new { @class = "form-control" })
+                                                        </td>
+                                                        <td style="width:10% !important">
+                                                            @Html.TextBoxFor(x => x.TransactionList[i].FieldName, new { @class = "form-control" })
+                                                        </td>
+                                                        <td style="width:10% !important">
+                                                            @Html.DropDownListFor(x => x.TransactionList[i].Type, Model.TypeList, new { @class = "form-control" })
+                                                        </td>
+                                                        <td style="width:6% !important">
+                                                            @Html.TextBoxFor(x => x.TransactionList[i].Position, new { @class = "form-control" })
+                                                        </td>
+                                                        <td style="width:6% !important">
+                                                            @Html.TextBoxFor(x => x.TransactionList[i].Width, new { @class = "form-control" })
+                                                        </td>
+                                                        <td style="width:5% !important">
+                                                            @Html.TextBoxFor(x => x.TransactionList[i].Decimal, new { @class = "form-control" })
+                                                        </td>
+                                                        <td style="width:10% !important">
+                                                            @Html.DropDownListFor(x => x.TransactionList[i].Align, Model.AlignmentList, new { @class = "form-control" })
+                                                        </td>
+                                                        <td style="width:3% !important">
+                                                            @Html.CheckBoxFor(x => x.TransactionList[i].TotalYN, new { @class = "form-control ATotYN", @type = "checkbox", @style = "height:35px;" })
+                                                        </td>
+                                                        <td style="width:3% !important">
+                                                            @Html.CheckBoxFor(x => x.TransactionList[i].HideYN, new { @class = "form-control ALinkYN", @type = "checkbox", @style = "height:35px;" })
+                                                        </td>
+                                                        <td style="width:3% !important">
+                                                            @Html.CheckBoxFor(x => x.TransactionList[i].CanGridYN, new { @class = "form-control AHideYN", @type = "checkbox", @style = "height:35px;" })
+                                                        </td>
+                                                        <td style="width:10% !important">
+                                                            @Html.TextBoxFor(x => x.TransactionList[i].SupressValue, new { @class = "form-control" })
+                                                        </td>
+                                                        <td style="width:20% !important">
+                                                            @Html.TextBoxFor(x => x.TransactionList[i].Style, new { @class = "form-control", @style = "height:35px;width:150px" })
+                                                        </td>
+                                                        <td style="width:5% !important">
+                                                            <a onclick="DeleteRows(this)"><i class="fa fa-trash fontCustom text-danger"></i></a>
+                                                        </td>
+                                                    </tr>
+                                                }
+
+                                            }
+                                            else
+                                            {
+                                                <tr class="AddRows">
+                                                    <td style="width:2% !important">
+                                                        1
+                                                    </td>
+                                                    <td style="width:10% !important">
+                                                        @Html.TextBoxFor(x => x.TransactionList[0].TableHeaderName, new { @class = "form-control" })
+                                                    </td>
+                                                    <td style="width:10% !important">
+                                                        @Html.TextBoxFor(x => x.TransactionList[0].FieldName, new { @class = "form-control" })
+                                                    </td>
+                                                    <td style="width:10% !important">
+                                                        @Html.DropDownListFor(x => x.TransactionList[0].Type, Model.TypeList, new { @class = "form-control" })
+                                                    </td>
+                                                    <td style="width:6% !important">
+                                                        @Html.TextBoxFor(x => x.TransactionList[0].Position, new { @class = "form-control" })
+                                                    </td>
+                                                    <td style="width:6% !important">
+                                                        @Html.TextBoxFor(x => x.TransactionList[0].Width, new { @class = "form-control" })
+                                                    </td>
+                                                    <td style="width:5% !important">
+                                                        @Html.TextBoxFor(x => x.TransactionList[0].Decimal, new { @class = "form-control" })
+                                                    </td>
+                                                    <td style="width:6% !important">
+                                                        @Html.DropDownListFor(x => x.TransactionList[0].Align, Model.AlignmentList, new { @class = "form-control" })
+                                                    </td>
+                                                    <td style="width:3% !important">
+                                                        @Html.CheckBoxFor(x => x.TransactionList[0].TotalYN, new { @class = "form-control ATotYN", @type = "checkbox", @style = "height:35px;" })
+                                                    </td>
+                                                    <td style="width:3% !important">
+                                                        @Html.CheckBoxFor(x => x.TransactionList[0].HideYN, new { @class = "form-control ALinkYN", @type = "checkbox", @style = "height:35px;" })
+                                                    </td>
+                                                    <td style="width:3% !important">
+                                                        @Html.CheckBoxFor(x => x.TransactionList[0].CanGridYN, new { @class = "form-control AHideYN", @type = "checkbox", @style = "height:35px;" })
+                                                    </td>
+                                                    <td style="width:10% !important">
+                                                        @Html.TextBoxFor(x => x.TransactionList[0].SupressValue, new { @class = "form-control" })
+                                                    </td>
+                                                    <td style="width:20% !important">
+                                                        @Html.TextBoxFor(x => x.TransactionList[0].Style, new { @class = "form-control", @style = "height:35px;width:150px" })
+                                                    </td>
+                                                    <td style="width:5% !important">
+                                                        <a onclick="DeleteRows(this)"><i class="fa fa-trash fontCustom text-danger"></i></a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                            <tr class="lastRow">
+                                                <td colspan="14" class="text-center"><a onclick="AddRows()"><i class="fa fa-plus fontCustom text-primary"></i></a><b>(Alt+I)</b></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="col-md-12 " style="text-align:center">
+                                        <button class="btn btn-primary px-4 text-white" style="font-family:Verdana;font-size:medium;margin-right:10px" id="btnSave">
+                                            Save (F10)
+                                        </button>
+                                        <a href="/TransactionGrid/index" class="btn btn-warning px-4 text-dark" style="font-family:Verdana;font-size:medium">
+                                            Cancel (Alt+C)
+                                        </a>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script>
+
+        function SetSelect2() {
+            //$(".select2").select2({
+            //    placeholder: "---Select---",
+            //});
+        }
+
+        function GoToAddTab() {
+            $('#custom-tabs-three-list-tab').removeClass('active');
+            $('#custom-tabs-three-add-tab').addClass('active');
+
+            $('#custom-tabs-three-list').removeClass('active');
+            $('#custom-tabs-three-add').addClass('active');
+            $('#custom-tabs-three-add').addClass('show');
+            setTimeout(function () { $('#txtGrdMnuVou').focus() }, 500);
+            SetSelect2()
+        }
+
+        function GoToListTab() {
+            $('#custom-tabs-three-list-tab').addClass('active');
+            $('#custom-tabs-three-add-tab').removeClass('active');
+
+            $('#custom-tabs-three-list').addClass('active');
+            $('#custom-tabs-three-add').removeClass('active');
+            $('#custom-tabs-three-add').removeClass('show');
+        }
+
+        var isRecentCalledEsc = false;
+        var isRecentCalledAddRows = false;
+        var isRecentCalledSave = false;
+        (function (code) {
+            code(window.jQuery, document, window);
+        }(function ($, document, window) {
+            $(function () {
+                $(window)
+                    .initKeyboard({ debug: 1 })
+                    .on('F2', function () {
+                        GoToAddTab()
+                    }).on('F10', function () {
+                        if (!isRecentCalledSave) {
+                            $("#btnSave").click();
+                            isRecentCalledSave = true;
+                            setTimeout(function () {
+                                isRecentCalledSave = false;
+                            }, 1000)
+                        }
+                    }).on('Alt+F10', function () {
+                        if (!isRecentCalledSave) {
+                            var grdsaveas = $('input[name="GrdSaveAs"]').val("1");
+                            if (grdsaveas == "1") {
+                                $("#btnSave").click();
+                            }
+                            isRecentCalledSave = true;
+                            setTimeout(function () {
+                                isRecentCalledSave = false;
+                            }, 1000)
+                        }
+                    })
+                    .on('Alt+L', function () {
+                        GoToListTab();
+                    })
+                    .on('Alt+I', function () {
+                        AddRows();
+                    })
+            });
+        }));
+
+        var id = $('#LayoutName').val();
+        if (id) {
+            GoToAddTab();
+        }
+        else {
+            GoToListTab();
+        }
+
+        SetSelect2()
+    </script>
+
+    <script>
+
+        $("#btnSave").click(function (e) {
+            var IsAllowed = true;
+            $('#tblGridTransaction').children('tbody').children('tr:not(tr.lastRow)').each(function () {
+                if (!ValidateData($(this).children("td").eq(1).children("input").val()))
+                    IsAllowed = false;
+
+                if (!ValidateData($(this).children("td").eq(2).children("input").val()))
+                    IsAllowed = false;
+
+                if (!ValidateData($(this).children("td").eq(3).children("select").val()))
+                    IsAllowed = false;
+
+                if (!ValidateData($(this).children("td").eq(4).children("input").val()))
+                    IsAllowed = false;
+
+                if (!ValidateData($(this).children("td").eq(5).children("input").val()))
+                    $(this).children("td").eq(5).children("input").val('0');
+
+                if (!ValidateData($(this).children("td").eq(6).children("input").val()))
+                    $(this).children("td").eq(6).children("input").val('0');
+
+                if (!ValidateData($(this).children("td").eq(7).children("select").val()))
+                    IsAllowed = false;
+
+                if (!ValidateData($(this).children("td").eq(11).children("input").val()))
+                    $(this).children("td").eq(11).children("input").val('');
+
+                if (!ValidateData($(this).children("td").eq(12).children("input").val()))
+                    $(this).children("td").eq(12).children("input").val('');
+            });
+
+            if (!IsAllowed) {
+                e.preventDefault();
+                showErrorMessage("Please enter mandatory data");
+            }
+
+        })
+
+        var isCalled = false;
+
+        function ValidateData(value) {
+            if (value == null || value == '' || value == undefined)
+                return false;
+            return true;
+        }
+
+        function AddRows() {
+            if (!isCalled) {
+                var previousRow = $('#tblGridTransaction').children().find('tr.lastRow').prev();
+                if (previousRow != null) {
+                    var tableHeader = $(previousRow).children('td').eq(1).children('input').val();
+                    var fieldName = $(previousRow).children('td').eq(2).children('input').val();
+                    var fieldType = $(previousRow).children('td').eq(3).children('select').val();
+                    var posi = $(previousRow).children('td').eq(4).children('input').val();
+                    var width = $(previousRow).children('td').eq(5).children('input').val();
+                    var decimal = $(previousRow).children('td').eq(6).children('input').val();
+                    var align = $(previousRow).children('td').eq(7).children('select').val();
+                    var totalYN = $(previousRow).children('td').eq(8).children('input').val();
+                    var hideYN = $(previousRow).children('td').eq(9).children('input').val();
+                    var canGrowYN = $(previousRow).children('td').eq(10).children('input').val();
+                    var supressValue = $(previousRow).children('td').eq(11).children('input').val();
+                    var style = $(previousRow).children('td').eq(12).children('input').val();
+                    if (ValidateData(tableHeader) && ValidateData(fieldName) && ValidateData(posi) && ValidateData(width) && ValidateData(align) && ValidateData(fieldType)) {
+                        var html = $('#tblGridTransaction').children().find('tr.AddRows').html();
+                        $('#tblGridTransaction').children().find('tr.lastRow').before("<tr>" + html + "</tr>");
+                        $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(1).children('input').val('');
+                        $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(2).children('input').val('');
+                        $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(3).children('select').val('');
+                        $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(4).children('input').val('');
+                        $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(5).children('input').val('');
+                        $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(6).children('input').val('');
+                        $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(7).children('select').val($('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(7).children('select').children('option:first').val());
+                        $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(8).children('input').prop('checked', false);
+                        $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(9).children('input').prop('checked', false);
+                        $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(10).children('input').prop('checked', false);
+                        $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(11).children('input').val('');
+                        $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(12).children('input').val('');
+                        $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(1).children('input').focus();
+                        SetSerialNumber();
+                        SetName();
+                        SetSelect2()
+                    }
+                    else {
+                        showErrorMessage("Please enter all required fields");
+                    }
+                }
+                isCalled = true;
+
+                setTimeout(function () {
+                    isCalled = false;
+                }, 500)
+            }
+
+
+        }
+
+        function DeleteRows(obj) {
+            if ($('#tblGridTransaction').children('tbody').children('tr:not(tr.lastRow)').length > 1) {
+                Swal.fire({
+                    title: 'Are you sure want to delete row?',
+                    showCancelButton: true,
+                    confirmButtonText: 'Delete',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $(obj).closest('tr').remove();
+                        SetSerialNumber();
+                        SetName();
+                    } else if (result.isDenied) {
+                    }
+                })
+            }
+            else {
+                showErrorMessage('Cannot delete first row');
+            }
+        }
+
+        function SetSerialNumber() {
+            var count = 1;
+            $('#tblGridTransaction').children('tbody').children('tr:not(tr.lastRow)').each(function () {
+                $(this).children('td').eq(0).html(count);
+                count = parseInt(count) + 1;
+            });
+        }
+
+        function SetName() {
+            var lastRow = 0;
+            $('#tblGridTransaction').children('tbody').children('tr:not(tr.lastRow)').each(function () {
+                $(this).children("td").eq(1).children("input").attr("name", "TransactionList[" + lastRow + "].TableHeaderName");
+                $(this).children("td").eq(2).children("input").attr("name", "TransactionList[" + lastRow + "].FieldName");
+                $(this).children("td").eq(3).children("select").attr("name", "TransactionList[" + lastRow + "].Type");
+                $(this).children("td").eq(4).children("input").attr("name", "TransactionList[" + lastRow + "].Position");
+                $(this).children("td").eq(5).children("input").attr("name", "TransactionList[" + lastRow + "].Width");
+                $(this).children("td").eq(6).children("input").attr("name", "TransactionList[" + lastRow + "].Decimal");
+                $(this).children("td").eq(7).children("select").attr("name", "TransactionList[" + lastRow + "].Align");
+                $(this).children("td").eq(8).children("input").attr("name", "TransactionList[" + lastRow + "].TotalYN");
+                $(this).children("td").eq(9).children("input").attr("name", "TransactionList[" + lastRow + "].HideYN");
+                $(this).children("td").eq(10).children("input").attr("name", "TransactionList[" + lastRow + "].CanGridYN");
+                $(this).children("td").eq(11).children("input").attr("name", "TransactionList[" + lastRow + "].SupressValue");
+                $(this).children("td").eq(12).children("input").attr("name", "TransactionList[" + lastRow + "].Style");
+                lastRow = parseInt(lastRow) + 1;
+            });
+        }
+
+        var gridmstDataTable;
+        gridmstDataTable = $('#tblGridMaster').DataTable({
+            "paging": true,
+            "ordering": false,
+            "filter": true,
+            "destroy": true,
+            "orderMulti": false,
+            "serverSide": true,
+            "Processing": true,
+            "lengthMenu": [10, 20, 30, 40, 50, 100, 500],
+            "pageLength": 10,
+            "language": {
+                "infoFiltered": ""
+            },
+            "order": [[0, "desc"]],
+            "columnDefs": [{
+                "render": function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                },
+                "targets": 0,
+                'orderable': false
+            },
+            {
+
+                "render": function (data, type, row) {
+                    var html = `<a href="/TransactionGrid/index/` + row.gridTransactionId + `"> <i class="fa fa-pen text-primary"></i></a>
+                                                                                                    <a href="/TransactionGrid/delete/`+ row.gridTransactionId + `"> <i class="fa fa-trash text-danger ml-3"></a></i>`;
+                    return html;
+                },
+                "targets": 1
+            },
+            {
+                "render": function (data, type, row) {
+                    return row.menuName;
+                },
+                "targets": 2
+            },
+            {
+                "render": function (data, type, row) {
+                    return row.layoutName;
+                },
+                "targets": 3
+            },
+            {
+                "render": function (data, type, row) {
+                    return row.style;
+                },
+                "targets": 4
+            }
+            ],
+            "ajax":
+            {
+                "url": "/TransactionGrid/GetData",
+                "type": "POST",
+                "dataType": "JSON"
+            },
+            "aoColumns": [
+                { "mDataProp": "GrdVou" },
+                { "mDataProp": "MenuName" },
+                { "mDataProp": "LayoutName" },
+                { "mDataProp": "Style" },
+            ],
+            drawCallback: function (resultData) {
+            },
+        });
+    </script>
+}

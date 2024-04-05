@@ -1,0 +1,1105 @@
+﻿
+<style>
+    .ui-autocomplete {
+        z-index: 1050 !important; /* Use a value higher than the modal's z-index */
+    }
+    .radio-container {
+        display: flex;
+        justify-content: space-between;
+    }
+
+        /* Optional styling for individual radio buttons */
+        .radio-container input[type="radio"] {
+            margin-right: 3px;
+        }
+
+
+
+</style>
+<div class="col-md-12" style="margin-right:0px;margin-left:0px;width:110%">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading" style="text-align:right">
+            <button type="button" class="btn btn-info btn-md" id="myBtn2">Add New</button>
+        </div>
+        <div class="panel-body">
+            @*@Html.ActionLink("Generate PDF", "GeneratePDF", "InquiryTransaction", null, new { @class = "btn btn-primary" })*@
+
+            <table class="table-responsive table-condensed table table-striped" id="tablejobdetails">
+                <thead>
+                    <tr>
+                        <th>Sl No</th>
+                        <th>Actions</th>
+                        <th>Job</th>
+                        <th>Event</th>
+                        <th>Venue</th>
+                        <th>Occa From Date</th>
+                        <th>Occa To Date</th>
+                        <th>From Time</th>
+                        <th>To Time</th>
+                        <th>Qty.</th>
+                        <th>Rate</th>
+                        <th>Status</th>
+                        <th>Note</th>
+
+
+                    </tr>
+                </thead>
+                <tbody style="width:100%"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- large modal -->
+<div class="modal fade" id="myModal2" tabindex="-1" data-backdrop="static"   role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg" >
+        <div class="modal-content" style="width:120%">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Inquiry Details......</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="row">
+                                <div class="col-md-4"> Sr No :</div>
+                                <div class="col-md-8">
+                                    <input type="text" readonly id="txtsrno" class="form-control" />
+                                    <input type="hidden" id="jobdetailsid" />
+                                </div>
+                            </div>  
+                        </div>
+                        <div class="col-md-3"><input id="pjobentrychk" type="checkbox" tabindex="100" /> &nbsp;&nbsp; Previous Job Entry </div>
+                        <div class="col-md-3"><input id="chkaddoneday" type="checkbox" tabindex="102" />&nbsp;&nbsp; Add 1 Day </div>
+                        <div class="col-md-3"><input id="chkfullday" type="checkbox" tabindex="103" />&nbsp;&nbsp;Full Day </div>
+                    </div>
+                    <div class="row" style="margin-top:1%">
+                        <div class="col-md-2">Job <span style="color:red">*</span>: </div>
+                        <div class="col-md-10"><select id="ddljob"  tabindex="104" style="width:100%" class="form-control select"></select></div>
+                    </div>
+                    <div class="row" style="margin-top:1%">
+                        <div class="col-md-2">Event : </div>
+                        <div class="col-md-10">
+                            <input type="text" id="txtevent" tabindex="105" class="form-control" />
+
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:1%;display:none" id="Wedingceremony">
+
+                        <div class="col-md-12 radio-container" style="text-align:right">
+                            <label>
+                                <input type="radio" id="rdGroom" name="Wedingceremonyoptions" tabindex="106" value="Groom"> Groom
+                            </label>
+                            <label>
+                                <input type="radio" id="rdBride" name="Wedingceremonyoptions" tabindex="107" value="Bride"> Bride
+                            </label>
+                            <label>
+                                <input type="radio" id="rdBoth" name="Wedingceremonyoptions" tabindex="108" value="Both"> Both
+                            </label>
+
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:1%">
+                        <div class="col-md-2">Venue From: </div>
+                        <div class="col-md-5">
+                            <input type="text" id="txtvenue" class="form-control" name="txtvenue" tabindex="109" placeholder="Address 1" />
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" id="txtddessv2" class="form-control" name="txtddessv2" tabindex="110" placeholder="Address 2" />
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:1%">
+                        <div class="col-md-2">Locaiton URL</div>
+                        <div class="col-md-10">
+                            <input type="text" id="txtvenuelink" tabindex="111"   class="form-control" placeholder="Enter a Locaiton URL">
+
+                        </div>
+                        <div class="col-md-4">
+
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:1%">
+                        <div class="col-md-2">Venue To: </div>
+                        <div class="col-md-5">
+                            <input type="text" id="txtvenueto" class="form-control" tabindex="112" name="txtvenueto" placeholder="Address 1" />
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" id="txtaddressto2" class="form-control" tabindex="113" name="txtaddressto2" placeholder="Address 2" />
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:1%">
+                        <div class="col-md-2">Locaiton URL</div>
+                        <div class="col-md-10">
+                            <input type="text" id="txtvenuetolink" tabindex="114"  class="form-control" name="txtvenuetolink" placeholder="Enter Locaiton URL"  />
+                        </div>
+                        <div class="col-md-4">
+
+                        </div>
+                    </div>
+
+
+                    <div class="row" style="margin-top:1%">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    Occasion Date <span style="color:red">*</span>:
+                                </div>
+                                <div class="col-md-8">
+
+                                    <input type="text" id="txtoccasiondate" tabindex="115" placeholder="dd/mm/yyyy" class="form-control" />
+                                    <label id="lblfromdateday" style="text-align:right" ></label>
+
+
+                                </div>
+                            </div>
+
+
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    Occasion To Date <span style="color:red">*</span>:
+                                </div>
+                                <div class="col-md-6">
+
+                                    <input type="text" id="txtoccasionTodate" readonly placeholder="dd/mm/yyyy" class="form-control" />
+                                    <label id="lbltodateday" style="text-align:right"></label>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:1%">
+
+
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    From Time :
+                                </div>
+                                <div class="col-md-8">
+                                    <input type="text" tabindex="116"  id="txtfromtime" onblur="calculatehrs()" class="form-control" />
+                                </div>
+                            </div>
+
+
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    To Time :
+                                </div>
+                                <div class="col-md-8">
+                                    <input type="text" id="txtotime" tabindex="117"  onblur="calculatehrs()"  class="form-control" />
+
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:1%">
+                        <div class="col-md-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    Qty :
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="number" id="txtqty" value="0" tabindex="118" class="form-control" />
+                                </div>
+                            </div>
+
+
+                        </div>
+                        <div class="col-md-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    Rate :
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="number" id="txtrate" value="0" tabindex="119" class="form-control" />
+                                </div>
+                            </div>
+
+
+                        </div>
+                        <div class="col-md-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    Amount :
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" id="txtAmount" value="0" readonly class="form-control" />
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:1%">
+                        <div class="col-md-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    Disc %  :
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="number" id="txtDiscpercentage" value="0" tabindex="120" class="form-control" />
+                                </div>
+                            </div>
+
+
+                        </div>
+                        <div class="col-md-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    Disc Amt :
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="number" id="Discamt" value="0" tabindex="121" class="form-control" style="width:100%" />
+                                </div>
+                            </div>
+
+
+                        </div>
+                        <div class="col-md-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    Net Amount :
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" value="0" id="Discnetamount" readonly class="form-control" />
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:1%">
+                        <div class="col-md-2">Team Remarks : </div>
+                        <div class="col-md-10"><input id="txtremarks" tabindex="122" type="text" multiple class="form-control" /></div>
+                    </div>
+                    <div class="row" style="margin-top:1%">
+                        <div class="col-md-2">Customer Remarkes : </div>
+                        <div class="col-md-10"><input id="txtspnote" tabindex="123" type="text" multiple class="form-control" /></div>
+                    </div>
+
+                    <div class="row" style="margin-top:1%">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4">Event Status : </div>
+                                <div class="col-md-8">
+                                    <select id="dllstatus" tabindex="124" class="form-control search">
+                                        <option value="In Progress">In Progress</option>
+                                        <option value="Cancel">Cancel</option>
+                                    </select>
+                                </div>
+
+
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4">Event Hours : </div>
+                                <div class="col-md-8">
+                                    <input type="text" readonly id="txteventhrs" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" tabindex="125" class="btn btn-default" id="btnclose">Close</button>
+                <button type="button" tabindex="126" id="btnOk" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="pdftypemodel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Report Type</h4>
+
+            </div>
+            <div class="modal-body">
+                <input type="radio" id="header" name="fav_language" value="HTML">
+                <label for="header">With Header</label><br>
+                <input type="radio" id="noheder" name="fav_language" value="CSS">
+                <label for="css">Without Header</label><br>
+                <hr /> <button type="button" id="closemodel" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" id="btngetreport" class="btn btn-primary">Go</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBSy5ZJcBmaAxoFQe3UEBAeh959ZNv4SsM&libraries=places&callback=initAutocomplete"></script>
+
+<script>
+    $(document).ready(function () { $(".chzn-select").chosen();})
+    function calculatehrsTiTi() {   
+        var titime = $("#txtotime").val();
+        var fromtime = $("#txtfromtime").val();
+        var fromdate = $("#txtoccasiondate").val();
+        var originalDate = new Date($("#txtoccasiondate").val().replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$2/$1/$3"));
+        var newDate = new Date(originalDate);
+        newDate.setDate(originalDate.getDate() + 1);
+
+        // Formatting the date
+        var day = newDate.getDate();
+        var month = newDate.getMonth() + 1; // Month is zero-based, so we add 1
+        var year = newDate.getFullYear();
+
+        var from = parseInt(fromtime.split(' ')[0]);
+        var to = parseInt(titime.split(' ')[0]);
+        if (from == 'PM' && to == 'AM') {
+            var todate = day + 1 + '/' + month + '/' + year;
+        } else {
+            $("#txtoccasionTodate").val(fromdate)
+        }
+       
+        
+        calculatehrs();
+    }
+
+    function initAutocomplete() {
+        var autocomplete = new google.maps.places.Autocomplete(
+            document.getElementById('txtvenueto'),
+            { types: ['geocode'] }
+        );
+
+        autocomplete.addListener('place_changed', function () {
+            var place = autocomplete.getPlace();
+            console.log(place);
+            // Handle the selected place, e.g., extract address components
+        });
+    }
+    //$(document).ready(function () {
+    //    google.maps.event.addDomListener(window, 'load', initialize);
+    //});
+
+    //function initialize() {
+    //    var input = document.getElementById('txtvenueto');
+    //    var autocomplete = new google.maps.places.Autocomplete(input);
+    //}
+
+    $('#Discamt').on('change', function () {
+
+        $('#txtDiscpercentage').val(0)
+        var diamount = $('#Discamt').val();
+        var Amount = $('#txtAmount').val()
+
+        var perce = (diamount / Amount) * 100
+        $('#txtDiscpercentage').val(perce)
+        var df = (Amount - diamount).toFixed(2);
+        $('#Discnetamount').val(df);
+    });
+
+      
+    var date1 = $('#txtInqDate').val();
+
+    var originalDate = new Date();
+
+    if (date1 != undefined) {
+        var dateParts = date1.split("-");
+        var year = parseInt(dateParts[0], 10);
+        var month = parseInt(dateParts[1], 10) - 1; // Adjust month to zero-based index
+        var day = parseInt(dateParts[2], 10);
+        originalDate = new Date(year, month, day);
+    }
+    $('#txtoccasiondate, #txtoccasionTodate').datepicker({
+        minDate: 0,
+        defaultDate: new Date(), // Set default date to today
+        dateFormat: 'dd/mm/yy'
+    }).datepicker("setDate", new Date());
+    Getanme();
+    
+     $('#txtoccasionTodate').on('change', function () { calculatehrs();});
+
+    $('#txtoccasiondate').on('change', function () {
+        var inputDate = $('#txtoccasiondate').val();
+
+        // Check if the input is not empty
+        if (inputDate !== '') {
+            // Format the date
+            var formattedDate = inputDate.replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3');
+
+            // Display the formatted date
+            $('#txtoccasiondate').val(formattedDate);
+        } else {
+            // If the input is empty, display an error message
+            $('#formattedDate').text('Please enter a valid date.');
+        }
+        //var d = $('#txtoccasiondate').val();
+        $('#txtoccasionTodate').val($('#txtoccasiondate').val());
+    calculatehrs();
+    })
+
+
+
+    // Add one day
+
+
+    $('#txtfromtime,#txtotime').datetimepicker({
+        format: 'hh:mm A'
+    });
+
+    $("#myBtn2").click(function () {
+        var inputValue = $('#txtInqTitle').val().trim();
+        var uppercaseValue = inputValue.toUpperCase();
+        if (uppercaseValue === 'WEDDING CEREMONY') {
+            $('#Wedingceremony').css('display', 'block');
+        } else {
+            $('#Wedingceremony').css('display', 'none');
+        }
+        $('#myModal2').modal('show');
+      //$("#myModal2").modal({ backdrop: false });
+        $.ajax({
+            url: "/InquiryTransaction/GetSerialNo",
+            type: "POST",
+            dataType: "json",
+            data: {Types:'Job', InqId:@ViewBag.InqueryId},
+            success: function (data) {
+                $('#txtsrno').val(data.result);
+                $("#pjobentrychk").focus();
+            }
+        })
+
+
+    });
+
+    function TextboxesAutoComplete() {
+        $.ajax({
+            url: "/Dropdown/GetEvent",
+            type: "POST",
+            dataType: "json",
+            success: function (data) {
+
+                $("#txtevent").autocomplete({
+                    source: data,
+                    minLength: 1,
+                    select: function (event, ui) {
+                        $("#txtevent").val(ui.item.label);
+                        return false;
+                    }
+                });
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error("AJAX Error:", textStatus, errorThrown);
+            }
+        });
+
+        $.ajax({
+            url: "/Dropdown/GetVenue",
+            type: "POST",
+            dataType: "json",
+            success: function (data) {
+                $("#txtvenue").autocomplete({
+                    source: data,
+                    minLength: 1,
+                    select: function (event, ui) {
+
+                        $("#txtvenue").val(ui.item.label);
+                        $("#txtvenuelink").val(ui.item.value);
+                        return false;
+                    }
+                });
+            }
+        })
+    }
+    $('#myModal2').on('shown.bs.modal', function () {
+        TextboxesAutoComplete();
+    });
+    $("#btnclose").click(function () {
+        reset();
+    });
+
+    $('#btnOk').click(function () {
+
+
+        var pjob = $('#pjobentrychk').is(":checked");
+        var chkaddoneday = $("#chkaddoneday").is(":checked");
+        var chkfullday = $("#chkfullday").is(":checked");
+        var ddljob = $('#ddljob option:selected').val();
+        var txtevent = $('#txtevent').val();
+        var txtvenue = $('#txtvenue').val();
+        var txtoccasiondate = $('#txtoccasiondate').val();
+        var txtfromtime = $('#txtfromtime').val();
+        var txtotime = $('#txtotime').val();
+        var txtqty = $('#txtqty').val();
+        var txtrate = $('#txtrate').val();
+        var txtAmount = $('#txtAmount').val();
+        var txtDiscpercentage = $('#txtDiscpercentage').val();
+        var Discamt = $('#Discamt').val();
+        var Discnetamount = $('#Discnetamount').val();
+        var txtremarks = $('#txtremarks').val();
+        var txtspnote = $('#txtspnote').val();
+        var dllstatus = $('#dllstatus option:selected').text();
+        var txteventhrs = $('#txteventhrs').val();
+        var TranId =@ViewBag.InqueryId;
+        var Todate = $('#txtoccasionTodate').val();
+
+        var VenueOneAddTo = $('#txtddessv2').val();
+        var VenueToAddOne = $('#txtvenueto').val();
+        var VenueToAddTwo = $('#txtaddressto2').val();
+        var VenueToUrl = $('#txtvenuetolink').val();
+
+        var slno = $('#txtsrno').val();
+        var Wedingceremonyoptions = $('input[name="Wedingceremonyoptions"]:checked').val();
+        if (Todate == '' | Todate == undefined) {
+            Todate = txtoccasiondate;
+        }
+        var Id = $("#jobdetailsid").val();
+        var venuelink = $("#txtvenuelink").val();
+        if (ddljob == 0 || ddljob == null || ddljob == undefined) {
+            $("#ddljob").css("border-color", "red");
+            $("#ddljob").focus();
+        }
+        else if (txtoccasiondate == '' || txtoccasiondate == undefined) {
+            $("#txtoccasiondate").css("border-color", "red");
+            $("#txtoccasiondate").focus();
+        }
+        else if (txtevent == '' || txtevent == undefined) {
+            $("#txtevent").css("border-color", "red");
+            $("#txtevent").focus();
+        }
+        else if (txtvenue == '' || txtvenue == undefined) {
+            $("#txtvenue").css("border-color", "red");
+            $("#txtvenue").focus();
+        }
+        else if (Todate == '' || Todate == undefined) {
+            $("#txtoccasionTodate").css("border-color", "red");
+            $("#txtoccasionTodate").focus();
+        }
+        else {
+            var data = {
+                pjobentrychk: pjob == true ? 1 : 0,
+                addoneday: chkaddoneday == true ? 1 : 0,
+                fullday: chkfullday == true ? 1 : 0,
+                Job: ddljob == '' ? "" : ddljob,
+                Eventsid: txtevent == '' ? "" : txtevent,
+                venueid: txtvenue == '' ? "" : txtvenue,
+                ocasiondate: txtoccasiondate == '' ? '' : txtoccasiondate,
+                fromtime: txtfromtime == '' ? "" : txtfromtime,
+                totime: txtotime == '' ? "" : txtotime,
+                qty: txtqty == '' ? 0 : txtqty,
+                rate: txtrate == '' ? 0 : txtrate,
+                amount: txtAmount == '' ? 0 : txtAmount,
+                discountpercentage: txtDiscpercentage == '' ? 0 : txtDiscpercentage,
+                discountamt: Discamt == '' ? 0 : Discamt,
+                totalnet: Discnetamount == '' ? 0 : Discnetamount,
+                remarks: txtremarks == '' ? "" : txtremarks,
+                spnoes: txtspnote == '' ? "" : txtspnote,
+                status: dllstatus == '' ? "" : dllstatus,
+                eventhrs: txteventhrs == '' ? 0 : txteventhrs,
+                IndId: TranId,
+                JobId: Id == '' ? 0 : Id,
+                Todate: Todate,
+                venuelink: venuelink,
+                sl: slno,
+                VenueOneAddTo: VenueOneAddTo,
+                VenueToAddOne: VenueToAddOne,
+                VenueToAddTwo: VenueToAddTwo,
+                VenueToUrl: VenueToUrl,
+                Wedingceremonyoptions: Wedingceremonyoptions
+            }
+            $.ajax({
+                url: "/InquiryTransaction/SaveJonDetails",
+                type: "POST",
+                dataType: "json",
+                data: data,
+                success: function (data) {
+                    console.log(data)
+                    if (data.obj == '1') {
+                      //  alert("Data Saved")
+                        reset();
+                        displaydata();
+                    } else if (data.obj == '2') {
+                       // alert("Data Updated")
+                        reset();
+                        displaydata();
+                    } if (data.obj == '3') {
+                        alert("Issue comes try again")
+                    }
+
+                }
+            })
+
+        }
+
+    });
+         var TranId =@ViewBag.InqueryId;
+        var Id = $("#jobdetailsid").val();
+
+         $.ajax({
+                        url: "/Dropdown/GetJobddl",
+                        type: "POST",
+                        dataType: "json",
+                        success: function (data) {
+                           $("#ddljob").append($("<option></option>").val("0").html("--Select--"));
+                            $.each(data.data, function (data, value) {
+                                $("#ddljob").append($("<option></option>").val(value.value).html(value.textName));
+                            })
+
+                        }
+                    })
+
+
+
+
+    displaydata();
+    function displaydata() {
+        var Jobdata = {
+            TranId: TranId,
+            Id: Id == '' ? 0 : Id,
+            Type: 'Job'
+        }
+        $.ajax({
+            url: "/InquiryTransaction/GetJobDetails",
+            type: "GET",
+            dataType: "json",
+            data: Jobdata,
+            success: function (data) {
+                console.log(data)
+                $("#tablejobdetails tbody").empty();
+                if (data.etrItmObj.length > 0) {
+                    $('#btngeneratepdf').show();
+                }
+                var amtsp = 0;
+                var i = 0;
+                debugger
+                $.each(data.etrItmObj, function (data, value) {
+                    //inqAmount
+                    console.log(data)
+                    i = i + 1;
+                    amtsp = amtsp + value.inqAmount;
+                    console.log(value.venueid)
+                    var newRowContent = '<tr><td>' + i
+                        + '</td><td> <i class="fas fa-edit"  onclick="callthisedit1(' + value.jobId
+                        + ')"></i>&nbsp;&nbsp;<i class="fa fa-trash" aria-hidden="true" onclick="calldeletedata(' + value.jobId
+                        + ')"></i></td><td>' + value.jobName + '</td><td>' + value.eventsid + '</td><td>' + value.venueid + '</td><td>'
+                        + value.ocasiondate + '</td><td>'+ value.todate + '</td><td>' + value.fromtime + '</td><td>' + value.totime + '</td><td>' + value.qty
+                        + '</td><td>' + value.rate + '</td><td>' + value.status
+                        + '</td><td>' + value.spnoes + '</td></tr>'
+
+                    $("#tablejobdetails tbody").append(newRowContent);
+
+
+
+                });
+                new DataTable('#tablejobdetails')
+
+                var dmt = 0;
+                dmt = $("#txtDiscountAmount").val();
+                $("#txtAmt").val(amtsp)
+                $("#txtNetAmount").val(amtsp - dmt)
+            }
+
+        });
+    }
+
+
+    //$('#Discamt').on('focusout', function () { Calculate() });
+    $('#txtDiscpercentage').on('focusout', function () { Calculate() });
+    $('#txtrate').on('focusout', function () { Calculate() });
+    $('#txtqty').on('focusout', function () { Calculate() });
+    function Calculate() {
+
+        var Discpercentage = $('#txtDiscpercentage').val();
+         var rate = $('#txtrate').val();
+         if (rate == undefined || rate == "") {
+             rate = 0;
+         }
+
+         var qty = $('#txtqty').val();
+         if (qty == undefined || qty == "") {
+             qty = 1;
+             $('#txtqty').val(1);
+         }
+         var Amount = 0;
+         Amount = (qty * rate);
+         $('#txtAmount').val(Amount)
+        if (Discpercentage > 0) {
+            var disamount = (Discpercentage * Amount) / 100
+            $('#Discamt').val(disamount.toFixed(2));
+            var df = (Amount - disamount).toFixed(2);
+            $('#Discnetamount').val(df);
+        } else {
+            $('#Discnetamount').val(Amount);
+        }
+
+         if (rate == 0 || rate == undefined) {
+             $('#txtDiscpercentage').val(0);
+         }
+
+
+     }
+
+     $('#ddljob').on('change', function () {
+         var id = $('#ddljob option:selected').val();
+         $.ajax({
+             url: "/Dropdown/GetjobDetailsById",
+             type: "POST",
+             dataType: "json",
+             data: { "Id": id},
+             success: function (data) {
+                 console.log(data)
+                 $('#txtrate').val(data.filteredJobs[0]["rate"])
+                 $('#txtqty').val(1);
+                 Calculate();
+             }
+         })
+         Calculate()
+     });
+
+
+     function callthisedit1(id) {
+        var TranId =@ViewBag.InqueryId;
+        $("#jobdetailsid").val(id);
+        var Jobdata = {
+            TranId: TranId,
+            Id: id == '' ? 0 : id,
+            Type: 'No'
+        }
+        $.ajax({
+            url: "/InquiryTransaction/GetJobDetails",
+            type: "GET",
+            dataType: "json",
+            data: Jobdata,
+            success: function (data) {
+                console.log(data.etrItmObj)
+                if (data.etrItmObj.length > 0) {
+                    $.each(data.etrItmObj, function (data, value) {
+                        $(':radio[name="Wedingceremonyoptions"]').prop('checked', false);
+                        // $("#pjobentrychk").prop('checked', value.pjobentrychk);
+                        $("#chkaddoneday").prop('checked', value.addoneday);
+                        $("#chkfullday").prop('checked', value.fullday);
+                        $('#ddljob').val(value.job);
+                        $("#txtevent").val(value.eventsid);
+                        $("#txtvenue").val(value.venueid);
+                        var dt = new Date(value.date);
+                        $('#txtoccasiondate').val(value.ocasiondate);
+                        $('#txtfromtime').val(value.fromtime);
+                        $('#txtotime').val(value.totime);
+                        $('#txtqty').val(value.qty);
+                        $('#txtrate').val(value.rate);
+                        $('#txtAmount').val(value.amount);
+                        $('#txtDiscpercentage').val(value.discountpercentage);
+                        $('#Discamt').val(value.discountamt);
+                        $('#Discnetamount').val(value.totalnet);
+                        $('#txtremarks').val(value.remarks);
+                        $('#txtspnote').val(value.spnoes);
+                        $("#dllstatus option:contains('" + value.status + "')").prop("selected", true);
+                        $("#txtsrno").val(value.sl);
+                        $('#txteventhrs').val(value.eventhrs);
+                        $('#txtoccasionTodate').val(value.todate);
+                        $('#jobdetailsid').val(id);
+                        $('#txtvenuelink').val(value.venuelink)
+
+                        $(':radio[name="Wedingceremonyoptions"]').filter('[value="' + value.wedingceremonyoptions + '"]').prop('checked', true);
+                        $('#txtddessv2').val(value.venueOneAddTo);
+                        $('#txtvenueto').val(value.venueToAddOne);
+                        $('#txtaddressto2').val(value.venueToAddTwo);
+                        $('#txtvenuetolink').val(value.venueToUrl)
+                        Getanme();
+                        $("#myModal2").modal({ backdrop: false });
+                    });
+                } else {
+                    alert('No Data found')
+                    reseNotHidet();
+                }
+
+            }
+
+        });
+    }
+    function callthisedit(id,Types) {
+        var TranId =@ViewBag.InqueryId;
+        $("#jobdetailsid").val(id);
+        var dsd = $("#txtsrno").val()
+        var Jobdata = {
+            TranId: TranId,
+            Id: id == '' ? 0 : id,
+            Type: Types
+        }
+        $.ajax({
+            url: "/InquiryTransaction/GetJobDetails",
+            type: "GET",
+            dataType: "json",
+            data: Jobdata,
+            success: function (data) {
+                console.log(data.etrItmObj)
+                if (data.etrItmObj.length > 0) {
+                    $.each(data.etrItmObj, function (data, value) {
+                        $(':radio[name="Wedingceremonyoptions"]').prop('checked', false);
+                        // $("#pjobentrychk").prop('checked', value.pjobentrychk);
+                        $("#chkaddoneday").prop('checked', value.addoneday);
+                        $("#chkfullday").prop('checked', value.fullday);
+                        $('#ddljob').val(value.job);
+                        $("#txtevent").val(value.eventsid);
+                        $("#txtvenue").val(value.venueid);
+                        var dt = new Date(value.date);
+                        $('#txtoccasiondate').val(value.date);
+                        $('#txtfromtime').val(value.fromtime);
+                        $('#txtotime').val(value.totime);
+                        $('#txtqty').val(value.qty);
+                        $('#txtrate').val(value.rate);
+                        $('#txtAmount').val(value.amount);
+                        $('#txtDiscpercentage').val(value.discountpercentage);
+                        $('#Discamt').val(value.discountamt);
+                        $('#Discnetamount').val(value.totalnet);
+                        $('#txtremarks').val(value.remarks);
+                        $('#txtspnote').val(value.spnoes);
+                        $("#dllstatus option:contains('" + value.status + "')").prop("selected", true);
+                        $("#txtsrno").val(parseInt(dsd) + 1);
+                        $('#txteventhrs').val(value.eventhrs);
+                        //$('#jobdetailsid').val(value.jobId);
+                        $('#txtoccasionTodate').val(value.todate);
+                        $('#txtvenuelink').val(value.venuelink)
+                        $('#txtddessv2').val(value.venueOneAddTo);
+                        $('#txtvenueto').val(value.venueToAddOne);
+                        $('#txtaddressto2').val(value.venueToAddTwo);
+                        $('#txtvenuetolink').val(value.venueToUrl)
+                        $(':radio[name="Wedingceremonyoptions"]').filter('[value="' + value.wedingceremonyoptions + '"]').prop('checked', true);
+                        Getanme();
+                        $("#myModal2").modal({ backdrop: false });
+                 
+                    });
+                } else {
+                    alert('No Data found')
+                    reseNotHidet();
+                }
+
+            }
+
+        });
+    }
+    function calldeletedata(id) {
+
+          var TranId =@ViewBag.InqueryId;
+        var Jobdata = {
+            TranId: TranId,
+            Id: id == '' ? 0 : id,
+            Type: 'Job'
+        }
+        if (confirm("Are you sure ? You want to delete these Item")) {
+            $.ajax({
+                url: "/InquiryTransaction/deletejobdeails",
+                type: "POST",
+                dataType: "json",
+                data: Jobdata,
+                success: function (data) {
+                    console.log(data.obj)
+                    if (data.obj == '1') {
+                       // alert("Data Deleted");
+                        displaydata();
+                    } else {
+                        alert("Not able to delete try again");
+                    }
+
+
+                }
+
+            });
+        }
+
+    }
+    function reset() {
+
+        $("#pjobentrychk").prop('checked', 0);
+        $("#chkaddoneday").prop('checked', 0);
+        $("#chkfullday").prop('checked',0);
+        $('#ddljob').val(0);
+        $("#txtevent").val('');
+        $("#txtvenue").val('');
+       // $('#txtoccasiondate').val('');
+        $('#txtfromtime').val('');
+        $('#txtotime').val('');
+        $('#txtqty').val(0);
+        $('#txtrate').val(0);
+        $('#txtAmount').val(0);
+        $('#txtDiscpercentage').val(0);
+        $('#Discamt').val('');
+        $('#Discnetamount').val(0);
+        $('#txtremarks').val('');
+        $('#txtspnote').val('');
+        $("#dllstatus option:contains('--Select--')").prop("selected", true);
+        $("#txtsrno").val(0);
+        $('#txteventhrs').val(0);
+        $('#jobdetailsid').val(0);
+        $("#txtotime").prop("disabled", false);
+        $("#txtfromtime").prop("disabled", false);
+        $("#txtvenuelink").val("");
+        $('#txtddessv2').val('');
+        $('#txtvenueto').val('');
+        $('#txtaddressto2').val('');
+        $('#txtvenuetolink').val('');
+        //$('#txtoccasionTodate').val('');
+        $('#lblfromdateday ,#lbltodateday').text('');
+        $('#myModal2').modal('hide');
+    }
+    function reseNotHidet() {
+        //$("#pjobentrychk").prop('checked', 0);
+        $("#chkaddoneday").prop('checked', 0);
+        $("#chkfullday").prop('checked', 0);
+        $('#ddljob').val(0);
+        $("#txtevent").val("");
+        $("#txtvenue").val("");
+        $('#txtoccasiondate').val('');
+        $('#txtfromtime').val('');
+        $('#txtotime').val('');
+        $('#txtqty').val(0);
+        $('#txtrate').val(0);
+        $('#txtAmount').val(0);
+        $('#txtDiscpercentage').val(0);
+        $('#Discamt').val('');
+        $('#Discnetamount').val(0);
+        $('#txtremarks').val('');
+        $('#txtspnote').val('');
+        $("#dllstatus option:contains('--Select--')").prop("selected", true);
+        $("#txtsrno").val(0);
+        $('#txteventhrs').val(0);
+        $('#jobdetailsid').val(0);
+        $("#txtotime").prop("disabled", false);
+        $("#txtfromtime").prop("disabled", false);
+        $("#txtvenuelink").val("");
+        $('#txtddessv2').val('');
+        $('#txtvenueto').val('');
+        $('#txtaddressto2').val('');
+        $('#txtvenuetolink').val('');
+        $('#txtoccasionTodate').val('');
+       // $('#myModal2').modal('hide');
+        $('#lblfromdateday ,#lbltodateday').text('');
+    }
+
+    $('#chkfullday').change(function () {
+
+        var d = $(this).is(':checked');
+        if (d == true) {
+            $('#txtfromtime').val('');
+            $('#txtotime').val('');
+            $("#txtotime").prop("disabled", true);
+            $("#txtfromtime").prop("disabled", true);
+            $('#txtoccasionTodate').val($('#txtoccasiondate').val());
+            $('#txteventhrs').val(24);
+        } else {
+            $("#txtotime").prop("disabled",false);
+            $("#txtfromtime").prop("disabled",false);
+
+        }
+
+    });
+    
+
+    var count = 0;
+    $('#chkaddoneday').change(function () {
+        var d = $(this).is(':checked');
+
+        var date1 = $('#txtoccasiondate').val();
+        var dateParts = date1.split("/");
+
+        var day = parseInt(dateParts[0], 10);
+        var month = parseInt(dateParts[1], 10) - 1; // Adjust month to zero-based index
+        var year = parseInt(dateParts[2], 10);
+
+        var originalDate = new Date(year, month, day);
+        var newDate = new Date(originalDate);
+        var formattedResult = null;
+        if (d == true) {
+            count = count + 1;
+            newDate.setDate(originalDate.getDate() + 1);
+            formattedResult = newDate.getDate() + '/' + (newDate.getMonth() + 1) + '/' + newDate.getFullYear();
+        } else {
+            count = count - 1;
+            if (count >= 0) {
+                newDate.setDate(originalDate.getDate() - 1);
+                formattedResult = newDate.getDate() + '/' + (newDate.getMonth() + 0) + '/' + newDate.getFullYear();
+            } else {
+                count = 0; // Reset count to 0 if it becomes negative
+            }
+        }
+
+
+        // Format the result
+        var formattedResult = newDate.getDate() + '/' + (newDate.getMonth() + 1) + '/' + newDate.getFullYear();
+        $('#txtoccasiondate').val(formattedResult.toString());
+        $('#txtoccasionTodate').val(formattedResult.toString());
+        
+        Getanme();
+    });
+
+    $('#pjobentrychk').change(function () {
+
+        var d = $(this).is(':checked');
+        if (d == true) {
+            var Id = $("#jobdetailsid").val();
+            if (Id == undefined || Id == null || Id == '') {
+                Id = 0;
+            }
+            callthisedit(Id,'YES');
+        }
+       
+    });
+    function calculatehrs() {
+  debugger
+        var fromtime = $("#txtfromtime").val();
+        var totime = $("#txtotime").val();
+      var fromdate = $("#txtoccasiondate").val();
+         var todate = $("#txtoccasionTodate").val();
+        var fromtime = $("#txtfromtime").val();
+        var totime = $("#txtotime").val();
+        var fromdate = $("#txtoccasiondate").val();
+        var todate = $("#txtoccasionTodate").val();
+        if (fromtime != null && fromtime != null && fromtime != null && fromtime != null) {
+            var newdatfrom = fromdate + ' ' + fromtime;
+            var todatenew = todate + ' ' + totime;
+            var fromdaten = new Date(newdatfrom.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$2/$1/$3"));
+            var todaten = new Date(todatenew.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$2/$1/$3"));
+
+            var timeDifference = todaten.getTime() - fromdaten.getTime();
+            var hoursDifference = timeDifference / (1000 * 60 * 60);
+            console.log('Hours between the two dates:', hoursDifference);
+            $("#txteventhrs").val((hoursDifference));
+        }
+        Getanme();
+    }
+
+    function Getanme() {
+        var fromdate = $("#txtoccasiondate").val();
+        var todate = $("#txtoccasionTodate").val();
+        if (fromdate != null) {
+            debugger
+            var parts = fromdate.split('/');
+            var day = parseInt(parts[0], 10);
+            var month = parseInt(parts[1], 10) - 1; // Subtract 1 from the month
+            var year = parseInt(parts[2], 10);
+            var date = new Date(year, month, day);
+            var dayOfWeek = date.getDay();
+            var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            $('#lblfromdateday').text(days[dayOfWeek]);
+        }
+        if (todate != null) {
+            var parts = todate.split('/');
+            var day = parseInt(parts[0], 10);
+            var month = parseInt(parts[1], 10) - 1; // Subtract 1 from the month
+            var year = parseInt(parts[2], 10);
+            var date = new Date(year, month, day);
+            var dayOfWeek = date.getDay();
+            var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            $('#lbltodateday').text(days[dayOfWeek]);
+        }
+
+    }
+
+</script>

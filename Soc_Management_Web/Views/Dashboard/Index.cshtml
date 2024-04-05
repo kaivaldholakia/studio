@@ -1,0 +1,10 @@
+﻿@{
+    List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> yearList = ViewBag.yearList as List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>;
+    List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> companyList = ViewBag.companyList as List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>;
+    List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> buttonList = ViewBag.buttonList as List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>;
+    int companyId = Convert.ToInt32(ViewBag.companyId);
+}
+@{
+    ViewData["Title"] = "Account";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}

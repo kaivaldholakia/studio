@@ -1,0 +1,407 @@
+﻿@model PIOAccount.Models.ModuleMasterModal
+@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int isAdministrator = HttpContextAccessor.HttpContext.Session.GetInt32("IsAdministrator").Value;
+    List<PIOAccount.Models.ModuleMasterModal> modulemasterList = ViewBag.modulemasterList as List<PIOAccount.Models.ModuleMasterModal>;
+    List<SelectListItem> layoutList = ViewBag.layoutList as List<SelectListItem>;
+    List<SelectListItem> pageNoList = ViewBag.pageNoList as List<SelectListItem>;
+    var userRight = ViewBag.userRight as PIOAccount.Models.UserFormRightModel;
+    ViewData["Title"] = userRight.ModuleNm;
+    string headerAdd = "";
+    string headerList = "";
+    string gridAdd = "";
+    string gridList = "";
+    bool headerAddTrue = false;
+    bool headerListTrue = false;
+
+    if (userRight != null && (userRight.IsAdd || userRight.IsEdit) && userRight.IsList)
+    {
+        headerList = "active";
+        gridList = "show active";
+        headerAddTrue = true;
+    }
+    else if (userRight != null && (userRight.IsAdd || userRight.IsEdit))
+    {
+        headerAdd = "active";
+        gridAdd = "show active";
+        headerAddTrue = true;
+    }
+    else if (userRight != null && userRight.IsList)
+    {
+        headerList = "active";
+        gridList = "show active";
+        headerAddTrue = true;
+    }
+}
+
+<div class="card card-primary">
+    <div class="card-header" style="font-family:Verdana">
+        <h6> @ViewData["Title"]</h6>
+    </div>
+    <div class="card-body">
+        <div class="card card-primary card-tabs">
+            <div class="card-header p-0 pt-1">
+                <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                    @if (userRight != null && userRight.IsList)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @headerList" id="custom-tabs-three-list-tab" data-toggle="pill" href="#custom-tabs-three-list" role="tab" aria-controls="custom-tabs-three-list" aria-selected="@headerListTrue" style="font-family:Verdana;font-size:small" onclick="GoToListTab()">List (Alt+L)</a>
+                        </li>
+                    }
+                    @if (userRight != null && (userRight.IsAdd || userRight.IsEdit))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @headerAdd" id="custom-tabs-three-add-tab" data-toggle="pill" href="#custom-tabs-three-add" role="tab" aria-controls="custom-tabs-three-add" aria-selected="@headerAddTrue" style="font-family:Verdana;font-size:small" onclick="GoToAddTab()">Add/Update (F2)</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="col-md-12">
+                    <div class="tab-content" id="custom-tabs-three-tabContent">
+                        @if (userRight != null && userRight.IsList)
+                        {
+                            <div class="tab-pane fade  @gridList" id="custom-tabs-three-list" role="tabpanel" aria-labelledby="custom-tabs-three-list-tab">
+                                <div class="table-responsive mt-2" style="font-family:Verdana;font-size:small;font-display:inherit">
+                                    <div class="col-md-12 col-12 mb-2 mt-2">
+                                        <div class="row">
+                                            <div class="col-md-1 mb-2 float-left">
+                                                <select class="form-control form-control-sm" onchange="loadData()" id="drpReportPageNoDatable">
+                                                    @for (int i = 0; i < pageNoList.Count; i++)
+                                                    {
+                                                        string checkedd = "checked";
+                                                        <option checked="@checkedd" value="@pageNoList[i].Value">@pageNoList[i].Text</option>
+                                                        checkedd = string.Empty;
+                                                    }
+
+                                                </select>
+                                            </div>
+                                            <div class="col-md-5 col-12">
+                                                <div class="row">
+                                                    <div class="col-md-6 col">
+                                                        <select class="form-control select2 drpReportLayout" onchange="loadData()">
+                                                            <option value="" ; style="width:200px">--Select Layout--</option>
+                                                            @if (layoutList != null && layoutList.Count > 0)
+                                                            {
+                                                                foreach (var item in layoutList)
+                                                                {
+                                                                    <option value="@item.Value">@item.Text </option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-2 col-auto mb-2 custommt-2-3">
+                                                        @if (isAdministrator == 1)
+                                                        {
+                                                            <button class="btn btn-dark btn-sm text-white" style="font-family:Verdana;font-size:medium" onclick="window.open('/GridMaster/Index/' + $('.drpReportLayout').val(), '_blank');">
+                                                                Edit
+                                                            </button>
+                                                        }
+                                                    </div>
+                                                    <div class="col-md-4 mb-2 custommt-2-3">
+                                                        <button class="btn btn-primary btn-sm" id="btnExportToExcel">Excel</button>
+                                                        <button class="btn btn-primary btn-sm ml-6" id="btnExportToPDF">PDF</button>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3"></div>
+                                            <div class="col-md-3 col-12 float-right">
+                                                <input type="text" class="form-control form-control-sm" placeholder="Search" id="txtReportSearchDataTable" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="dataTable">
+
+                                    </div>
+                                    <div class="pager float-right"></div>
+                                </div>
+                            </div>
+                        }
+                        @if (userRight != null && (userRight.IsAdd || userRight.IsEdit))
+                        {
+                            <div class="tab-pane fade @gridAdd" id="custom-tabs-three-add" role="tabpanel" aria-labelledby="custom-tabs-three-add-tab">
+                                <form method="post" class="mt-1">
+                                    <div class="container-fluid">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="row">
+                                                    <label class="control-label col-md-2 col-sm-2  font-weight-bold customLabel" style="font-family:Verdana">
+                                                        Menu Name English <span class="required">*</span>
+                                                    </label>
+                                                    <input type="hidden" name="State" />
+                                                    <div class="col-md-auto col-12 form-outline form-white mb-2">
+                                                        <input type="text" id="txtName" name="Name" onfocus="this.select()" class="form-control form-control-lg" placeholder="Menu Name English" tabindex="1" value="@Model.Name" style="font-family: Verdana;font-size:small; height:35px;width:200px" required />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="row">
+                                                    <label class="control-label col-md-2 col-sm-2  font-weight-bold customLabel" style="font-family:Verdana">
+                                                        Menu Name Other Lang <span class="required">*</span>
+                                                    </label>
+                                                    <input type="hidden" name="State" />
+                                                    <div class="col-md-auto col-12 form-outline form-white mb-2">
+                                                        <input type="text" id="txtNameOth" name="NameOth" onfocus="this.select()" class="form-control form-control-lg" placeholder="Menu Name Oth Lang." tabindex="1" value="@Model.NameOth" style="font-family: Verdana;font-size:small; height:35px;width:200px" required />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="row">
+                                                    <label class="control-label col-md-2 col-sm-2  font-weight-bold customLabel" style="font-family:Verdana">
+                                                        Link <span class="required">*</span>
+                                                    </label>
+                                                    <input type="hidden" name="State" />
+                                                    <div class="col-md-auto col-12 form-outline form-white mb-2">
+                                                        <input type="text" id="txtLink" name="Link" onfocus="this.select()" class="form-control form-control-lg" placeholder="Link" tabindex="2" value="@Model.Link" style="font-family: Verdana;font-size:small; height:35px;width:200px" required />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="row">
+                                                    <label class="control-label col-md-2 col-sm-2 col-xs-12 font-weight-bold customLabel" style="font-family:Verdana">
+                                                        Under Menu <span class="required"></span>
+                                                    </label>
+                                                    <div class="col-md-9 d-flex form-outline form-white mb-2" tabindex=" = 2">
+                                                        @Html.DropDownListFor(x => x.ParentFK, Model.MenuList, "Select", new { @class = "form-control select2", @tabindex = "3", onfocus = "this.select()", style = "font-family: Verdana;font-size:small; height:35px; width:200px", @onclick = "SetIconVal()", @onchange = "SetIconVal()" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="row">
+                                                    <label class="control-label col-md-2 col-sm-2  font-weight-bold customLabel" style="font-family:Verdana">
+                                                        Icon <span class="required">*</span>
+                                                    </label>
+                                                    <input type="hidden" name="State" />
+                                                    <div class="col-md-auto col-12 form-outline form-white mb-2">
+                                                        <input type="text" id="txtIcon" name="Icon" onfocus="this.select()" class="form-control form-control-lg" placeholder="Icon" tabindex="4" value="@Model.Icon" style="font-family: Verdana;font-size:small; height:35px;width:200px" required />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="row">
+                                                    <label class="control-label col-md-2 col-sm-2 col-xs-12 font-weight-bold customLabel" style="font-family:Verdana">
+                                                        Position <span class="required"></span>
+                                                    </label>
+                                                    <div class="col-md-auto col-12 form-outline form-white mb-2">
+                                                        <input type="text" id="txtPosition" name="Position" onfocus="this.select()" class="form-control form-control-lg" placeholder="Position" tabindex="5" value="@Model.Position" style="font-family: Verdana;font-size:small; height:35px;width:70px" required />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="row">
+                                                    <label class="control-label col-md-2 col-sm-2 col-xs-12 font-weight-bold customLabel" style="font-family:Verdana">
+                                                        Dashboard <span class="required"></span>
+                                                    </label>
+                                                    <div class="col-md-auto col-12 form-outline form-white mb-2">
+                                                        <input type="text" id="txtDeshboardpos" name="Deshboardpos" onfocus="this.select()" class="form-control form-control-lg" placeholder="Deshboard" tabindex="6" value="@Model.Deshboardpos" style="font-family: Verdana;font-size:small; height:35px;width:70px" required />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="row">
+                                                    <div class="col-md-12 text-center">
+                                                        @if (userRight.IsEdit && Model != null && Model.ModuleId > 0)
+                                                        {
+                                                            <button class="btn btn-primary px-md-4 mb-2 text-white" style="font-family:Verdana;font-size:medium" id="btnSave">
+                                                                Save (F10)
+                                                            </button>
+                                                            <a href="/Menu/index" class="btn btn-warning px-md-4 mb-2 text-dark" style="font-family:Verdana;font-size:medium">
+                                                                Cancel (Esc)
+                                                            </a>
+                                                        }
+                                                        else if (userRight.IsAdd && Model.ModuleId == 0)
+                                                        {
+                                                            <button class="btn btn-primary px-md-4 mb-2 text-white" style="font-family:Verdana;font-size:medium" id="btnSave">
+                                                                Save (F10)
+                                                            </button>
+                                                            <a href="/Menu/index" class="btn btn-warning px-md-4 mb-2 text-dark" style="font-family:Verdana;font-size:medium">
+                                                                Cancel (Esc)
+                                                            </a>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        var moduleId = '@Html.Raw(Model.ModuleId)';
+        if (moduleId != null && moduleId != '' && moduleId != 0) {
+            GoToAddTab()
+        }
+        else {
+            GoToListTab()
+        }
+        var status = '@Html.Raw(ViewBag.FocusType)';
+        if (status != null && status != '') {
+            if (status == "0") {
+                $("#txtName").focus();
+            }
+            if (status == "1") {
+                $("#txtName").focus();
+            }
+        }
+        else {
+            $("#txtName").focus();
+        }
+    });
+
+    function GoToAddTab() {
+        $('#custom-tabs-three-list-tab').removeClass('active');
+        $('#custom-tabs-three-add-tab').addClass('active');
+
+        $('#custom-tabs-three-list').removeClass('active');
+        $('#custom-tabs-three-add').addClass('active');
+        $('#custom-tabs-three-add').addClass('show');
+        document.getElementById('txtName').focus();
+    }
+    function GoToListTab() {
+        $('#custom-tabs-three-list-tab').addClass('active');
+        $('#custom-tabs-three-add-tab').removeClass('active');
+
+        $('#custom-tabs-three-list').addClass('active');
+        $('#custom-tabs-three-list').addClass('show');
+        $('#custom-tabs-three-add').removeClass('active');
+        $('#custom-tabs-three-add').removeClass('show');
+        $('#txtReportSearchDataTable').focus();
+    }
+</script>
+<script>
+    var isRecentCalledEsc = false;
+    (function (code) {
+        code(window.jQuery, document, window);
+    }(function ($, document, window) {
+        $(function () {
+            $(window)
+                .initKeyboard({ debug: 1 })
+                .on('F2', function () {
+                    GoToAddTab()
+                }).on('F10', function () {
+                    $("#btnSave").click();
+                })
+                .on('Alt+L', function () {
+                    GoToListTab();
+                })
+                .on('Alt+C', function () {
+                    if (confirm("Do you want to exit without save?")) {
+                        location.href = '/Menu/Index'
+                    }
+                    else {
+                        $('#txtName').focus();
+                    }
+
+                }).on('Escape', function () {
+                    if (!isRecentCalledEsc) {
+                        isRecentCalledEsc = true;
+                        if (confirm("Do you want to exit without save?")) {
+                            location.href = '/Menu/Index'
+                        }
+                        //else {
+                        //    $('#txtName').focus();
+                        //}
+                        setTimeout(function () {
+                            isRecentCalledEsc = false;
+                        }, 500)
+                    }
+
+                })
+        });
+    }));
+</script>
+
+<script>
+
+    var isRecentCalled = false;
+
+
+    $(function () {
+
+        loadData();
+        var pageIndex = '';
+        var pageSize = '';
+        var totalRecord = '';
+        var isDelete = '@Html.Raw(userRight.IsDelete)';
+        var isEdit = '@Html.Raw(userRight.IsEdit)';
+    })
+
+    var timer = null;
+    $('#txtReportSearchDataTable').keyup(function (e) {
+        if (e.keyCode >= 112 && e.keyCode <= 123) {
+            e.preventDefault();
+            return false;
+        }
+        else {
+            clearTimeout(timer);
+
+            timer = setTimeout(loadData, 1000)
+        }
+
+    });
+
+    function loadData(pageIndex, columnName, sortBy) {
+            isRecentCalled = true;
+            if (pageIndex == undefined || pageIndex == "" || pageIndex == "0" || pageIndex == 0) {
+                pageIndex = 1;
+            }
+            var layoutId = $('.drpReportLayout').val();
+
+            if (!layoutId) {
+                $('.drpReportLayout').val($('.drpReportLayout').children('option').eq(1).prop('value'));
+                //SetSelect2()
+
+            }
+            if (!columnName) {
+                columnName = '';
+            }
+            if (!sortBy) {
+                sortBy = '';
+            }
+            $('.dataTable').html();
+            $.ajax({
+                url: '/Menu/GetReportView',
+                type: 'GET',
+                data: { pageIndex: pageIndex, pageSize: $('#drpReportPageNoDatable').val(), searchValue: $('#txtReportSearchDataTable').val(), gridMstId: $('.drpReportLayout').val(), columnName: columnName, sortby: sortBy },
+                dataType: 'HTML',
+                traditional: true, // add this
+                success: function (data) {
+                    $('.dataTable').html(data);
+                    setTimeout(function () {
+                        isRecentCalled = false;
+                    }, 2000)
+                },
+                failure: function (response) {
+                    errorMessage(response);
+                }
+            });
+    }
+
+    $('#btnExportToExcel').click(function () {
+        window.location.href = "/Menu/ExportToExcelPDF?gridMstId=" + $('.drpReportLayout').val() + "&searchValue=" + $('#txtReportSearchDataTable').val() + "&type=1";
+    })
+    $('#btnExportToPDF').click(function () {
+        window.location.href = "/Menu/ExportToExcelPDF?gridMstId=" + $('.drpReportLayout').val() + "&searchValue=" + $('#txtReportSearchDataTable').val() + "&type=2";
+    })
+
+    function SetIconVal() {
+        var parentFK = $('#ParentFK').children('option:selected').val()
+        if (parentFK != null && parentFK != '' && parentFK != 0)
+        {
+            $('input[name="Icon"]').val('far fa-circle nav-icon');
+        }
+    }
+
+</script>

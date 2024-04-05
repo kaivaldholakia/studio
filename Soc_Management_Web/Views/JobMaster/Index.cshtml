@@ -1,0 +1,1268 @@
+﻿@model PIOAccount.Models.JobModel
+@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int isAdministrator = HttpContextAccessor.HttpContext.Session.GetInt32("IsAdministrator").Value;
+    List<PIOAccount.Models.JobModel> cityList = ViewBag.cityList as List<PIOAccount.Models.JobModel>;
+    List<SelectListItem> layoutList = ViewBag.layoutList as List<SelectListItem>;
+    List<SelectListItem> pageNoList = ViewBag.pageNoList as List<SelectListItem>;
+    var userRight = ViewBag.userRight as PIOAccount.Models.UserFormRightModel;
+    ViewData["Title"] = userRight.ModuleNm;
+    string headerAdd = "";
+    string headerList = "";
+    string gridAdd = "";
+    string gridList = "";
+    bool headerAddTrue = false;
+    bool headerListTrue = false;
+
+    if (userRight != null && (userRight.IsAdd || userRight.IsEdit) && userRight.IsList)
+    {
+        headerList = "active";
+        gridList = "show active";
+        headerAddTrue = true;
+    }
+    else if (userRight != null && (userRight.IsAdd || userRight.IsEdit))
+    {
+        headerAdd = "active";
+        gridAdd = "show active";
+        headerAddTrue = true;
+    }
+    else if (userRight != null && userRight.IsList)
+    {
+        headerList = "active";
+        gridList = "show active";
+        headerAddTrue = true;
+    }
+    int psno = 1;
+    int msno = 1;
+   
+}
+<style>
+    .btn-danger {
+        color: #fff;
+        background-color: #d9534f;
+        border-color: #d43f3a;
+        margin-left: 10px;
+    }
+
+    .table td {
+        padding: 0;
+    }
+
+    .table th {
+        padding: 0;
+    }
+    #form-list-client-body TR TD:nth-child(2) {
+        text-align: left;
+    }
+    #form-list-manpower-body TR TD:nth-child(2) {
+        text-align: left;
+    }
+
+</style>
+
+<script src="~/js/jquery-shortcut.js"></script>
+
+
+
+
+<div class="card card-primary" style="background-color:antiquewhite">
+    <div class="card-header" style="font-family:Verdana">
+        <h6> @ViewData["Title"]</h6>
+    </div>
+    <div class="card-body">
+        <div class="card card-primary card-tabs">
+            <div class="card-header p-0 pt-1">
+                <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                    @if (userRight != null && userRight.IsList)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @headerList" id="custom-tabs-three-list-tab" data-toggle="pill" href="#custom-tabs-three-list" role="tab" aria-controls="custom-tabs-three-list" aria-selected="@headerListTrue" style="font-family:Verdana;font-size:small" onclick="GoToListTab()">List (Alt+L)</a>
+                        </li>
+                    }
+                    @if (userRight != null && (userRight.IsAdd || userRight.IsEdit))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @headerAdd" id="custom-tabs-three-add-tab" data-toggle="pill" href="#custom-tabs-three-add" role="tab" aria-controls="custom-tabs-three-add" aria-selected="@headerAddTrue" style="font-family:Verdana;font-size:small" onclick="GoToAddTab()">Add/Update (F2)</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+            <div class="card-body" style="background-color:aliceblue">
+                <div class="col-md-12">
+                    <div class="tab-content" id="custom-tabs-three-tabContent">
+                        @if (userRight != null && userRight.IsList)
+                        {
+                            <div class="tab-pane fade  @gridList" id="custom-tabs-three-list" role="tabpanel" aria-labelledby="custom-tabs-three-list-tab">
+                                <div class="table-responsive mt-2" style="font-family:Verdana;font-size:small;font-display:inherit">
+                                    <div class="col-md-12 col-12 mb-2 mt-2">
+                                        <div class="row">
+                                            <div class="col-md-1 mb-2 float-left">
+                                                <select class="form-control form-control-sm" onchange="loadData()" id="drpReportPageNoDatable">
+                                                    @for (int i = 0; i < pageNoList.Count; i++)
+                                                    {
+                                                        string checkedd = "checked";
+                                                        <option checked="@checkedd" value="@pageNoList[i].Value">@pageNoList[i].Text</option>
+                                                        checkedd = string.Empty;
+                                                    }
+
+                                                </select>
+                                            </div>
+                                            <div class="col-md-5 col-12">
+                                                <div class="row">
+                                                    <div class="col-md-6 col">
+                                                        <select class="form-control select2 drpReportLayout" onchange="loadData()">
+                                                            <option value="" ; style="width:200px">--Select Layout--</option>
+                                                            @if (layoutList != null && layoutList.Count > 0)
+                                                            {
+                                                                foreach (var item in layoutList)
+                                                                {
+                                                                    <option value="@item.Value">@item.Text </option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-2 col-auto mb-2 custommt-2-3">
+                                                        @if (isAdministrator == 1)
+                                                        {
+                                                            <button class="btn btn-dark btn-sm text-white" style="font-family:Verdana;font-size:medium" onclick="window.open('/GridMaster/Index/' + $('.drpReportLayout').val(), '_blank');">
+                                                                Edit
+                                                            </button>
+                                                        }
+                                                    </div>
+                                                    <div class="col-md-4 mb-2 custommt-2-3">
+                                                        <button class="btn btn-primary btn-sm" id="btnExportToExcel">Excel</button>
+                                                        <button class="btn btn-primary btn-sm ml-6" id="btnExportToPDF">PDF</button>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3"></div>
+                                            <div class="col-md-3 col-12 float-right">
+                                                <input type="text" class="form-control form-control-sm" placeholder="Search" id="txtReportSearchDataTable" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="dataTable">
+
+                                    </div>
+                                    <div class="pager float-right"></div>
+                                </div>
+                            </div>
+                        }
+                        @if (userRight != null && (userRight.IsAdd || userRight.IsEdit))
+                        {
+                            <div class="tab-pane fade @gridAdd" id="custom-tabs-three-add" role="tabpanel" aria-labelledby="custom-tabs-three-add-tab">
+                                <form method="post" class="mt-1">
+                                    <div class="container-fluid">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="row">
+                                                    <label class="control-label col-md-2 col-sm-2  font-weight-bold customLabel" style="font-family:Verdana">
+                                                        Job Work Name <span class="required">*</span>
+                                                    </label>
+                                                    <input type="hidden" name="State" />
+                                                    <div class="col-md-auto col-12 form-outline form-white mb-2">
+                                                        @*<input type="text" id="txtJobName" name="JobName" onfocus="this.select()" class="form-control form-control-lg" placeholder="Job Work Name"
+                                                            tabindex="1" value="@Model.jobworkname" style="font-family: Verdana;font-size:small; height:35px;width:350px" required />*@
+                                                        @Html.HiddenFor(m => m.jobid, new { @id = "jobid" })
+                                                        @Html.TextBoxFor(x => x.jobworkname, new
+                                                   {
+                                                       @class = "form-control form-control-lg",
+                                                       @placeholder = "job Work Name",
+                                                       @tabindex = "1",
+                                                       @required = "required",
+
+                                                       @id = "txtJobName"
+                                                   })
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <label class="control-label col-md-2 col-sm-2  font-weight-bold customLabel" style="font-family:Verdana">
+                                                        Short Name <span class="required">*</span>
+                                                    </label>
+                                                    <input type="hidden" name="State" />
+                                                    <div class="col-md-auto col-12 form-outline form-white mb-2">
+
+                                                        @Html.TextBoxFor(x => x.shortname, new
+                                                   {
+                                                       @class = "form-control form-control-lg",
+                                                       @placeholder = "ShortName",
+                                                       @tabindex = "2",
+                                                       @id = "txtShortName",
+                                                       @required = "required"
+                                                   })
+                                                    </div>
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                    <div class="row">
+                                                        <div class="col-md-auto col-12 form-outline form-white mb-2 row">
+
+                                                            @Html.CheckBoxFor(x => x.NoEntVnDate, new
+                                                       {
+                                                           @class = "form-control form-control-lg",
+
+                                                                @tabindex = "3",
+
+
+
+                                                       })
+                                                        </div>
+                                                        <div style="font-size: 20px;font-weight: lighter;">No Event, Venue, Date</div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <label class="control-label col-md-2 col-sm-2  font-weight-bold customLabel" style="font-family:Verdana">
+                                                        Remarks <span class="required"></span>
+                                                    </label>
+                                                    <input type="hidden" name="State" />
+                                                    <div class="col-md-auto col-12 form-outline form-white mb-2">
+                                                        <textarea id="txtRemarks" name="remarks" class="form-control form-control-lg" placeholder="job Remarks" tabindex="3" value="" style="width: 350px">@Model.remarks</textarea>
+                                                        @*@Html.TextBoxFor(x => x.remarks, new
+                                                            {
+                                                                @class = "form-control form-control-lg",
+                                                                @placeholder = "job Remarks",
+                                                                @tabindex = "3",
+
+
+                                                                @id = "txtRemarks"
+                                                            })*@
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <label class="control-label col-md-2 col-sm-2  font-weight-bold customLabel" style="font-family:Verdana">
+                                                        Rate <span class="required"></span>
+                                                    </label>
+                                                    <input type="hidden" name="State" />
+                                                    <div class="col-md-auto col-12 form-outline form-white mb-2">
+
+                                                        @Html.TextBoxFor(x => x.rate, new
+                                                   {
+                                                       @class = "form-control form-control-lg",
+                                                       @placeholder = "Rate",
+                                                       @tabindex = "4",
+                                                       @id = "txtRate",
+                                                       onkeypress = "return isNumber(event)",
+                                                   })
+                                                    </div>
+                                                </div>
+
+                                                <div class=" text-center">
+                                                    <div class="row" style="margin:15px;">
+                                                        <div class="col-sm-6 col-md-5 col-lg-6" style="border:1px solid">
+                                                            <label class="control-label col-md-6 col-sm-6  font-weight-bold customLabel" style="font-family:Verdana">
+                                                                Product Details <span class="required"></span>
+                                                            </label>
+                                                            <div class="row">
+                                                                <div class="col-md-12">
+                                                                    <table style="width:100%">
+                                                                        <tr>
+
+                                                                            <td>Product</td>
+                                                                            <td>Qty.</td>
+                                                                            <td>Remarks</td>
+                                                                            <td>Action</td>
+                                                                        </tr>
+                                                                        <tr>
+
+
+                                                                            <td>
+                                                                                @Html.DropDownListFor(x => x.product, Model.lstproduct, "Select", new { @class = "form-control select2 ProdType", @tabindex = "5", onfocus = "this.select()", @required = "required", @id = "drpprd", style = "font-family: Verdana;font-size:small; height:35px;width:180px" })
+                                                                            </td>
+                                                                            <td>
+
+                                                                                @Html.TextBoxFor(x => x.qty, new
+                                                                           {
+                                                                               @class = "form-control form-control-lg",
+
+                                                                               @tabindex = "6",
+                                                                               @id = "client-name",
+                                                                               @required = "required",
+                                                                               onkeypress = "return isNumber(event)"
+                                                                           })
+                                                                            </td>
+                                                                            <td>
+                                                                                @Html.TextBoxFor(x => x.premarks1, new
+                                                                           {
+                                                                               @class = "form-control form-control-lg",
+
+                                                                               @tabindex = "7",
+                                                                               @id = "client-email"
+
+                                                                           })
+                                                                            </td>
+                                                                            <td> <button id="btn-save1" name="btn-save" class="btn btn-primary" onclick="addClient()"><i class="fa fa-plus"></i></button></td>
+                                                                        </tr>
+
+                                                                    </table>
+
+                                                                </div>
+                                                                <!-- LIST -->
+                                                                <div class=col-md-12>
+
+                                                                    <legend>List of Products</legend>
+
+
+                                                                    <table class="table table-bordered table-condensed table-hover">
+                                                                        <thead>
+                                                                            <tr style="background: darkgray;">
+                                                                                <th>SNo</th>
+                                                                                <th style="text-align: justify;padding: 0px 8px;">Product</th>
+                                                                                <th>Qty</th>
+                                                                                <th>Remarks</th>
+                                                                                <th>Actions</th>
+                                                                            </tr>
+
+                                                                        </thead>
+                                                                        <tbody id="form-list-client-body">
+                                                                            @if (Model.lstProduct1 != null)
+                                                                            {
+                                                                                foreach (var item in Model.lstProduct1)
+                                                                                {
+
+                                                                                    <tr>
+                                                                                        <td>@(psno++)</td>
+                                                                                        <td style="text-align: justify;padding: 0px 8px;">@item.PrNm</td>
+                                                                                        <td>@item.Qty</td>
+                                                                                        <td>@item.Rmk</td>
+                                                                                        <td style="display:none;">@item.PrVou</td>
+                                                                                        <td style="display:none;">@item.SNo</td>
+                                                                                        <td>
+                                                                                            <button class="btn btn-sm btn-primary" onclick="editClient(@item.editSno)" style="height: 27px;">Edit</button>
+                                                                                            <button class="btn btn-sm btn-danger itmdel" onclick="deleteClient(@item.editSno)" style="height: 27px;">Delete</button>
+                                                                                        </td>
+                                                                                    </tr>
+
+                                                                                }
+                                                                            }
+                                                                        </tbody>
+                                                                    </table>
+
+
+                                                                </div>
+
+
+                                                                <br>
+
+                                                                <!-- view -->
+
+
+
+
+                                                            </div>
+                                                        </div>
+
+
+
+                                                        <div class="col-sm-6 col-md-5 col-lg-6" style="border:1px solid">
+                                                            <label class="control-label col-md-6 col-sm-6  font-weight-bold customLabel" style="font-family:Verdana">
+                                                                Man Power Details  <span class="required"></span>
+                                                            </label>
+                                                            <div class="row">
+                                                                <div class="col-md-12">
+                                                                    <table style="width:100%">
+                                                                        <tr>
+
+                                                                            <td>Category</td>
+                                                                            <td> Qty.</td>
+                                                                            <td>Remarks</td>
+                                                                            <td>Action</td>
+                                                                        </tr>
+                                                                        <tr>
+
+                                                                            <td>
+                                                                                @Html.DropDownListFor(x => x.category, Model.lstcategory, "Select", new { @class = "form-control select2 drpcatgType", @tabindex = "8", id = "dropCatg", onfocus = "this.select()", style = "font-family: Verdana;font-size:small; height:35px; width:180px", @required = "required" })
+                                                                            </td>
+                                                                            <td>
+                                                                                @Html.TextBoxFor(x => x.qty1, new
+                                                                           {
+                                                                               @class = "form-control form-control-lg",
+
+                                                                               @tabindex = "9",
+                                                                               @id = "txtmainpwrqty",
+                                                                               @required = "required",
+                                                                               onkeypress = "return isNumber(event)"
+                                                                           })
+                                                                            </td>
+                                                                            <td>
+
+                                                                                @Html.TextBoxFor(x => x.mremarks2, new
+                                                                              {
+                                                                                  @class = "form-control form-control-lg",
+
+                                                                                 @tabindex = "10",
+                                                                                  @id = "txtmainpwrremark"
+
+                                                                              })
+                                                                            </td>
+                                                                            <td> <button id="btn-save2" name="btn-save" class="btn btn-primary" onclick="addMainPowerDetails()"><i class="fa fa-plus"></i></button></td> @*ManPower details Save*@
+
+                                                                        </tr>
+
+                                                                    </table>
+
+                                                                </div>
+                                                                <!-- LIST -->
+                                                                <div class=col-md-12>
+
+                                                                    <legend>List of Man Power</legend>
+
+
+                                                                    <table class="table table-bordered table-condensed table-hover">
+                                                                        <thead>
+                                                                            <tr style="background: darkgray;">
+                                                                                <th>SNo</th>
+                                                                                <th style="text-align: justify;padding: 0px 8px;">Category</th>
+                                                                                <th> Qty.</th>
+                                                                                <th>Remarks</th>
+                                                                                <th>Action</th>
+                                                                            </tr>
+
+                                                                        </thead>
+                                                                        <tbody id="form-list-manpower-body">
+                                                                            @if (Model.lstMainPower != null)
+                                                                            {
+                                                                                foreach (var item in Model.lstMainPower)
+                                                                                {
+
+                                                                                    <tr>
+                                                                                        <td>@(msno++)</td>
+                                                                                        <td style="text-align: justify;padding: 0px 8px;">@item.CatNm</td>
+                                                                                        <td>@item.Qty</td>
+                                                                                        <td>@item.Rmk</td>
+                                                                                        <td style="display:none;">@item.CatVou</td>
+                                                                                        <td style="display:none;">@item.SNo</td>
+                                                                                        <td>
+                                                                                            <button class="btn btn-sm btn-primary" onclick="editClient1(@item.editSno)" style="height: 27px;">Edit</button>
+                                                                                            <button class="btn btn-sm btn-danger" onclick="deleteClient1(@item.editSno)" style="height: 27px;">Delete</button>
+                                                                                        </td>
+                                                                                    </tr>
+
+                                                                                }
+                                                                            }
+                                                                        </tbody>
+                                                                    </table>
+
+
+                                                                </div>
+
+
+                                                                <br>
+
+                                                                <!-- view -->
+
+
+
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="row">
+                                                    <div class="col-md-12 text-center">
+                                                        @*@if (userRight.IsEdit && Model != null && Model.jobid != 0)
+                                                            {
+                                                                <button class="btn btn-primary text-white" id="btnSave">
+                                                                    Other Detail
+                                                                </button>
+                                                                <a href="/JobMaster/index" class="btn btn-warning px-md-4 text-dark" style="font-family: Nina;font-size:medium">
+                                                                    Save(F10)
+                                                                </a>
+                                                            }
+                                                            else if (userRight.IsAdd && Model.jobid > 0)
+                                                            {
+                                                                <button class="btn btn-primary px-md-4 text-white" style="font-family: Nina;font-size:medium" id="btnSave">
+                                                                    Other Detail
+                                                                </button>
+                                                                <a href="/JobMaster/index" class="btn btn-warning px-md-4 text-dark" style="font-family: Nina;font-size:medium">
+                                                                    Save(F10)
+                                                                </a>
+                                                            }
+                                                            @if (userRight.IsEdit && Model != null && Model.jobid != 0)
+                                                            {
+                                                                <button class="btn btn-primary px-md-4 text-white" style="font-family: Nina;font-size:medium" id="btnSave">
+                                                                    Clear/New(F2)
+                                                                </button>
+                                                                <a href="/JobMaster/index" class="btn btn-warning px-md-4 text-dark" style="font-family: Nina;font-size:medium">
+                                                                    Find(F3)
+                                                                </a>
+                                                            }
+                                                            else if (userRight.IsAdd && Model.jobid > 0)
+                                                            {
+                                                                <button class="btn btn-primary px-md-4 text-white" style="font-family: Nina;font-size:medium" id="btnNew">
+                                                                    Clear/New(F2)
+                                                                </button>
+                                                                <a href="/JobMaster/index" class="btn btn-warning px-md-4 text-dark" style="font-family: Nina;font-size:medium">
+                                                                    Find(F3)
+                                                                </a>
+                                                            }*@
+
+
+                                                        <button class="btn btn-primary px-md-4 text-white" style="font-family: Nina;font-size:medium" id="btnSave">
+                                                            Save
+                                                        </button>
+                                                        <a href="/JobMaster/index" class="btn btn-warning px-md-4 text-dark" style="font-family: Nina;font-size:medium">
+                                                            Exit
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@*<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>*@
+<script>
+    debugger;
+
+    var clients = [];
+    var Manpower = [];
+    var myIndex;
+    var preditmode = 0;
+    var maineditmode = 0;
+    //#region Product
+    function addClient() {
+        debugger;
+        if (document.getElementById("drpprd").value != 0 && document.getElementById("client-name").value != 0 ) {
+            clients = [];
+            if ($("#form-list-client-body TR").innerHTML != "") {
+                $("#form-list-client-body TR").each(function () {
+                    var row = $(this);
+                    var Prd = {};
+                    Prd.dropprod = row.find("TD").eq(1).css("text-align", "left").html();;
+                    Prd.name = row.find("TD").eq(2).html();
+                    Prd.email = row.find("TD").eq(3).html();
+                    Prd.pno = row.find("TD").eq(4).html();
+                    Prd.Sno = row.find("TD").eq(5).html();
+                    clients.push(Prd);
+                })
+            }
+            var newClient = {
+                dropprod: document.getElementById("drpprd").options[document.getElementById("drpprd").selectedIndex].text,
+                name: document.getElementById("client-name").value,
+                email: document.getElementById("client-email").value,
+                pno: document.getElementById("drpprd").options[document.getElementById("drpprd").selectedIndex].value,
+                Sno: preditmode
+
+            }
+            clients.push(newClient)
+            displayClients()
+        }
+    }
+
+    //$(function () {
+    //    debugger;
+    //    if ($("#form-list-client-body TR").innerHTML != "") {
+    //        $("#form-list-client-body TR").each(function () {
+    //            var row = $(this);
+    //            var Prd = {};
+    //            Prd.dropprod = row.find("TD").eq(0).html();
+    //            Prd.name = row.find("TD").eq(1).html();
+    //            Prd.email = row.find("TD").eq(2).html();
+    //            Prd.pno = row.find("TD").eq(3).html();
+    //            Prd.name = row.find("TD").eq(4).html();
+    //            clients.push(Prd);
+    //        })
+    //    }
+    //})
+
+
+    function displayClients() {
+        debugger;
+        //document.getElementById("form-list-client-body").innerHTML = ""
+        //if (document.getElementById("client-name").value != 0) {
+            document.getElementById("form-list-client-body").innerHTML = ""
+        var sno = 1;
+            for (i = 0; i < clients.length; i++) {
+                var myTr = document.createElement("tr")
+                var b = 0;
+                var mytd = document.createElement("td")
+                mytd.innerHTML = sno
+                myTr.appendChild(mytd)
+                for (a in clients[i]) {
+
+                    if (b > 2) {
+                        var mytd = document.createElement("td")
+                        mytd.setAttribute('style', 'display:none;');
+                        mytd.innerHTML = clients[i][a]
+                        myTr.appendChild(mytd)
+                    }
+                    else {
+                        var mytd = document.createElement("td")
+                        mytd.innerHTML = clients[i][a]
+                        myTr.appendChild(mytd)
+                    }
+                    b++;
+                }
+                //<i class="fa fa-trash"></i>
+                //                                                                <i class="fa fa-edit"></i>
+
+                var actionTd = document.createElement("td")
+                //var editBtn = '<button class="btn btn-primary text-white" onclick="editClient('+i+')" id="btnSave"> <i class="fa fa-edit"></i></button>';
+                var editBtn = document.createElement("button")
+                editBtn.innerHTML = "Edit"
+                editBtn.setAttribute("class", "btn btn-sm btn-primary")
+                editBtn.setAttribute("style", "height: 27px;")
+                editBtn.setAttribute("onclick", "editClient(" + i + ")")
+
+                var deletebtn = document.createElement("button")
+                deletebtn.innerHTML = "Delete"
+                deletebtn.setAttribute("class", "btn btn-sm btn-danger itmdel")
+                deletebtn.setAttribute("style", "height: 27px;")
+                deletebtn.setAttribute("onclick", "deleteClient(" + i + ")")
+
+                actionTd.appendChild(editBtn)
+                actionTd.appendChild(deletebtn)
+                myTr.appendChild(actionTd)
+                document.getElementById("form-list-client-body").appendChild(myTr)
+                sno++;
+            }
+
+
+            document.getElementById("drpprd").selectedIndex = 0;
+            //document.getElementById("drpprd").value = "";
+            document.getElementById("client-name").value = "";
+            document.getElementById("client-email").value = "";
+        //}
+        //else {
+        //window.location.reload();
+        $("#drpprd").focus();
+
+
+        //}
+    }
+    //Editing Client
+    function editClient(i) {
+        debugger;
+        console.log(clients[i])
+        clients = [];
+        if ($("#form-list-client-body TR").innerHTML != "") {
+            $("#form-list-client-body TR").each(function () {
+                var row = $(this);
+                var Prd = {};
+                Prd.dropprod = row.find("TD").eq(1).html();
+                Prd.name = row.find("TD").eq(2).html();
+                Prd.email = row.find("TD").eq(3).html();
+                Prd.pno = row.find("TD").eq(4).html();
+                Prd.Sno = row.find("TD").eq(5).html();
+                clients.push(Prd);
+            })
+        }
+        //var trLng = $(this).closest('tr').length;
+        //if (trLng == 5)
+        //{
+        //    editmode = true;
+        //    var updatebtn = document.getElementById("btn-save1");
+        //    updatebtn.setAttribute("onclick", "updClientPr(" + trLng.find('td:eq(4)').innerHTML + ")");
+        //    document.getElementById("drpprd").value = trLng.find('td:eq(3)').innerHTML;
+        //    document.getElementById("client-name").value = trLng.find('td:eq(1)').innerHTML;
+        //    document.getElementById("client-email").value = trLng.find('td:eq(2)').innerHTML;
+        //}
+        myIndex = i;
+        var updatebtn = document.getElementById("btn-save1");
+        //updatebtn.innerHTML = "Update";
+        //updatebtn.setAttribute("class", "btn btn-sm btn-success")
+        updatebtn.setAttribute("onclick", "updClientPr(" + myIndex +")");
+        //document.getElementById("saveupdate").innerHTML = "";
+        //document.getElementById("saveupdate").appendChild(updatebtn);
+       // $("drpprd").val(clients[i].pno);
+        $("#drpprd").val(clients[i].pno).trigger('change');
+
+       // document.getElementById("drpprd").value = clients[i].pno;
+       // document.getElementById("txtpno").value = clients[i].pno;
+        //document.getElementById("drpprd").value = clients[i].dropprod;
+        document.getElementById("client-name").value = clients[i].name;
+        document.getElementById("client-email").value = clients[i].email;
+        preditmode = clients[i].Sno;
+    }
+
+    //Updating Client
+    function updClientPr(i) {
+        if (document.getElementById("drpprd").value != 0 && document.getElementById("client-name").value != 0) {
+            var updatedClient = {
+                //pno: document.getElementById("txtpno").value,
+                dropprod: document.getElementById("drpprd").options[document.getElementById("drpprd").selectedIndex].text,
+                name: document.getElementById("client-name").value,
+                email: document.getElementById("client-email").value,
+                pno: document.getElementById("drpprd").options[document.getElementById("drpprd").selectedIndex].value,
+                Sno: preditmode
+            }
+            editmode = 0;
+            clients[myIndex] = updatedClient;
+            //var crbtn = document.createElement("button")
+            //crbtn.innerHTML = "Save";
+            var crbtn = document.getElementById("btn-save1");
+            crbtn.setAttribute("onclick", "addClient()")
+            crbtn.setAttribute("class", "btn btn-sm btn-success")
+            //document.getElementById("saveupdate").innerHTML = ""
+
+            //document.getElementById("saveupdate").appendChild(crbtn);
+
+            displayClients()
+        }
+    }
+
+    //deleting client
+    function deleteClient(i) {
+        debugger;
+        clients = [];
+        if ($("#form-list-client-body TR").innerHTML != "") {
+            $("#form-list-client-body TR").each(function () {
+                var row = $(this);
+                var Prd = {};
+                Prd.dropprod = row.find("TD").eq(1).html();
+                Prd.name = row.find("TD").eq(2).html();
+                Prd.email = row.find("TD").eq(3).html();
+                Prd.pno = row.find("TD").eq(4).html();
+                Prd.Sno = row.find("TD").eq(5).html();
+                clients.push(Prd);
+            })
+        }
+        var sno = $("#form-list-client-body").find("TR").eq(i).find('td').eq(5).html();
+        if (sno != 0) {
+            var delModel = {
+                jobvou: $("#jobid").val(),
+                sno: sno,
+                type: 1
+            }
+            $.ajax({
+                url: '@Url.Action("Delete1", "JobMaster")',
+                type: 'POST',
+                dataType: 'json',
+                data: delModel,
+                success: function (data) {
+                    if (data.msg == "success") {
+                        debugger;
+                        //clients.splice(i, 1)
+                        //displayClients()
+                        window.location.reload();
+                    }
+                }
+            });
+        }
+        else {
+            clients.splice(i, 1)
+            displayClients()
+        }
+
+    }  //);
+    //#endregion
+
+
+    //#region Main Power
+    function addMainPowerDetails() {
+        if (document.getElementById("dropCatg").value != 0 && document.getElementById("txtmainpwrqty").value != 0) {
+            Manpower = [];
+            if ($("#form-list-manpower-body TR").innerHTML != "") {
+                $("#form-list-manpower-body TR").each(function () {
+                    var row = $(this);
+                    var Main = {};
+                    Main.dropprod = row.find("TD").eq(1).css("text-align", "left").html();;
+                    Main.qty = row.find("TD").eq(2).html();
+                    Main.remark = row.find("TD").eq(3).html();
+                    Main.pno = row.find("TD").eq(4).html();
+                    Main.sno = row.find("TD").eq(5).html();
+                    Manpower.push(Main);
+                })
+            }
+            var newClient = {
+                // pno: document.getElementById("txtmno").value,
+                dropprod: document.getElementById("dropCatg").options[document.getElementById("dropCatg").selectedIndex].text,
+                qty: document.getElementById("txtmainpwrqty").value,
+                remark: document.getElementById("txtmainpwrremark").value,
+                pno: document.getElementById("dropCatg").options[document.getElementById("dropCatg").selectedIndex].value,
+                sno: maineditmode
+            }
+            Manpower.push(newClient)
+            displayMainPowerDetails()
+        }
+        else {
+            $("#dropCatg").focus();
+        }
+    }
+    function displayMainPowerDetails() {
+        //if (document.getElementById("txtmainpwrqty").value != 0) {
+        document.getElementById("form-list-manpower-body").innerHTML = ""
+
+        var sno = 1;
+            for (i = 0; i < Manpower.length; i++) {
+                var myTr = document.createElement("tr")
+                var b = 0;
+                var mytd = document.createElement("td")
+                mytd.innerHTML = sno;
+                myTr.appendChild(mytd)
+                for (a in Manpower[i]) {
+
+                    if (b > 2) {
+                        var mytd = document.createElement("td")
+                        mytd.setAttribute("style", "display:none;")
+                        mytd.innerHTML = Manpower[i][a]
+                        myTr.appendChild(mytd)
+                    }
+                    else {
+                        var mytd = document.createElement("td")
+                        mytd.innerHTML = Manpower[i][a]
+                        myTr.appendChild(mytd)
+                    }
+                    b++;
+                }
+                var actionTd = document.createElement("td")
+                var editBtn = document.createElement("button")
+                editBtn.innerHTML = "Edit"
+                editBtn.setAttribute("class", "btn btn-sm btn-primary")
+                editBtn.setAttribute("style", "height: 27px;")
+                editBtn.setAttribute("onclick", "editClient1(" + i + ")")
+
+                var deletebtn = document.createElement("button")
+                deletebtn.innerHTML = "Delete"
+                deletebtn.setAttribute("class", "btn btn-sm btn-danger")
+                deletebtn.setAttribute("style", "height: 27px;")
+                deletebtn.setAttribute("onclick", "deleteClient1(" + i + ")")
+
+                actionTd.appendChild(editBtn)
+                actionTd.appendChild(deletebtn)
+                myTr.appendChild(actionTd)
+                document.getElementById("form-list-manpower-body").appendChild(myTr)
+                sno++;
+            }
+            document.getElementById("dropCatg").selectedIndex = 0;
+            document.getElementById("dropCatg").value = "";
+            document.getElementById("txtmainpwrqty").value = "";
+            document.getElementById("txtmainpwrremark").value = "";
+        //}
+        //else {
+            $("#txtmainpwrqty").focus();
+        //}
+    }
+    //Editing manpower
+    function editClient1(i) {
+        debugger;
+        console.log(Manpower[i])
+        Manpower = [];
+        if ($("#form-list-manpower-body TR").innerHTML != "") {
+            $("#form-list-manpower-body TR").each(function () {
+                var row = $(this);
+                var Main = {};
+                Main.dropprod = row.find("TD").eq(1).html();
+                Main.qty = row.find("TD").eq(2).html();
+                Main.remark = row.find("TD").eq(3).html();
+                Main.pno = row.find("TD").eq(4).html();
+                Main.sno = row.find("TD").eq(5).html();
+                Manpower.push(Main);
+            })
+        }
+        myIndex = i;
+        //var updatebtn = document.createElement("button")
+        var updatebtn = document.getElementById("btn-save2");
+        //updatebtn.innerHTML = "Update";
+        //updatebtn.setAttribute("class", "btn btn-sm btn-success")
+        updatebtn.setAttribute("onclick", "updClientMPr(" + myIndex + ")");
+        //document.getElementById("saveupdate").innerHTML = "";
+        //document.getElementById("saveupdate").appendChild(updatebtn);
+        $("#dropCatg").val(Manpower[i].pno).trigger('change');
+
+       // document.getElementById("dropCatg").value = Manpower[i].pno;
+        //document.getElementById("dropCatg").value = Manpower[i].dropprod;
+        document.getElementById("txtmainpwrqty").value = Manpower[i].qty
+        document.getElementById("txtmainpwrremark").value = Manpower[i].remark
+        maineditmode = Manpower[i].sno
+    }
+
+    //#endregion
+    //deleting manpower
+    function deleteClient1(i) {
+        debugger;
+        Manpower = [];
+        if ($("#form-list-manpower-body TR").innerHTML != "") {
+            $("#form-list-manpower-body TR").each(function () {
+                var row = $(this);
+                var Main = {};
+                Main.dropprod = row.find("TD").eq(1).html();
+                Main.qty = row.find("TD").eq(2).html();
+                Main.remark = row.find("TD").eq(3).html();
+                Main.pno = row.find("TD").eq(4).html();
+                Main.sno = row.find("TD").eq(5).html();
+                Manpower.push(Main);
+            })
+        }
+        var sno = $("#form-list-manpower-body").find("TR").eq(i).find('td').eq(5).html();
+        if (sno != 0) {
+            var delModel = {
+                jobvou: $("#jobid").val(),
+                sno: sno,
+                type: 2
+            }
+            $.ajax({
+                url: '@Url.Action("Delete1", "JobMaster")',
+                type: 'POST',
+                dataType: 'json',
+                data: delModel,
+                success: function (data) {
+                    if (data.msg == "success") {
+                        //Manpower.splice(i, 1)
+                        //displayMainPowerDetails()
+                        window.location.reload();
+                    }
+                }
+            })
+        }
+        else {
+            Manpower.splice(i, 1)
+            displayMainPowerDetails()
+        }
+    }
+    //Updating manpower
+    function updClientMPr(i) {
+        if (document.getElementById("dropCatg").value != 0 && document.getElementById("txtmainpwrqty").value != 0) {
+            var updatedMClient = {
+                //pno: document.getElementById("txtmno").value,
+                dropprod: document.getElementById("dropCatg").options[document.getElementById("dropCatg").selectedIndex].text,
+                qty: document.getElementById("txtmainpwrqty").value,
+                remark: document.getElementById("txtmainpwrremark").value,
+                pno: document.getElementById("dropCatg").options[document.getElementById("dropCatg").selectedIndex].value,
+                sno: maineditmode
+            }
+            Manpower[myIndex] = updatedMClient;
+            //var crbtn = document.createElement("button")
+            //crbtn.innerHTML = "Save";
+            var crbtn = document.getElementById("btn-save2");
+            crbtn.setAttribute("onclick", "addMainPowerDetails()")
+            crbtn.setAttribute("class", "btn btn-sm btn-success")
+            //document.getElementById("saveupdate").innerHTML = ""
+
+            //document.getElementById("saveupdate").appendChild(crbtn);
+
+            displayMainPowerDetails()
+        }
+    }
+
+    //header part
+    $("#btnSave").on("click", function () {
+        debugger;
+
+        var execute = true;
+        if ($("#txtJobName").val() == "" || $("#txtShortName").val() == "") {
+            execute = false;
+        }
+
+        if (execute) {
+            var PrJob = [];
+            $("#form-list-client-body TR").each(function () {
+                var row = $(this);
+                var customer = {};
+                customer.SNo = row.find("TD").eq(5).html();
+                customer.Qty = row.find("TD").eq(2).html();
+                customer.PrVou = row.find("TD").eq(4).html();
+                customer.Rmk = row.find("TD").eq(3).html();
+                //customer.premarks1 = row.find("TD").eq(3).html();
+
+                PrJob.push(customer);
+            });
+
+            var MainJob = [];
+            $("#form-list-manpower-body TR").each(function () {
+                var row = $(this);
+                var customer = {};
+                customer.SNo = row.find("TD").eq(5).html();
+                customer.Qty = row.find("TD").eq(2).html();
+                customer.CatVou = row.find("TD").eq(4).html();
+                customer.Rmk = row.find("TD").eq(3).html();
+                //customer.mremarks2 = row.find("TD").eq(3).html();
+
+                MainJob.push(customer);
+            });
+
+            var model = {
+                jobid: $("#jobid").val(),
+                jobworkname: $("#txtJobName").val(),
+                shortname: $("#txtShortName").val(),
+                remarks: $("#txtRemarks").val(),
+                rate: $("#txtRate").val(),
+                NoEntVnDate: $("#NoEntVnDate").val(),
+                lstProduct1: PrJob,
+                lstMainPower: MainJob
+            }
+
+            $.ajax({
+                url: '@Url.Action("Index", "JobMaster")',
+                dataType: 'json',
+                data: model,           //'{ _customer : ' + JSON.stringify(model) + '}',
+                type: 'POST',
+                //contentType: 'application/json;',
+                success: function (data) {
+                    debugger;
+                    //alert(data.msg);
+                    //var job = $("#jobid").val();
+                    if (data.msg == "Success") {
+                        //document.getElementById("jobid").value = "0";
+                        window.location.reload();
+                    }
+                    if (data.msg == "failed") {
+                        debugger;
+                        //'Duplicate Job Details'
+                        showErrorMessage('Duplicate Job Details');
+
+                       // window.location.reload();
+                    }
+                    @*else {
+                        window.location.reload();
+
+                         @Html.ActionLink("Index", "JobMaster", new { id = job });
+                    }*@
+
+
+                },
+                error: function (data) {
+                    alert('error');
+                }
+            });
+        }
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        debugger;
+        var ctyName = '@Html.Raw(Model.jobworkname)';
+        if (ctyName != null && ctyName != '') {
+            GoToAddTab()
+        }
+        else {
+            GoToListTab()
+        }
+        var status = '@Html.Raw(ViewBag.FocusType)';
+        if (status != null && status != '') {
+            if (status == "0") {
+                $("#txtCtyName").focus();
+            }
+            if (status == "1") {
+                $("#txtCtyName").focus();
+            }
+        }
+        else {
+            $("#txtCtyName").focus();
+        }
+
+
+    });
+    if ($("#client-name").val() == 0) {
+        $("#client-name").val("");
+    }
+    if ($("#txtmainpwrqty").val() == 0) {
+        $("#txtmainpwrqty").val("");
+    }
+    function GoToAddTab() {
+        $('#custom-tabs-three-list-tab').removeClass('active');
+        $('#custom-tabs-three-add-tab').addClass('active');
+
+        $('#custom-tabs-three-list').removeClass('active');
+        $('#custom-tabs-three-add').addClass('active');
+        $('#custom-tabs-three-add').addClass('show');
+        document.getElementById('txtJobName').focus();
+    }
+    function GoToListTab() {
+        $('#custom-tabs-three-list-tab').addClass('active');
+        $('#custom-tabs-three-add-tab').removeClass('active');
+
+        $('#custom-tabs-three-list').addClass('active');
+        $('#custom-tabs-three-list').addClass('show');
+        $('#custom-tabs-three-add').removeClass('active');
+        $('#custom-tabs-three-add').removeClass('show');
+        $('#txtReportSearchDataTable').focus();
+    }
+
+    function isNumber(evt) {
+        debugger;
+        evt = (evt) ? evt : window.event;
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    }
+</script>
+<script>
+    var isRecentCalledEsc = false;
+    (function (code) {
+        code(window.jQuery, document, window);
+    }(function ($, document, window) {
+        $(function () {
+            $(window)
+                .initKeyboard({ debug: 1 })
+                .on('F2', function () {
+                    GoToAddTab()
+                }).on('F10', function () {
+                    $("#btnSave").click();
+                })
+                .on('Alt+L', function () {
+                    GoToListTab();
+                })
+                .on('Alt+C', function () {
+                    if (confirm("Do you want to exit without save?")) {
+                        location.href = '/City/Index'
+                    }
+                    else {
+                        $('#txtCtyName').focus();
+                    }
+
+                }).on('Escape', function () {
+                    if (!isRecentCalledEsc) {
+                        isRecentCalledEsc = true;
+                        if (confirm("Do you want to exit without save?")) {
+                            location.href = '/City/Index'
+                        }
+                        //else {
+                        //    $('#txtCtyName').focus();
+                        //}
+                        setTimeout(function () {
+                            isRecentCalledEsc = false;
+                        }, 500)
+                    }
+
+                })
+        });
+    }));
+</script>
+
+<script>
+
+    var isRecentCalled = false;
+
+
+    $(function () {
+
+        loadData();
+        var pageIndex = '';
+        var pageSize = '';
+        var totalRecord = '';
+        var isDelete = '@Html.Raw(userRight.IsDelete)';
+        var isEdit = '@Html.Raw(userRight.IsEdit)';
+    })
+
+    var timer = null;
+    $('#txtReportSearchDataTable').keyup(function (e) {
+        if (e.keyCode >= 112 && e.keyCode <= 123) {
+            e.preventDefault();
+            return false;
+        }
+        else {
+            clearTimeout(timer);
+
+            timer = setTimeout(loadData, 1000)
+        }
+
+    });
+
+    function loadData(pageIndex, columnName, sortBy) {
+            isRecentCalled = true;
+            if (pageIndex == undefined || pageIndex == "" || pageIndex == "0" || pageIndex == 0) {
+                pageIndex = 1;
+            }
+            var layoutId = $('.drpReportLayout').val();
+
+            if (!layoutId) {
+                $('.drpReportLayout').val($('.drpReportLayout').children('option').eq(1).prop('value'));
+                //SetSelect2()
+
+            }
+            if (!columnName) {
+                columnName = '';
+            }
+            if (!sortBy) {
+                sortBy = '';
+            }
+            $('.dataTable').html();
+            $.ajax({
+                url: '/JobMaster/GetReportView',
+                type: 'GET',
+                data: { pageIndex: pageIndex, pageSize: $('#drpReportPageNoDatable').val(), searchValue: $('#txtReportSearchDataTable').val(), gridMstId: $('.drpReportLayout').val(), columnName: columnName, sortby: sortBy },
+                dataType: 'HTML',
+                traditional: true, // add this
+                success: function (data) {
+                    $('.dataTable').html(data);
+                    setTimeout(function () {
+                        isRecentCalled = false;
+                    }, 2000)
+                },
+                failure: function (response) {
+                    errorMessage(response);
+                }
+            });
+    }
+
+    $('#btnExportToExcel').click(function () {
+        window.location.href = "/City/ExportToExcelPDF?gridMstId=" + $('.drpReportLayout').val() + "&searchValue=" + $('#txtReportSearchDataTable').val() + "&type=1";
+    })
+    $('#btnExportToPDF').click(function () {
+        window.location.href = "/City/ExportToExcelPDF?gridMstId=" + $('.drpReportLayout').val() + "&searchValue=" + $('#txtReportSearchDataTable').val() + "&type=2";
+    })
+</script>
+<script>
+    $(function () {
+        var statename = $('#CtyStaVou').children('option:selected').text()
+        if (statename)
+            $('input[name="State"]').val(statename);
+    })
+
+    $('#CtyStaVou').change(function () {
+        var statename = $('#CtyStaVou').children('option:selected').text()
+        if (statename)
+            $('input[name="State"]').val(statename);
+    })
+</script>
+
+<script>
+    $(document).ready(function () {
+        $(".CtyStaVou").select2({
+            placeholder: "---Select---",
+            ajax: {
+                url: '/City//City/GetState-List',
+                data: function (params) {
+                    return {
+                        q: params.term// search term
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.items
+                    }
+                },
+
+            }
+        });
+
+        //$(".CtyStaVou").select2({
+        //    placeholder: "---Select---",
+        //});
+        
+        $('.ProdType, .drpcatgType').select2({
+            placeholder: "---Select---",
+        });
+        //$('#drpprd, #dropCatg').select2({
+        //    placeholder: "---Select---",
+        //});
+    });
+
+</script>
+
+
+
+
+
+
+

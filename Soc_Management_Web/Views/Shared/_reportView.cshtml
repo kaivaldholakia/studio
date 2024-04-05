@@ -1,0 +1,334 @@
+﻿@model PIOAccount.Models.GetReportDataModel;
+@{
+    var userRight = ViewBag.userRight as PIOAccount.Models.UserFormRightModel;
+}
+
+@if (Model != null)
+{
+    <div class="col-md-12 table-responsive gridViewTableResponsive">
+        <table class="table table-bordered overflow-auto dynamicDataTable table-head-fixed">
+            <thead>
+                <tr>
+                    @if (Model != null && Model.ColumnsData != null)
+                    {
+                        <th width="2%" style="font-family:Nina; font-size:medium">#</th>
+                        @if (Model.ReportType == PIOAccount.Classes.DbConnection.GridTypeView)
+                        {
+                            string width = "4%;";
+                            <th width="@width" style="font-family: Nina; font-size: medium">Action</th>
+                        }
+                        foreach (var item in Model.ColumnsData)
+                        {
+                            string hideClass = string.Empty;
+                            if (item.GrdAHideYN == "1")
+                            {
+                                hideClass = "d-none";
+                            }
+                            string canGrow = item.GrdCanGrow.ToLower() == "false" ? "white-space: nowrap" : "white-space: normal";
+                            string[] splitted = new string[0];
+                            if (item.GrdATotYN == "1")
+                            {
+                                splitted = item.GrdANewColNm.Split("@@@");
+                                if (splitted != null && splitted.Length == 2)
+                                {
+                                    if (item.GrdAAlign == "2")
+                                    {
+                                        <th class="@hideClass text-right" width="@item.GrdAWidth%" style="@canGrow"><a style="cursor:pointer;font-family:NIna;font-size:medium" onclick="SortingBy('@item.DbFldName', '@item.OrderBy')">@splitted[0] <br />@splitted[1] <i class="text-primary"></i><i class=" text-primary"></i></a></th>
+                                    }
+                                    else
+                                    {
+                                        <th class="@hideClass" width="@item.GrdAWidth%" style="@canGrow"><a style="cursor:pointer;font-family:Nina;font-size:medium" onclick="SortingBy('@item.DbFldName', '@item.OrderBy')">@splitted[0] <br />@splitted[1] <i class="text-primary"></i><i class=" text-primary"></i></a></th>
+                                    }
+                                }
+                                else
+                                {
+                                    if (item.GrdAAlign == "2")
+                                    {
+                                        <th class="@hideClass text-right" width="@item.GrdAWidth%" style="@canGrow"><a style="cursor:pointer;font-family:Nina;font-size:medium" onclick="SortingBy('@item.DbFldName', '@item.OrderBy')">@item.GrdANewColNm <i class="text-primary"></i><i class=" text-primary"></i></a></th>
+                                    }
+                                    else
+                                    {
+                                        <th class="@hideClass" width="@item.GrdAWidth%" style="@canGrow"><a style="cursor:pointer;font-family:Nina;font-size:medium" onclick="SortingBy('@item.DbFldName', '@item.OrderBy')">@item.GrdANewColNm <i class="text-primary"></i><i class=" text-primary"></i></a></th>
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (item.GrdAAlign == "2")
+                                {
+                                    <th class="@hideClass text-right" width="@item.GrdAWidth%" style="@canGrow"><a style="cursor:pointer;text-align:right" onclick="SortingBy('@item.DbFldName', '@item.OrderBy')">@Html.Raw(item.GrdANewColNm.Replace(";", "<br>")) <i class="text-primary"></i><i class=" text-primary"></i></a></th>
+                                }
+                                else
+                                {
+                                    <th class="@hideClass" width="@item.GrdAWidth%" style="@canGrow"><a style="cursor:pointer;font-family:Nina;font-size:medium" onclick="SortingBy('@item.DbFldName', '@item.OrderBy')">@Html.Raw(item.GrdANewColNm.Replace(";", "<br>")) <i class="text-primary"></i><i class=" text-primary"></i></a></th>
+                                }
+
+                            }
+
+                        }
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.RowsData != null)
+                {
+                    int rowCount = ((Model.pageIndex * Model.pageSize) - Model.pageSize) + 1;
+
+                    for (int x = 0; x < Model.RowsData.Count; x++)
+                    {
+                        var item = Model.RowsData[x] as List<string>;
+                        <tr>
+                            @if (item.ToList().Where(x => x == "Total : ").Count() <= 0)
+                            {
+                                <td width="2%">@rowCount</td>
+                                @if (Model.ReportType == PIOAccount.Classes.DbConnection.GridTypeView)
+                                {
+                                    string width = "4%;";
+                                    <td width="@width">
+                                        @if (userRight != null && userRight.IsEdit)
+                                        {
+                                            <a href="/@Model.ControllerName/Index/@item[0]"> <i class="fa fa-pen text-primary"></i></a>
+
+                                        }
+                                        @if (userRight != null & userRight.IsDelete)
+                                        {
+                                            <a class="pl-2" onclick="DeleteConfirmation('@Model.ControllerName','@item[0]')"> <i class="fa fa-trash text-danger"></i></a>
+
+                                        }
+                                    </td>
+                                }
+                            }
+                            else
+                            {
+                                @if (Model.ReportType == PIOAccount.Classes.DbConnection.GridTypeView)
+                                {
+                                    <td>
+                                    </td>
+                                    <td></td>
+                                }
+                                else
+                                {
+                                    <td>
+                                    </td>
+                                }
+
+                            }
+
+                            @{
+                                int count = 0;
+                            }
+                            @for (int y = 0; y < item.Count; y++)
+                            {
+                                if (Model.ReportType == PIOAccount.Classes.DbConnection.GridTypeView)
+                                {
+                                    if (count > 0)
+                                    {
+                                        string hideClass = string.Empty;
+                                        if (Model.ColumnsData[y - 1].GrdAHideYN == "1")
+                                        {
+                                            hideClass = "d-none";
+                                        }
+                                        string canGrow = Model.ColumnsData[y - 1].GrdCanGrow.ToLower() == "false" ? "white-space: nowrap" : "white-space: normal";
+
+                                        string alignment = string.Empty;
+                                        bool isDefault = true;
+                                        if (Model.ColumnsData[y - 1].GrdAAlign == "1")
+                                        {
+                                            alignment = "text-left";
+                                        }
+                                        else if (Model.ColumnsData[y - 1].GrdAAlign == "2")
+                                        {
+                                            alignment = "text-right";
+                                        }
+                                        else if (Model.ColumnsData[y - 1].GrdAAlign == "3")
+                                        {
+                                            alignment = "text-center";
+                                        }
+
+
+                                        if (Model.ColumnsData[y - 1].GrdALinkYN == "1")
+                                        {
+                                            <td width="@Model.ColumnsData[y - 1].GrdAWidth%" class="@alignment @hideClass" style="font-family: Nina; font-size: medium; @canGrow"><a href="@item[y]" target="_blank">@item[y]</a></td>
+                                            isDefault = false;
+                                        }
+                                        @*if (Convert.ToInt32(Model.ColumnsData[y - 1].GrdADecUpTo) > 0 && Model.ColumnsData[y - 1].GrdADataType == "2")
+                                            {
+                                                <td width="@Model.ColumnsData[y - 1].GrdAWidth%" class="@alignment @hideClass"> @PIOAccount.Classes.DbConnection.DynamicDecimalPoints(item[y], Convert.ToInt32(Model.ColumnsData[y - 1].GrdADecUpTo))</td>
+                                                isDefault = false;
+                                            }*@
+                                        if (Model.ColumnsData[y - 1].GrdADataType == "2")
+                                        {
+                                            <td width="@Model.ColumnsData[y - 1].GrdAWidth%" class="@alignment @hideClass" style="font-family: Nina; font-size: medium; @canGrow"> @PIOAccount.Classes.DbConnection.DynamicDecimalPoints(item[y], Convert.ToInt32(Model.ColumnsData[y - 1].GrdADecUpTo))</td>
+                                            isDefault = false;
+                                        }
+                                        if (isDefault)
+                                        {
+                                            <td width="@Model.ColumnsData[y - 1].GrdAWidth%" class="@alignment @hideClass" style="font-family: Nina; font-size: medium; @canGrow">@item[y]</td>
+                                        }
+
+                                    }
+                                    count++;
+                                }
+                                else
+                                {
+
+                                    string hideClass = string.Empty;
+                                    if (Model.ColumnsData[y].GrdAHideYN == "1")
+                                    {
+                                        hideClass = "d-none";
+                                    }
+                                    string canGrow = Model.ColumnsData[y].GrdCanGrow.ToLower() == "false" ? "white-space: nowrap" : "white-space: normal";
+
+                                    string alignment = string.Empty;
+                                    bool isDefault = true;
+                                    if (Model.ColumnsData[y].GrdAAlign == "1")
+                                    {
+                                        alignment = "text-left";
+                                    }
+                                    else if (Model.ColumnsData[y].GrdAAlign == "2")
+                                    {
+                                        alignment = "text-right";
+                                    }
+                                    else if (Model.ColumnsData[y].GrdAAlign == "3")
+                                    {
+                                        alignment = "text-center";
+                                    }
+
+
+                                    if (Model.ColumnsData[y].GrdALinkYN == "1")
+                                    {
+                                        <td width="@Model.ColumnsData[y].GrdAWidth%" class="@alignment @hideClass" style="font-family: Nina; font-size: medium; @canGrow"><a href="@item[y]" target="_blank">@item[y]</a></td>
+                                        isDefault = false;
+                                    }
+                                    if (Model.ColumnsData[y].GrdADataType == "2")
+                                    {
+                                        <td width="@Model.ColumnsData[y].GrdAWidth%" class="@alignment @hideClass" style="font-family: Nina; font-size: medium; @canGrow"> @PIOAccount.Classes.DbConnection.DynamicDecimalPoints(item[y], Convert.ToInt32(Model.ColumnsData[y].GrdADecUpTo))</td>
+                                        isDefault = false;
+                                    }
+                                    if (isDefault)
+                                    {
+                                        <td width="@Model.ColumnsData[y].GrdAWidth%" class="@alignment @hideClass" style="font-family: Nina; font-size: medium; @canGrow">@item[y]</td>
+                                    }
+
+                                }
+
+
+                            }
+
+                        </tr>
+                        rowCount++;
+                    }
+                }
+            </tbody>
+        </table>
+
+    </div>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var FocusTemp = '@ViewBag.FocusType';
+            if (FocusTemp == '1') {
+                location.href = '/Department/Index';
+            }
+        $(".pager").ASPSnippets_Pager({
+            PageIndex: parseInt('@Model.pageIndex'),
+            PageSize: parseInt('@Model.pageSize'),
+            RecordCount: parseInt('@Model.totalRecord'),
+        });
+            $('.pager').css({ "margin": "25px" });
+            $(".pager .page").css({ "font-size": "13px", "padding": "4px 8px 4px 8px", "background-color": "white", "margin-right": "20px", "color": "black", "border": "1px solid", "border-color": "linear-gradient(180deg,rgba(12,154,255,1)0%, rgba(94,210,251,1)100%)", "border-radius": "6px" });
+            $(".pager span").css({ "font-size": "13px", "padding": "4px 8px 4px 8px", "cursor": "pointer", "background-color": "#006DF0", "background": "linear-gradient(180deg,rgba(12,154,255,1)0%, rgba(94,210,251,1)100%)", "margin-right": "20px", "color": "#fff", "border-radius": "6px", "border": "1px solid black" })
+            $(".pager .page.page-arrow").css({ "padding": "2px 8px" });
+
+        if ($('.pager').children('a.page-arrow').length == 2) {
+            var pageNo = $(".pager span").html();
+            if (pageNo == 1) {
+                $('.pager').children('a.page-arrow').eq(0).children('i').remove();
+                $('.pager').children('a.page-arrow').eq(0).html("Next")
+                $('.pager').children('a.page-arrow').css({ 'background': 'white', 'color': 'black', 'font-size': '15px' });
+                $('.pager').children('a.page-arrow').eq(1).remove();
+                //$('.pager').children('a.page-arrow').eq(1).children('i').remove();
+                //$('.pager').children('a.page-arrow').eq(1).html("Last");
+            }
+            else {
+                $('.pager').children('a.page-arrow').eq(1).children('i').remove();
+                $('.pager').children('a.page-arrow').html("Previous")
+                $('.pager').children('a.page-arrow').css({ 'background': 'white', 'color': 'black', 'font-size': '15px' });
+                $('.pager').children('a.page-arrow').eq(0).remove();
+                //$('.pager').children('a.page-arrow').eq(0).children('i').remove();
+                //$('.pager').children('a.page-arrow').eq(0).html("First");
+            }
+        }
+        else {
+            $('.pager').children('a.page-arrow').eq(1).children('i').remove();
+            $('.pager').children('a.page-arrow').eq(1).html("Previous")
+            $('.pager').children('a.page-arrow').css({ 'background': 'white', 'color': 'black', 'font-size': '15px' });
+            $('.pager').children('a.page-arrow').eq(2).children('i').remove();
+            $('.pager').children('a.page-arrow').eq(2).html("Next");
+            $('.pager').children('a.page-arrow').css({ 'background': 'white', 'color': 'black', 'font-size': '15px' });
+            $('.pager').children('a.page-arrow').eq(3).remove();
+            //$('.pager').children('a.page-arrow').eq(3).html("Last")
+            //$('.pager').children('a.page-arrow').eq(0).html("First")
+            $('.pager').children('a.page-arrow').eq(0).remove();
+        }
+
+            $('.pager').children('a').each(function () {
+            if (!$(this).hasClass('page-arrow')) {
+                $(this).attr('onclick', 'loadData(' + $(this).attr('page') + ')');
+            }
+            else {
+                if ($(this).html() == "Next") {
+                    $(this).attr('onclick', 'NextPage()');
+                }
+                if ($(this).html() == "First") {
+                    $(this).attr('onclick', 'FirstPage()');
+                }
+                if ($(this).html() == "Last") {
+                    $(this).attr('onclick', 'LastPage()');
+                }
+                if ($(this).html() == "Previous") {
+                    $(this).attr('onclick', 'PreviousPage()');
+                }
+            }
+        })
+        $('#txtSearchDataTable').focus();
+        $('body,html').animate({
+            scrollTop: 0
+        }, 600);
+
+    });
+    function NextPage() {
+        var index = $('.pager').children('span').html();
+        loadData(parseInt(index) + 1);
+    }
+
+
+    function PreviousPage() {
+        var index = $('.pager').children('span').html();
+        loadData(parseInt(index) - 1);
+    }
+
+    function SortingBy(columnName, sortBy) {
+        loadData('',columnName,sortBy)
+        }
+        function DeleteConfirmation(controllerName, Id) {
+            if (confirm("Do you want to delete?")) {
+                location.href='/'+controllerName+'/Delete/'+Id
+            }
+        }
+    </script>
+
+
+}
+else
+{
+    <div class="table-responsive">
+        <div class="alert alert-danger">
+            <h6>
+                Wrong Query :
+                <br>
+                @ViewBag.Query
+            </h6>
+        </div>
+    </div>
+}

@@ -1,0 +1,856 @@
+﻿@model Soc_Management_Web.Models.DatareceiveModel
+@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int isAdministrator = HttpContextAccessor.HttpContext.Session.GetInt32("IsAdministrator").Value;
+    List<PIOAccount.Models.CityModel> cityList = ViewBag.cityList as List<PIOAccount.Models.CityModel>;
+    List<SelectListItem> layoutList = ViewBag.layoutList as List<SelectListItem>;
+    List<SelectListItem> pageNoList = ViewBag.pageNoList as List<SelectListItem>;
+    var userRight = ViewBag.userRight as PIOAccount.Models.UserFormRightModel;
+    ViewData["Title"] = userRight.ModuleNm;
+    string headerAdd = "";
+    string headerList = "";
+    string gridAdd = "";
+    string gridList = "";
+    bool headerAddTrue = false;
+    bool headerListTrue = false;
+
+    if (userRight != null && (userRight.IsAdd || userRight.IsEdit) && userRight.IsList)
+    {
+        headerList = "active";
+        gridList = "show active";
+        headerAddTrue = true;
+    }
+    else if (userRight != null && (userRight.IsAdd || userRight.IsEdit))
+    {
+        headerAdd = "active";
+        gridAdd = "show active";
+        headerAddTrue = true;
+    }
+    else if (userRight != null && userRight.IsList)
+    {
+        headerList = "active";
+        gridList = "show active";
+        headerAddTrue = true;
+    }
+}
+
+<style>
+    .boxdata {
+        -webkit-box-shadow: 2px 6px 20px -5px rgba(0,0,0,0.75);
+        -moz-box-shadow: 2px 6px 20px -5px rgba(0,0,0,0.75);
+        box-shadow: 2px 6px 20px -5px rgba(0,0,0,0.75);
+    }
+
+    .table-wrapper {
+        background: #fff;
+        padding: 20px 25px;
+        margin: 30px 0;
+        border-radius: 3px;
+        box-shadow: 0 1px 1px rgba(0,0,0,.05);
+    }
+
+    .table-title {
+        padding-bottom: 15px;
+        background: #435d7d;
+        color: #fff;
+        padding: 16px 30px;
+        margin: -20px -25px 10px;
+        border-radius: 3px 3px 0 0;
+    }
+
+        .table-title h2 {
+            margin: 5px 0 0;
+            font-size: 24px;
+        }
+
+        .table-title .btn-group {
+            float: right;
+        }
+
+        .table-title .btn {
+            color: #fff;
+            float: right;
+            font-size: 13px;
+            border: none;
+            min-width: 50px;
+            border-radius: 2px;
+            border: none;
+            outline: none !important;
+            margin-left: 10px;
+        }
+
+            .table-title .btn i {
+                float: left;
+                font-size: 21px;
+                margin-right: 5px;
+            }
+
+            .table-title .btn span {
+                float: left;
+                margin-top: 2px;
+            }
+
+    table.table tr th, table.table tr td {
+        border-color: #e9e9e9;
+        padding: 12px 15px;
+        vertical-align: middle;
+    }
+
+        table.table tr th:first-child {
+            width: 60px;
+        }
+
+        table.table tr th:last-child {
+            width: 100px;
+        }
+
+    table.table-striped tbody tr:nth-of-type(odd) {
+        background-color: #fcfcfc;
+    }
+
+    table.table-striped.table-hover tbody tr:hover {
+        background: #f5f5f5;
+    }
+
+    table.table th i {
+        font-size: 13px;
+        margin: 0 5px;
+        cursor: pointer;
+    }
+
+    table.table td:last-child i {
+        opacity: 0.9;
+        font-size: 22px;
+        margin: 0 5px;
+    }
+
+    table.table td a {
+        font-weight: bold;
+        color: #566787;
+        display: inline-block;
+        text-decoration: none;
+        outline: none !important;
+    }
+
+        table.table td a:hover {
+            color: #2196F3;
+        }
+
+        table.table td a.edit {
+            color: #FFC107;
+        }
+
+        table.table td a.delete {
+            color: #F44336;
+        }
+
+    table.table td i {
+        font-size: 19px;
+    }
+
+    table.table .avatar {
+        border-radius: 50%;
+        vertical-align: middle;
+        margin-right: 10px;
+    }
+
+    .pagination {
+        float: right;
+        margin: 0 0 5px;
+    }
+
+        .pagination li a {
+            border: none;
+            font-size: 13px;
+            min-width: 30px;
+            min-height: 30px;
+            color: #999;
+            margin: 0 2px;
+            line-height: 30px;
+            border-radius: 2px !important;
+            text-align: center;
+            padding: 0 6px;
+        }
+
+            .pagination li a:hover {
+                color: #666;
+            }
+
+        .pagination li.active a, .pagination li.active a.page-link {
+            background: #03A9F4;
+        }
+
+            .pagination li.active a:hover {
+                background: #0397d6;
+            }
+
+        .pagination li.disabled i {
+            color: #ccc;
+        }
+
+        .pagination li i {
+            font-size: 16px;
+            padding-top: 6px
+        }
+
+    .hint-text {
+        float: left;
+        margin-top: 10px;
+        font-size: 13px;
+    }
+    /* Custom checkbox */
+    .custom-checkbox {
+        position: relative;
+    }
+
+        .custom-checkbox input[type="checkbox"] {
+            opacity: 0;
+            position: absolute;
+            margin: 5px 0 0 3px;
+            z-index: 9;
+        }
+
+        .custom-checkbox label:before {
+            width: 18px;
+            height: 18px;
+        }
+
+        .custom-checkbox label:before {
+            content: '';
+            margin-right: 10px;
+            display: inline-block;
+            vertical-align: text-top;
+            background: white;
+            border: 1px solid #bbb;
+            border-radius: 2px;
+            box-sizing: border-box;
+            z-index: 2;
+        }
+
+        .custom-checkbox input[type="checkbox"]:checked + label:after {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 3px;
+            width: 6px;
+            height: 11px;
+            border: solid #000;
+            border-width: 0 3px 3px 0;
+            transform: inherit;
+            z-index: 3;
+            transform: rotateZ(45deg);
+        }
+
+        .custom-checkbox input[type="checkbox"]:checked + label:before {
+            border-color: #03A9F4;
+            background: #03A9F4;
+        }
+
+        .custom-checkbox input[type="checkbox"]:checked + label:after {
+            border-color: #fff;
+        }
+
+        .custom-checkbox input[type="checkbox"]:disabled + label:before {
+            color: #b8b8b8;
+            cursor: auto;
+            box-shadow: none;
+            background: #ddd;
+        }
+
+    /* Modal styles */
+    /* .modal .modal-dialog {
+        max-width: 400px;
+    }*/
+    .modal .modal-header, .modal .modal-body, .modal .modal-footer {
+        padding: 20px 30px;
+    }
+
+    .modal .modal-content {
+        border-radius: 3px;
+    }
+
+    .modal .modal-footer {
+        /* background: #ecf0f1;*/
+        border-radius: 0 0 3px 3px;
+    }
+
+    .modal .modal-title {
+        display: inline-block;
+    }
+
+    .modal .form-control {
+        border-radius: 2px;
+        box-shadow: none;
+        border-color: #dddddd;
+    }
+
+    .modal textarea.form-control {
+        resize: vertical;
+    }
+
+    .modal .btn {
+        border-radius: 2px;
+        min-width: 100px;
+    }
+
+    .modal form label {
+        font-weight: normal;
+    }
+</style>
+
+
+<style>
+    /* bootstrap 4 panel */
+    .panel {
+        margin-bottom: 20px;
+        background-color: #fff;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+        box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+    }
+
+    .panel-heading {
+        padding: 10px 15px;
+        border-bottom: 1px solid transparent;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        color: #fff;
+    }
+
+    .panel-body {
+        padding: 15px;
+        color: rgb(41, 43, 44);
+        background-color: transparent;
+    }
+
+
+    /* colorize */
+    .panel-default {
+        border-color: rgb(221, 221, 221);
+    }
+
+        .panel-default > .panel-heading {
+            color: rgb(51, 51, 51);
+            background-color: rgb(245, 245, 245);
+            border-color: rgb(221, 221, 221);
+        }
+
+    .panel-primary {
+        border-color: #0275d8;
+    }
+
+        .panel-primary > .panel-heading {
+            background-color: #0275d8;
+            border-color: #0275d8;
+        }
+
+    .panel-success {
+        border-color: #5cb85c;
+    }
+
+        .panel-success > .panel-heading {
+            background-color: #5cb85c;
+            border-color: #5cb85c;
+        }
+
+    .panel-info {
+        border-color: #5bc0de;
+    }
+
+        .panel-info > .panel-heading {
+            background-color: #5bc0de;
+            border-color: #5bc0de;
+        }
+
+    .panel-warning {
+        border-color: #f0ad4e;
+    }
+
+        .panel-warning > .panel-heading {
+            background-color: #f0ad4e;
+            border-color: #f0ad4e;
+        }
+
+    .panel-danger {
+        border-color: #d9534f;
+    }
+
+        .panel-danger > .panel-heading {
+            background-color: #d9534f;
+            border-color: #d9534f;
+        }
+
+    input.form-control, .select2-selection--single {
+        font-size: 17px !important;
+        height: 38px !important;
+    }
+
+    #tile-1 .nav-tabs li a {
+        position: relative;
+        margin-right: 0px !important;
+        padding: 20px 4px !important;
+        font-size: 16px;
+        border: none !important;
+        color: #333;
+    }
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<div class="card card-primary" style="background-color:antiquewhite">
+    <div class="card-header" style="font-family:Verdana">
+        <h6> @ViewData["Title"]</h6>
+    </div>
+    <div class="card-body">
+        <div class="card card-primary card-tabs">
+            <div class="card-header p-0 pt-1">
+                <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+
+                    @if (userRight != null && (userRight.IsAdd || userRight.IsEdit))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link active" id="custom-tabs-three-add-tab" data-toggle="pill" href="#custom-tabs-three-add" role="tab" aria-controls="custom-tabs-three-add" aria-selected="true" style="font-family:Verdana;font-size:small">Search</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+            <div class="card-body" style="background-color:aliceblue">
+                <div class="col-md-12">
+                    <div class="tab-content" id="custom-tabs-three-tabContent">
+
+                        @if (userRight != null && (userRight.IsAdd || userRight.IsEdit))
+                        {
+                            <div class="tab-pane fade" id="custom-tabs-three-add" role="tabpanel" aria-labelledby="custom-tabs-three-add-tab">
+                                <form method="post" class="mt-4" id="saleForm">
+                                    <div>
+                                        <div>
+                                            @*<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#CustomerPopup">
+            Launch demo modal
+        </button>*@
+
+                                            <div class="row">
+
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 mt-2" style="text-align:right">
+                                                            From Date: <span class="required"></span>
+                                                        </label>
+
+                                                        <div class=" input-group col-md-9">
+                                                            @Html.TextBoxFor(m => m.fromDate, new { @class = "form-control ", @placeholder = "From Date", @tabindex = "1", @id = "txtfromdate" })
+                                                            <div class="input-group-append">
+                                                                <span class="input-group-text" id="basic-addon2">
+                                                                    <i class="fa fa-calendar"></i>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 mt-2" style="text-align:right">
+                                                            To Date: <span class="required"></span>
+                                                        </label>
+
+                                                        <div class=" input-group col-md-9">
+                                                            @Html.TextBoxFor(m => m.toDate, new { @class = "form-control", @placeholder = "To Date", @tabindex = "2", @type = "text", @required = "required", @id = "txttodate" })
+                                                            <div class="input-group-append">
+                                                                <span class="input-group-text" id="basic-addon2">
+                                                                    <i class="fa fa-calendar"></i>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 mt-2" style="text-align:right">
+                                                            Pending: <span class="required"></span>
+                                                        </label>
+                                                        @*usp_GettScheduledata*@
+                                                        <div class="col-md-9">
+                                                            @Html.DropDownListFor(x => x.pending, Model.pendinglst, "Select",
+                                                                 new { @class = "form-control search ", @style = "width:100%", @tabindex = "3", id = "ddlpending", onfocus = "this.select()", })
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 mt-2" style="text-align:right">
+                                                            From Ord No: <span class="required"></span>
+                                                        </label>
+
+                                                        <div class="col-md-9">
+                                                            @Html.TextBoxFor(m => m.fromorderno, new { @class = "form-control ", @placeholder = "From Order No", @tabindex = "4", @id = "txtfromorderno" })
+                                                            
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 mt-2" style="text-align:right">
+                                                            To Order No: <span class="required"></span>
+                                                        </label>
+
+                                                        <div class="col-md-9">
+                                                            @Html.TextBoxFor(m => m.toorderno, new { @class = "form-control ", @placeholder = "To Order No", @tabindex = "5", @id = "txttoorderno" })
+                                                            
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 mt-2" style="text-align:right">
+                                                            Event Tittle: <span class="required"></span>
+                                                        </label>
+                                                        @*usp_GettScheduledata*@
+                                                        <div class="col-md-9">
+                                                            @Html.DropDownListFor(x => x.events, Model.eventlist, "Select",
+                                                                 new { @class = "form-control search ", @style = "width:100%", @tabindex = "6", id = "ddlevent", onfocus = "this.select()", })
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 mt-2" style="text-align:right">
+                                                            Customer: <span class="required"></span>
+                                                        </label>
+
+                                                        <div class="col-md-9">
+                                                            @Html.DropDownListFor(x => x.customerId, Model.lstCustomer, "Select",
+                                                                 new { @class = "form-control search ", @style = "width:100%", @tabindex = "7", id = "ddlcustomer", onfocus = "this.select()", })
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 mt-2" style="text-align:right">
+                                                            Person: <span class="required"></span>
+                                                        </label>
+
+                                                        <div class="col-md-9">
+                                                            @Html.DropDownListFor(x => x.personId, Model.personlst, "Select",
+                                                                 new { @class = "form-control search ", @style = "width:100%", @tabindex = "8", id = "ddlperson", onfocus = "this.select()", })
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 mt-2" style="text-align:right">
+                                                            Category: <span class="required"></span>
+                                                        </label>
+
+                                                        <div class="col-md-9">
+                                                            @Html.DropDownListFor(x => x.categoryId, Model.categorylst, "Select",
+                                                                 new { @class = "form-control search ", @style = "width:100%", @tabindex = "9", id = "ddlcategory", onfocus = "this.select()", })
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+
+
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-4">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 mt-2" style="text-align:right">
+                                                            Order by: <span class="required"></span>
+                                                        </label>
+
+                                                        <div class="col-md-9">
+                                                            @Html.DropDownListFor(x => x.orderBy, Model.orderbylst, "Select",
+                                                                 new { @class = "form-control search ", @style = "width:100%", @tabindex = "10", id = "ddlorderby", onfocus = "this.select()", })
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+
+                                                    <span class="btn btn-primary text-white" style="font-family:Verdana;font-size:medium" id="btnContinuea">
+                                                        Search
+                                                    </span>
+                                                    <button type="button" class="btn btn-primary text-white" style="font-family:Verdana;font-size:medium" id="btngeneratepdf">
+                                                        <i class="fas fa-file-excel-o"></i> Export
+                                                    </button>
+                                                    <a href="/Order/Index" class="btn btn-warning text-dark" style="font-family:Verdana;font-size:medium">
+                                                        Cancel (Esc)
+                                                    </a>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <hr />
+                                                </div>
+                                            </div>
+                                            <div class="row">
+
+                                                <div class="col-md-12" style="overflow:auto">
+                                                    <table class="table table-condensed" id="tblschedule">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Sl</th>
+                                                                <th>Customer</th>
+                                                                <th>Event</th>
+                                                                <th>Order No</th>
+                                                                <th>Date</th>
+                                                                <th>Person</th>
+                                                                <th>Data Y/N</th>
+                                                                <th>Category</th>
+                                                                <th>Location</th>
+                                                                <th>Size</th>
+                                                                <th>Remarks</th>
+                                                                <th>Save Status</th>
+                                                                <th>Venue</th>
+                                                            </tr>
+                                                        </thead>
+                                                    </table>
+                                                </div>
+
+
+                                            </div>
+                                        </div>
+
+
+
+                                    </div>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+
+
+
+
+
+    </div>
+    
+</div>
+
+<style>
+    body {
+        background-color: #f1f1f2;
+    }
+
+    .tile {
+        width: 95%;
+        margin: 60px auto;
+    }
+
+    #tile-1 .tab-pane {
+        padding: 15px;
+        height: 80px;
+    }
+
+    #tile-1 .nav-tabs {
+        position: relative;
+        border: none !important;
+        background-color: #fff;
+        /*   box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2); */
+        border-radius: 6px;
+    }
+
+        #tile-1 .nav-tabs li {
+            margin: 0px !important;
+        }
+
+            #tile-1 .nav-tabs li a {
+                position: relative;
+                margin-right: 0px !important;
+                padding: 20px 40px !important;
+                font-size: 16px;
+                border: none !important;
+                color: #333;
+            }
+
+        #tile-1 .nav-tabs a:hover {
+            background-color: #fff !important;
+            border: none;
+        }
+
+    #tile-1 .slider {
+        display: inline-block;
+        width: 30px;
+        height: 4px;
+        border-radius: 3px;
+        background-color: #39bcd3;
+        position: absolute;
+        z-index: 1200;
+        bottom: 0;
+        transition: all .4s linear;
+    }
+
+    #tile-1 .nav-tabs .active {
+        background-color: transparent !important;
+        border: none !important;
+        color: #39bcd3 !important;
+    }
+
+    #table1 tbody tr:hover {
+        background-color: white;
+    }
+</style>
+
+
+<script>
+    $(document).ready(function () {
+        $('#custom-tabs-three-add-tab').addClass('active');
+        $('#custom-tabs-three-add').addClass('active');
+        $('#custom-tabs-three-add').addClass('show');
+        $("#txtfromdate").focus();
+        $(".search").select2({
+            placeholder: "---Select---",
+        });
+        $('#txtfromdate,#txttodate').datepicker({
+            dateFormat: 'dd/mm/yy'
+        });
+
+    });
+    $('#btnContinuea').on('click', function () {
+
+
+        var Jobdata = {
+            fromDate: $('#txtfromdate').val(),
+            toDate: $('#txttodate').val(),
+            pending: document.getElementById("ddlpending").options[document.getElementById("ddlpending").selectedIndex].text,
+            personId: document.getElementById("ddlperson").options[document.getElementById("ddlperson").selectedIndex].text,
+            categoryId: document.getElementById("ddlcategory").options[document.getElementById("ddlcategory").selectedIndex].text,
+            customerId: document.getElementById("ddlcustomer").options[document.getElementById("ddlcustomer").selectedIndex].text,
+            events: document.getElementById("ddlevent").options[document.getElementById("ddlevent").selectedIndex].text,
+            fromorderno: $('#txtfromorderno').val(),
+            toorderno: $('#txttoorderno').val(),
+            orderBy: document.getElementById("ddlorderby").options[document.getElementById("ddlorderby").selectedIndex].text
+        }
+        $.ajax({
+            url: "/DataReceive/GetListData",
+            type: "GET",
+            dataType: "json",
+            data: Jobdata,
+            success: function (data) {
+                console.log(data)
+                $("#tblschedule tbody").empty();
+
+                $.each(data.result, function (data, value) {
+                    debugger
+                    var yn = "";
+                    var status = "";
+                    yn = value.dataYN == 1 ? "true" : "";
+                    status = value.saveStatus == 1 ? "true" : "";
+                    var newRowContent = '<tr><td>' + value.sl
+                        + '</td><td>' + value.accNm + '</td><td>' + value.ortEvnNm + '</td><td>' + value.orderId + ' </td><td>' + value.fromDate + '</td><td>' + value.person
+                        + '</td><td><input type="checkbox" ' + (yn === "true" ? 'checked' : '') + ' class="chkyn" id="chkyn' + value.id + '" onchange = savedata("chkyn' + value.id + '",' + value.id + ') /></td><td>'
+                        + value.jobCd + '</td><td> <input  type="text" onblur =savedata("txtlocations' + value.id + '",' + value.id
+                        + ') class="form-control txtlocations" value="' + value.locations + '" id="txtlocations' + value.id + '"/> </td><td><input type="text" onblur = savedata("txtsize' + value.id + '",' + value.id + ')  class="form-control txtsize" value="' + value.size + '" id="txtsize' + value.id
+                        + '"/></td><td><input type="text" onblur = savedata("txtremarks' + value.id + '",' + value.id + ') class="form-control txtremarks" value="' + value.remarks + '" id="txtremarks' + value.id
+                        + '" /></td><td><input type="checkbox" class="chksaveStatus" onchange = savedata("chksaveStatus' + value.id + '",' + value.id + ')  ' + (status === "true" ? 'checked' : '') + ' id="chksaveStatus' + value.id + '"/></td><td>' + value.venue + '</td></tr>'
+
+                    $("#tblschedule tbody").append(newRowContent);
+
+                });
+
+
+                
+
+            }
+
+        });
+      
+    })
+   
+    function savedata(txtid, id) {
+        debugger
+        var chkyn = 'chkyn' + id;
+        var txtlocations = 'txtlocations' + id;
+        var txtsize = 'txtsize' + id;
+        var txtremarks = 'txtremarks' + id;
+        var chksaveStatus = 'chksaveStatus' + id;
+        var obj = {
+            id: id,
+            remarks: $('#' + txtremarks).val(),
+            size: $('#' + txtsize).val(),
+            locations: $('#' + txtlocations).val(),
+            saveStatus: $('#' + chksaveStatus).is(':checked')==true ? 1 : 0,
+            dataYN: $('#' + chkyn).is(':checked') == true ? 1 : 0 // Check if .chkyn is checked
+        };
+        $.ajax({
+            url: "/DataReceive/SavePersondata",
+            type: "POST",
+            dataType: "json",
+            data: obj,
+            success: function (data) {
+
+                alert("data saved")
+            }
+        });
+
+    }
+
+   
+
+    $(document).ready(function () {
+        $('#tblschedule').DataTable();
+
+        $("#btngeneratepdf").click(function () {
+            let table = document.getElementsByTagName("table");
+            console.log(table);
+            debugger;
+            TableToExcel.convert(table[0], {
+                name: `DataReveive.xlsx`,
+                sheet: {
+                    name: 'DataReveive'
+                }
+            });
+        });
+    });
+   
+    $.ajax({
+        url: "/Dropdown/GetJobddl",
+        type: "POST",
+        dataType: "json",
+        success: function (data) {
+            $("#ddljob").append($("<option></option>").val("0").html("--Select--"));
+            $.each(data.data, function (data, value) {
+                $("#ddljob").append($("<option></option>").val(value.value).html(value.textName));
+            })
+
+        }
+    })
+
+    $('#txtfromdate').on('change', function () {
+        var inputDate = $('#txtfromdate').val();
+        if (inputDate !== '') {
+            var formattedDate = inputDate.replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3');
+            $('#txtfromdate').val(formattedDate);
+            $('#txtfromdate').val(formattedDate);
+        }
+    })
+    $('#txttodate').on('change', function () {
+        var inputDate = $('#txttodate').val();
+        if (inputDate !== '') {
+            var formattedDate = inputDate.replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3');
+            $('#txttodate').val(formattedDate);
+            $('#txttodate').val(formattedDate);
+        }
+    })
+</script>

@@ -1,0 +1,556 @@
+﻿@model PIOAccount.Models.AssignUserModuleModal
+@{
+    ViewData["Title"] = "AssignDesignationModule";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int isAdministrator = 0;
+    if (ViewBag.isAdministrator != null)
+    {
+        isAdministrator = Convert.ToInt32(ViewBag.isAdministrator);
+    }
+}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Assign Module To User</h3>
+            </div>
+            <div class="card-body" id="custom-tabs-five-overlay">
+                <div class="col-md-12 col-12">
+                    <div class="row">
+                        @*<div class="col-md-4 col-12">
+                            <div class="form-group">
+                                <label for="Name">User<span class="text-danger"> *</span></label>
+                                @Html.DropDownListFor(m => m.UserId, Model.UserMasterList, "Please Select User", htmlAttributes: new { @class = "form-control form-control-sm select2", @tabindex = "1" })
+                            </div>
+                        </div>*@
+                        <div class="col-md-4 col-12">
+                            <div class="form-group">
+                                <label for="Name">User Role<span class="text-danger">*</span></label>
+                                @Html.DropDownListFor(m => m.UserRollId, Model.UserRollList, "Please Select User", htmlAttributes: new { @class = "form-control form-control-sm select2", @tabindex = "1" })
+                            </div>
+                        </div>
+                        <div class="col-md-8 col-12 text-right">
+                            <div class="custom-control custom-checkbox mt-5">
+                                <input type="checkbox" class="custom-control-input _chkAll" id="_chkAll" />
+                                <label for="_chkAll" class="custom-control-label">Select All</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.ModuleMasterList != null && Model.ModuleMasterList.Count > 0)
+                {
+                    foreach (var master in Model.ModuleMasterList)
+                    {
+                        if (isAdministrator == 0)
+                        {
+                            if (master.ModuleName == "User Rights" || master.ModuleName == "User rights" || master.ModuleName == "user rights" || master.ModuleName == "User Rights")
+                            {
+                                continue;
+                            }
+                        }
+
+
+                        <div class="card card-primary mt-2">
+                            <div class="card-header">
+                                <h3 class="card-title">@master.ModuleName</h3>
+                                <div class="card-tools">
+                                    <div class="row">
+                                        <div class="col-md-6 col-6">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input custom-control-input-green _masterChkAll" id="masterChkAll_@master.ModuleId" />
+                                                <label for="masterChkAll_@master.ModuleId" class="custom-control-label"></label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-6">
+                                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered ">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    Name
+                                                </th>
+                                                <th class="text-center" width="10%">
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input type="checkbox" class="custom-control-input   _columnChkAdd" id="masterColumnAdd_@master.ModuleId" />
+                                                        <label for="masterColumnAdd_@master.ModuleId" class="custom-control-label">Add</label>
+                                                    </div>
+
+                                                </th>
+                                                <th class="text-center" width="10%">
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input type="checkbox" class="custom-control-input  _columnChkEdit" id="masterColumnEdit_@master.ModuleId" />
+                                                        <label for="masterColumnEdit_@master.ModuleId" class="custom-control-label">Edit</label>
+                                                    </div>
+
+                                                </th>
+                                                <th width="10%">
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input type="checkbox" class="custom-control-input  _columnChkDelete" id="masterColumnDelete_@master.ModuleId" />
+                                                        <label for="masterColumnDelete_@master.ModuleId" class="custom-control-label">Delete</label>
+                                                    </div>
+
+                                                </th>
+                                                <th width="10%">
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input type="checkbox" class="custom-control-input  _columnChkList" id="masterColumnList_@master.ModuleId" />
+                                                        <label for="masterColumnList_@master.ModuleId" class="custom-control-label">List</label>
+                                                    </div>
+
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (master.SubMenuModalList != null && master.SubMenuModalList.Count > 0)
+                                            {
+
+                                                foreach (var child in master.SubMenuModalList)
+                                                {
+                                                    if (isAdministrator == 0)
+                                                    {
+                                                        if (child.ModuleName == "Client Master" || child.ModuleName == "Client master" || child.ModuleName == "client master" || child.ModuleName == "Grid Master" || child.ModuleName == "grid master")
+                                                        {
+                                                            continue;
+                                                        }
+                                                    }
+
+
+                                                    <tr>
+                                                        <td>
+                                                            <div class="custom-control custom-checkbox ">
+                                                                <input type="checkbox" class="custom-control-input _rowChkAll" name="module" value="@child.ModuleId" id="rowChkAll_@child.ModuleId" />
+                                                                <label for="rowChkAll_@child.ModuleId" class="custom-control-label"> @child.ModuleName</label>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="custom-control custom-checkbox text-center">
+                                                                <input type="checkbox" class="custom-control-input _rowChkAdd" value="@child.ModuleId" name="add" id="rowChkAdd_@child.ModuleId" checked="@child.IsAdd" />
+                                                                <label for="rowChkAdd_@child.ModuleId" class="custom-control-label"></label>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="custom-control custom-checkbox text-center">
+                                                                <input type="checkbox" class="custom-control-input _rowChkEdit" value="@child.ModuleId" name="edit" id="rowChkEdit_@child.ModuleId" checked="@child.IsEdit" />
+                                                                <label for="rowChkEdit_@child.ModuleId" class="custom-control-label"></label>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="custom-control custom-checkbox text-center">
+                                                                <input type="checkbox" class="custom-control-input _rowChkDelete" value="@child.ModuleId" name="delete" id="rowChkDelete_@child.ModuleId" checked="@child.IsDelete" />
+                                                                <label for="rowChkDelete_@child.ModuleId" class="custom-control-label"></label>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="custom-control custom-checkbox  text-center">
+                                                                <input type="checkbox" class="custom-control-input _rowChkList" value="@child.ModuleId" name="list" id="rowChkList_@child.ModuleId" checked="@child.IsList" />
+                                                                <label for="rowChkList_@child.ModuleId" class="custom-control-label"></label>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <div class="custom-control custom-checkbox ">
+                                                            <input type="checkbox" class="custom-control-input _rowChkAll" name="module" value="@master.ModuleId" id="rowChkAll_@master.ModuleId" />
+                                                            <label for="rowChkAll_@master.ModuleId" class="custom-control-label"> @master.ModuleName</label>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="custom-control custom-checkbox text-center">
+                                                            <input type="checkbox" class="custom-control-input _rowChkAdd" value="@master.ModuleId" name="add" id="rowChkAdd_@master.ModuleId" checked="@master.IsAdd" />
+                                                            <label for="rowChkAdd_@master.ModuleId" class="custom-control-label"></label>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="custom-control custom-checkbox text-center">
+                                                            <input type="checkbox" class="custom-control-input _rowChkEdit" value="@master.ModuleId" name="edit" id="rowChkEdit_@master.ModuleId" checked="@master.IsEdit" />
+                                                            <label for="rowChkEdit_@master.ModuleId" class="custom-control-label"></label>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="custom-control custom-checkbox text-center">
+                                                            <input type="checkbox" class="custom-control-input _rowChkDelete" value="@master.ModuleId" name="delete" id="rowChkDelete_@master.ModuleId" checked="@master.IsDelete" />
+                                                            <label for="rowChkDelete_@master.ModuleId" class="custom-control-label"></label>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="custom-control custom-checkbox  text-center">
+                                                            <input type="checkbox" class="custom-control-input _rowChkList" value="@master.ModuleId" name="list" id="rowChkList_@master.ModuleId" checked="@master.IsList" />
+                                                            <label for="rowChkList_@master.ModuleId" class="custom-control-label"></label>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+
+                <div class="col-md-12 col-12 text-right">
+                    <input type="button" onclick="location.href='/Module/AssignUserModule'" class="btn btn-secondary mr-2" value="Reset/Cancel" />
+                    <input type="button" class="btn btn-primary" value="Save" onclick="AssignModule()" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    $(document).ready(function () {
+        $('._masterChkAll').click(function () {
+            if ($(this).is(":checked")) {
+                $(this).closest('.card-header').next('.card-body').children().find('input[type="checkbox"]').each(function () {
+                    $(this).prop('checked', true);
+                })
+            }
+            else {
+                $(this).closest('.card-header').next('.card-body').children().find('input[type="checkbox"]').each(function () {
+                    $(this).prop('checked', false);
+                })
+            }
+
+            CheckUnCheckMaster();
+            CheckUnCheckSelectALL();
+        })
+
+        $('._columnChkAdd').click(function () {
+            if ($(this).is(":checked")) {
+                $(this).closest('thead').next('tbody').children().find('input[type="checkbox"]._rowChkAdd').each(function () {
+                    $(this).prop('checked', true);
+                })
+            }
+            else {
+                $(this).closest('thead').next('tbody').children().find('input[type="checkbox"]._rowChkAdd').each(function () {
+                    $(this).prop('checked', false);
+                })
+            }
+            CheckUnCheckRowMaster();
+            CheckUnCheckMaster();
+            CheckUnCheckSelectALL();
+        })
+
+        $('._columnChkEdit').click(function () {
+            if ($(this).is(":checked")) {
+                $(this).closest('thead').next('tbody').children().find('input[type="checkbox"]._rowChkEdit').each(function () {
+                    $(this).prop('checked', true);
+                })
+            }
+            else {
+                $(this).closest('thead').next('tbody').children().find('input[type="checkbox"]._rowChkEdit').each(function () {
+                    $(this).prop('checked', false);
+                })
+            }
+            CheckUnCheckRowMaster();
+            CheckUnCheckMaster();
+            CheckUnCheckSelectALL();
+        })
+
+        $('._columnChkDelete').click(function () {
+            if ($(this).is(":checked")) {
+                $(this).closest('thead').next('tbody').children().find('input[type="checkbox"]._rowChkDelete').each(function () {
+                    $(this).prop('checked', true);
+                })
+            }
+            else {
+                $(this).closest('thead').next('tbody').children().find('input[type="checkbox"]._rowChkDelete').each(function () {
+                    $(this).prop('checked', false);
+                })
+            }
+            CheckUnCheckRowMaster();
+            CheckUnCheckMaster();
+            CheckUnCheckSelectALL();
+        })
+
+        $('._columnChkList').click(function () {
+            if ($(this).is(":checked")) {
+                $(this).closest('thead').next('tbody').children().find('input[type="checkbox"]._rowChkList').each(function () {
+                    $(this).prop('checked', true);
+                })
+            }
+            else {
+                $(this).closest('thead').next('tbody').children().find('input[type="checkbox"]._rowChkList').each(function () {
+                    $(this).prop('checked', false);
+                })
+            }
+            CheckUnCheckRowMaster();
+            CheckUnCheckMaster();
+            CheckUnCheckSelectALL();
+        })
+
+        $('._rowChkAll').click(function () {
+            if ($(this).is(":checked")) {
+                $(this).closest('tr').children().find('input[type="checkbox"]').each(function () {
+                    $(this).prop('checked', true);
+                })
+            }
+            else {
+                $(this).closest('tr').children().find('input[type="checkbox"]').each(function () {
+                    $(this).prop('checked', false);
+                })
+            }
+
+            CheckUnCheckMaster();
+            CheckUnCheckSelectALL();
+        })
+
+        $('._rowChkAdd,._rowChkEdit,._rowChkDelete,._rowChkList').click(function () {
+            if ($(this).is(":checked")) {
+                $(this).closest('tr').children().find('._rowChkAll').prop('checked', true);
+            }
+            else {
+                if ($(this).closest('tr').children().find('._rowChkAdd').is(":checked") || $(this).closest('tr').children().find('._rowChkEdit').is(":checked") || $(this).closest('tr').children().find('._rowChkDelete').is(":checked") || $(this).closest('tr').children().find('._rowChkList').is(":checked")) {
+                    $(this).closest('tr').children().find('._rowChkAll').prop('checked', true);
+                }
+                else {
+                    $(this).closest('tr').children().find('._rowChkAll').prop('checked', false);
+                }
+            }
+
+            var totalCheckBox = $(this).closest('.card-body').children().find('input[type="checkbox"]').length;
+            var checkedCheckBox = $(this).closest('.card-body').children().find('input[type="checkbox"]:checked').length;
+            if (totalCheckBox == checkedCheckBox) {
+                $(this).closest('tr').children().find('._masterChkAll').prop('checked', true);
+            }
+            else {
+                $(this).closest('tr').children().find('._masterChkAll').prop('checked', false);
+            }
+            CheckUnCheckAddColumnMaster();
+            CheckUnCheckEditColumnMaster();
+            CheckUnCheckDeleteColumnMaster();
+            CheckUnCheckListColumnMaster();
+            CheckUnCheckMaster();
+            CheckUnCheckSelectALL();
+        })
+
+        $('._chkAll').click(function () {
+            if ($(this).is(":checked")) {
+                $('#custom-tabs-five-overlay').children('.card').children().find('input[type="checkbox"]').each(function () {
+                    $(this).prop('checked', true);
+                })
+            }
+            else {
+                $('#custom-tabs-five-overlay').children('.card').children().find('input[type="checkbox"]').each(function () {
+                    $(this).prop('checked', false);
+                })
+            }
+
+        })
+
+
+    })
+
+    function CheckUnCheckSelectALL() {
+        var totalCheckBox = $('#custom-tabs-five-overlay').children('.card').children().find('input[type="checkbox"]').length;
+
+        var checkedcheckBox = $('#custom-tabs-five-overlay').children('.card').children().find('input[type="checkbox"]:checked').length;
+        if (totalCheckBox == checkedcheckBox) {
+            $('._chkAll').prop('checked', true);
+        }
+        else {
+            $('._chkAll').prop('checked', false);
+        }
+    }
+
+    function CheckUnCheckMaster() {
+        $('#custom-tabs-five-overlay').children('.card').each(function () {
+            var totalCheckBox = $(this).children('.card-body').children().find('input[type="checkbox"]').length;
+
+            var checkedcheckBox = $(this).children('.card-body').children().find('input[type="checkbox"]:checked').length;
+            if (totalCheckBox == checkedcheckBox) {
+                $(this).children('.card-header').children().find('input[type="checkbox"]').prop('checked', true);
+            }
+            else {
+                $(this).children('.card-header').children().find('input[type="checkbox"]').prop('checked', false);
+            }
+        })
+    }
+
+    function CheckUnCheckRowMaster() {
+        $('._rowChkAll').each(function () {
+            var totalCheckBox = $(this).closest('tr').children('td').children().find('input[type="checkbox"]:not(._rowChkAll)').length;
+
+            var checkedcheckBox = $(this).closest('tr').children('td').children().find('input[type="checkbox"]:checked:not(._rowChkAll)').length;
+
+            if (checkedcheckBox > 0) {
+                $(this).prop('checked', true);
+            }
+            else {
+                $(this).prop('checked', false);
+            }
+        })
+    }
+
+    function CheckUnCheckAddColumnMaster() {
+        $('._rowChkAll').each(function () {
+            var totalCheckBox = $(this).closest('tbody').children().find('input[type="checkbox"]._rowChkAdd:not(._rowChkAll)').length;
+
+            var checkedcheckBox = $(this).closest('tbody').children().find('input[type="checkbox"]._rowChkAdd:checked:not(._rowChkAll)').length;
+
+            if (totalCheckBox == checkedcheckBox) {
+                $(this).closest('tbody').prev('thead').children().find('._columnChkAdd').prop('checked', true);
+            }
+            else {
+                $(this).closest('tbody').prev('thead').children().find('._columnChkAdd').prop('checked', false);
+            }
+        })
+    }
+
+    function CheckUnCheckEditColumnMaster() {
+        $('._rowChkAll').each(function () {
+            var totalCheckBox = $(this).closest('tbody').children().find('input[type="checkbox"]._rowChkEdit:not(._rowChkAll)').length;
+
+            var checkedcheckBox = $(this).closest('tbody').children().find('input[type="checkbox"]._rowChkEdit:checked:not(._rowChkAll)').length;
+
+            if (totalCheckBox == checkedcheckBox) {
+                $(this).closest('tbody').prev('thead').children().find('._columnChkEdit').prop('checked', true);
+            }
+            else {
+                $(this).closest('tbody').prev('thead').children().find('._columnChkEdit').prop('checked', false);
+            }
+        })
+    }
+
+    function CheckUnCheckDeleteColumnMaster() {
+        $('._rowChkAll').each(function () {
+            var totalCheckBox = $(this).closest('tbody').children().find('input[type="checkbox"]._rowChkDelete:not(._rowChkAll)').length;
+
+            var checkedcheckBox = $(this).closest('tbody').children().find('input[type="checkbox"]._rowChkDelete:checked:not(._rowChkAll)').length;
+
+            if (totalCheckBox == checkedcheckBox) {
+                $(this).closest('tbody').prev('thead').children().find('._columnChkDelete').prop('checked', true);
+            }
+            else {
+                $(this).closest('tbody').prev('thead').children().find('._columnChkDelete').prop('checked', false);
+            }
+        })
+    }
+
+    function CheckUnCheckListColumnMaster() {
+        $('._rowChkAll').each(function () {
+            var totalCheckBox = $(this).closest('tbody').children().find('input[type="checkbox"]._rowChkList:not(._rowChkAll)').length;
+
+            var checkedcheckBox = $(this).closest('tbody').children().find('input[type="checkbox"]._rowChkList:checked:not(._rowChkAll)').length;
+
+            if (totalCheckBox == checkedcheckBox) {
+                $(this).closest('tbody').prev('thead').children().find('._columnChkList').prop('checked', true);
+            }
+            else {
+                $(this).closest('tbody').prev('thead').children().find('._columnChkList').prop('checked', false);
+            }
+        })
+    }
+
+    function AssignModule() {
+        var arrayData = [];
+        var DesignationFK = $('#UserRollId').val();
+
+        $('._rowChkAll').each(function () {
+            if ($(this).is(":checked")) {
+
+                var isAdd = false;
+                var isEdit = false;
+                var isDelete = false;
+                var isList = false;
+                var moduleId = $(this).val();
+
+                if ($(this).closest('tr').children().find('._rowChkAdd').is(':checked')) {
+                    isAdd = true;
+                }
+                if ($(this).closest('tr').children().find('._rowChkEdit').is(':checked')) {
+                    isEdit = true;
+                }
+                if ($(this).closest('tr').children().find('._rowChkDelete').is(':checked')) {
+                    isDelete = true;
+                }
+                if ($(this).closest('tr').children().find('._rowChkList').is(':checked')) {
+                    isList = true;
+                }
+
+                arrayData.push({ ModuleId: moduleId, IsAdd: isAdd, IsEdit: isEdit, IsDelete: isDelete, IsList: isList, UserId: DesignationFK });
+            }
+        })
+
+        var modalData = {
+            AssignedModule: arrayData,
+            UserRollId: DesignationFK
+        }
+
+        $.ajax({
+            url: '/Module/GetAssignModuleList',
+            type: 'POST',
+            dataType: 'json',
+            data: { assignDesignationModuleModal: modalData },
+            success: function (data) {
+                if (data.success) {
+                    location.href = '/Module/AssignUserModule/';
+                }
+                else {
+                    errorMessage(data.message);
+                }
+            },
+            failure: function (response) {
+                errorMessage(response);
+            }
+        });
+
+    }
+
+    $('#UserRollId').change(function () {
+        var DesignationFK = $(this).val();
+        location.href = '/Module/AssignUserModule/' + DesignationFK;
+    })
+
+    $(function () {
+        CheckUnCheckAddColumnMaster();
+        CheckUnCheckEditColumnMaster();
+        CheckUnCheckDeleteColumnMaster();
+        CheckUnCheckListColumnMaster();
+        CheckUnCheckRowMaster();
+        CheckUnCheckMaster();
+        CheckUnCheckSelectALL();
+    });
+
+</script>
+
+<script type="text/javascript">
+
+
+
+    (function (code) {
+        code(window.jQuery, document, window);
+    }(function ($, document, window) {
+        $(function () {
+            $(window)
+                .initKeyboard({ debug: 1 })
+                .on('Alt+M', function () {
+                    $('body').removeClass('sidebar-collapse')
+                    $('#txtSearchSidebar').focus();
+                });
+        });
+    }));
+
+    $(function () {
+        var body = document.querySelector('body');
+        var mousetrap = new Mousetrap(body);
+        mousetrap.bind('escape', ResetForm);
+        mousetrap.bind('alt+s', SaveRecord);
+        mousetrap.bind('f10', SaveRecord);
+    })
+</script>
+

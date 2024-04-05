@@ -1,0 +1,143 @@
+﻿@model Soc_Management_Web.Models.InqHeaderAndFooterModel
+<div class="col-md-12" style="margin-right:0px;margin-left:0px;width:110%">
+
+    <div class="row">
+        <div class="col-md-12" style="margin-right:0px;margin-left:0px;">
+            <div class="panel panel-primary">
+                <div class="panel-heading" style="text-align:left">
+                    <h3>HEADER FOOTER</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-2" style="text-align:left">
+                            <label>Subject : </label>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" name="txtsubject" required id="txtsubject" value="@Model.Subject" />
+                            <div id="subjectValidation" style="color: red;"></div>
+                        </div>
+                        <div class="col-md-2" style="text-align:left">
+                            <label>Mobile : </label>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" name="txtinqmobile" required id="txtinqmobile" value="@Model.Mobile" />
+                            <div id="mobileValidation" style="color: red;"></div>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:1%">
+                        <div class="col-md-2" style="text-align:left">
+                            <label>Header : </label>
+                        </div>
+                        <div class="col-md-4">
+                            <textarea type="text" rows="5" cols="6" class="form-control" id="txtHeader" value="@Model.Hedaer">@Model.Hedaer</textarea>
+                            <div id="HeaderValidation" style="color: red;"></div>
+                        </div>
+                        <div class="col-md-2" style="text-align:left">
+                            <label>Footer : </label>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" name="txtfooter" required id="txtfooter" value="@Model.Footer" />
+                            <div id="footerValidation" style="color: red;"></div>
+                            <br />
+                            <button type="button" class="btn btn-primary" onclick="saveHeaderAndFooter()">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+</div>
+<script>
+
+    
+    textboxAutoComplete(1, 'txtsubject');
+    textboxAutoComplete(2, 'txtinqmobile');
+    textboxAutoComplete(3, 'txtfooter');
+    function textboxAutoComplete(type, textboxid) {
+        $.ajax({
+            url: "/Dropdown/GetInqSubMobFooter?type=" + type + "",
+            type: "POST",
+            dataType: "json",
+            success: function (data) {
+                $("#" + textboxid).autocomplete({
+                    source: data,
+                    minLength: 1,
+                });
+            }
+        });
+    }
+
+     function saveHeaderAndFooter() {
+
+         // Get input values
+         var txtsubject = document.getElementById("txtsubject");
+         var txtinqmobile = document.getElementById("txtinqmobile");
+         var txtHeader = document.getElementById("txtHeader");
+         var txtfooter = document.getElementById("txtfooter");
+
+         // Get validation divs
+         var subjectValidation = document.getElementById("subjectValidation");
+         var mobileValidation = document.getElementById("mobileValidation");
+         var HeaderValidation = document.getElementById("HeaderValidation");
+         var footerValidation = document.getElementById("footerValidation");
+
+         // Clear previous validation messages
+         subjectValidation.innerHTML   = "";
+         mobileValidation.innerHTML   = "";
+         HeaderValidation.innerHTML    = "";
+         footerValidation.innerHTML   = "";
+
+         // Validate Extra Item
+         if (txtsubject.value.trim() === "") {
+             subjectValidation.innerHTML = "Please enter an subject.";
+             return;
+         }
+         if (txtinqmobile.value.trim() === "") {
+             mobileValidation.innerHTML = "Please enter an mobile no.";
+             return;
+         }
+        
+      
+
+         var model = {
+             InqId: @ViewBag.InqueryId,
+             Subject: $("#txtsubject").val(),
+             Hedaer: $("#txtHeader").val(),
+             Footer: $("#txtfooter").val(),
+             Mobile: $("#txtinqmobile").val()
+               }
+
+            $.ajax({
+                url: '@Url.Action("SaveInqSubMobFooter", "InquiryTransaction")',
+                type: 'POST',
+                dataType: 'json',
+                data: model,
+                success: function (data) {
+                    console.log(data)
+                    if (data.data == "1") {
+                        alert("Data Saved");
+                    } 
+                    else if (data.obj == "2") {
+                        alert("Try again");
+                    }
+                    ReloadPartialView();
+                }
+            })
+    }
+
+    function ReloadPartialView() {
+    var inqId = @ViewBag.InqueryId;
+
+    $.ajax({
+        url: "/InquiryTransaction/HeaderFotterLoad",
+        type: "GET",
+        data: { id: inqId },
+        success: function (result) {
+            // Replace the content of the existing partial view container
+            $('#HeaderFotterdeails').html(result);
+        }
+    });
+}
+</script>

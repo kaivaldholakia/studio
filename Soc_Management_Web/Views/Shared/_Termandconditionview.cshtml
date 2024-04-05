@@ -1,0 +1,345 @@
+﻿@model List<Soc_Management_Web.Models.InqTermandCondition>
+
+    <style>
+        .text {
+            display: block;
+            width: 150px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+    </style>
+    <div class="col-md-12" style="margin-right:0px;margin-left:0px;width:110%">
+        <div class="panel panel-primary">
+            <div class="panel-heading" style="text-align:left">
+                TERM & CONDITION
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-1">
+                        <label>Terms: </label>
+                        <input type="hidden" id="Tearmconditionid" />
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" name="name" id="txttermandcondition" class="form-control">
+                        <div id="validationMessage" style="color: red;"></div>
+                    </div>
+                    <div class="col-md-2">
+                        <label>Description: </label>
+                    </div>
+                    <div class="col-md-4">
+                        <textarea type="text" rows="2" cols="5" name="Terms" id="Terms" class="form-control"></textarea>
+                        <div id="validationMessagedesc" style="color: red;"></div>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn-info btn" type="button" id="btnTandCadd" onclick="addtearmscondition()"><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
+                        <button class="btn-info btn" id="btnTermsFind" type="button">Find</button>
+                        <button class="btn-danger btn" type="button" id="btnTandCCancel">X</button>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <hr />
+                        <table id="tbltermsandcondition" class="table table-condensed table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Sl No</th>
+                                    <th>Terms</th>
+                                    <th>Desc</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody style="width:100%">
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.SlNo</td>
+                                        <td>@item.Terms</td>
+                                        <td class="text">@item.Description</td>
+                                        <td>
+                                            <i class="fa fa-edit edit-btn" aria-hidden="true" data-extraitemid="@item.InqId"></i>
+                                            <!-- Remove Icon -->
+                                            <i class="fa fa-trash delete-btn" aria-hidden="true" data-extraitemid="@item.InqId"></i>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modelSelectAll" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <table id="tableselectall" class="table table-condensed table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th><input type="checkbox" name="select_all" value="1" id="example-select-all"></th>
+                                                <th>Sl No</th>
+                                                <th style="display:none">Id</th>
+                                                <th>Term</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="width:100%" id="tableselectallbody">
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" id="bttermsnclose">Close</button>
+                        <button type="button" id="SaveAllTC" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+    $('#btnTermsFind').on('click', function () {
+        debugger;
+         $('#modelSelectAll').modal('show');
+        $.ajax({
+            url: "/InquiryTransaction/GetForAllSelection",
+            type: "GET",
+            data: {
+                Types: 'TAndC'
+            },
+            success: function (data) {
+                $("#tableselectall tbody").empty();
+                var i = 0;
+                $.each(data.result, function (data, value) {
+                    i = i + 1;
+                    console.log(value.item)
+                    var newRowContent = '<tr><td><input type="checkbox" onchange="Checkuncheck()" value=' + value.id + ' id=' + value.id +'/></td><td>' + i + '</td><td style="display:none">' + value.id + '</td><td>' + value.item
+                        + '</td><td style="width:200px">'
+                        + value.description + '</td></tr>'
+
+                    $("#tableselectall tbody").append(newRowContent);
+
+
+
+                });
+                $('#tableselectall').DataTable({
+                    "bPaginate": true,
+                    "pageLength": 7,
+                    "scrollX": true // Enable horizontal scrolling
+                });
+
+            }
+        });
+    });
+    $('#bttermsnclose').on('click', function () {
+        $('#modelSelectAll').modal('hide');
+    });
+
+    function Checkuncheck() {
+
+        var f = false;
+        $('#tableselectall tr input[type="checkbox"]').each(function () {
+            if (!$(this).prop('checked')) {
+                f = true;
+            }
+
+        });
+        if (f == true) {
+            $('#example-select-all').prop('checked', false);
+        } else {
+            $('#example-select-all').prop('checked', true);
+        }
+    }
+    $('#example-select-all').on('click', function () {
+
+        $('#tableselectall').DataTable().destroy();
+        var dataTable = $('#tableselectall').DataTable({
+            scrollY: '300px', // Set the height
+            scrolly: true,    // Enable horizontal scrolling
+            scrollCollapse: true,
+            paging: false      // Disable pagination (optional)
+        });
+        var d = $(this).is(':checked');
+        // Iterate over all pages
+        $('#tableselectall tr input[type="checkbox"]').each(function () {
+            // Select checkboxes on each page
+            if (d == true) {
+                $(this).prop('checked', true);
+            } else {
+                $(this).prop('checked', false);
+            }
+
+        });
+
+
+    });
+    $('#SaveAllTC').on('click', function () {
+        debugger
+        var checkedValues ='';
+        $('#tableselectall tr input[type="checkbox"]:checked').each(function () {
+            if (checkedValues == '') {
+                checkedValues = $(this).val();
+            } else {
+                checkedValues = checkedValues+","+ $(this).val();
+            }
+        });
+         var inqId = @ViewBag.InqueryId;
+        $.ajax({
+            url: "/InquiryTransaction/SaveSelectAll",
+            type: "GET",
+            data: {
+                Ids: checkedValues,
+                Type: 'TAndC',
+                TranId: inqId
+            },
+            success: function (data) {
+                $('#modelSelectAll').modal('hide');
+                ReloadPartialView()
+
+            }
+        })
+    })
+    $('#tbltermsandcondition').DataTable({
+        responsive: true,
+        paging: true,
+        searching: true
+        // Add other DataTable options as needed
+    });
+
+    $.ajax({
+        url: "/Dropdown/GetTermsAndCOndition1?type=3",
+        type: "POST",
+        dataType: "json",
+        success: function (data) {
+            $("#txttermandcondition").autocomplete({
+                source: data,
+                minLength: 1,
+                select: function (event, ui) {
+                    // Set the selected item in the input field
+                    $("#txttermandcondition").val(ui.item.label);
+
+                    // Show the amount in a textbox (replace #txtAmount with the actual ID of your textbox)
+                    $("#Terms").val(ui.item.value);
+
+                    // Prevent the default behavior of the Autocomplete widget
+                    return false;
+                }
+            });
+        }
+    });
+    function addtearmscondition() {
+        var termInput = document.getElementById("txttermandcondition");
+        var termValue = termInput.value.trim();
+
+
+        if (termValue === "") {
+            document.getElementById("validationMessage").innerHTML = "Please enter a term and condition.";
+            return;
+        }
+
+        document.getElementById("validationMessage").innerHTML = "";
+
+        var Termdata = $('#txttermandcondition').val();
+         var model = {
+                InqId: @ViewBag.InqueryId,
+                TermInqId: $("#Tearmconditionid").val(),
+             Description: $("#Terms").val(),
+             status: 1,
+             Terms: $("#txttermandcondition").val()
+               }
+
+            $.ajax({
+                url: '@Url.Action("SaveTermdata", "InquiryTransaction")',
+                type: 'POST',
+                dataType: 'json',
+                data: model,
+                success: function (data) {
+                    if (data.obj == "1") {
+                        alert("Data Saved");
+                    } else if (data.obj == "2") {
+                        alert("Data Updated");
+                    }
+                    else if (data.obj == "2") {
+                        alert("Try again");
+                    }
+                    ReloadPartialView();
+                }
+            })
+    }
+     function ReloadPartialView() {
+    var inqId = @ViewBag.InqueryId;
+
+    $.ajax({
+        url: "/InquiryTransaction/TearmAndConditionLoad",
+        type: "GET",
+        data: { id: inqId },
+        success: function (result) {
+            // Replace the content of the existing partial view container
+            $('#TermConditionsdetails').html(result);
+        }
+    });
+    }
+
+    // Assuming each row has a delete button with the class 'delete-btn'
+    $(document).on('click', '.delete-btn', function () {
+        // Get the extra item ID from the data attribute or another way
+        var extraItemId = $(this).data('extraitemid');
+        var currentRow = $(this).closest('tr');
+
+        // Make an AJAX request to delete the record
+        $.ajax({
+            url: '/InquiryTransaction/DeleteTermsAndCondition',
+            type: 'POST',
+            data: { extraItemId: extraItemId },
+            dataType: 'json',
+            success: function (result) {
+                //debugger
+                //if (result.success) {
+                //    // Remove the corresponding row from the table
+                //
+                //    alert(result.message);
+                //} else {
+                //    alert(result.message);
+                //}
+                currentRow.remove();
+                alert(result.message);
+            },
+            error: function () {
+                alert('Error in the AJAX request');
+            }
+        });
+    });
+
+    // Click event for the edit button
+    $(document).ready(function () {
+        $(document).on('click', '.edit-btn', function () {
+            debugger;
+
+            var extraitem = $(this).closest('tr').find('td:eq(1)').text();
+            var extraitemde = $(this).closest('tr').find('td:eq(2)').text();
+            var extraitemId = $(this).data('extraitemid');
+
+            // Populate the textboxes with the data
+            $('#Terms').val(extraitemde);
+            $('#txttermandcondition').val(extraitem);
+            $('#Tearmconditionid').val(extraitemId);
+        });
+    });
+
+
+    $('#btnTandCCancel').click(function () {
+        // Clear the values of the textboxes
+        $('#txttermandcondition').val('');
+        $('#Tearmconditionid').val('');
+    });
+    </script>

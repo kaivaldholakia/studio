@@ -1,0 +1,364 @@
+﻿@model List<Soc_Management_Web.Models.Extraitem>
+<div class="col-md-12" style="margin-right:0px;margin-left:0px;width:110%">
+
+    <div class="row">
+        <div class="col-md-12" style="margin-right:0px;margin-left:0px;">
+            <div class="panel panel-primary">
+                <div class="panel-heading" style="text-align:left">
+                    <h3>EXTRA ITEMS</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-1" style="text-align:left">
+                            <label>Extra Item</label>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" class="form-control" name="txtExtraitem" required id="txtExtraitem" />
+                            <input type="hidden" id="extraitemId" />
+                            <div id="extraItemValidation" style="color: red;"></div>
+                        </div>
+                        <div class="col-md-1" style="text-align:left">
+                            <label>Amount</label>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" class="form-control" name="txtetraitemAmount" required id="txtetraitemAmount" />
+                            <div id="amountValidation" style="color: red;"></div>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn-info btn" id="bnaddExtra" type="button"><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
+                            <button class="btn-info btn" id="btnFind" type="button">Find</button>
+                            <button class="btn-danger btn" id="btnIdExtracancel" type="button">X</button>
+
+
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <hr />
+                            <table id="tableextraiem" class="table table-condensed table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Sl No</th>
+                                        <th>Item</th>
+                                        <th>Amount</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="width:100%">
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>@item.Sl</td>
+                                            <td>@item.extraitem</td>
+                                            <td>@item.amount</td>
+                                            <td>
+                                                <i class="fa fa-edit edit-btn" aria-hidden="true" data-extraitemid="@item.IteValue"></i>
+
+                                                <!-- Remove Icon -->
+                                                <i class="fa fa-trash delete_extra-btn" id="btnextradelete" aria-hidden="true" data-extraitemid="@item.IteValue"></i>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modelExtraItemAll" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <table id="tableextraiemall" class="table table-condensed table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" name="select_all" value="1" id="example-select-all"></th>
+                                            <th>Sl No</th>
+                                            <th style="display:none">Id</th>
+                                            <th>Item</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody style="width:100%;" id="tableextraiemallbody">
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" id="btncloseordei">Close</button>
+                    <button type="button" id="SaveAll" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $('#btnFind').on('click', function () {
+
+        $('#modelExtraItemAll').modal('show');
+        $.ajax({
+            url: "/Order/GetForAllSelection",
+            type: "GET",
+            data: {
+                Types: 'ExtraItem'
+            },
+            success: function (data) {
+                $("#tableextraiemall tbody").empty();
+                var i=0;
+                $.each(data.result, function (data, value) {
+                    i = i + 1;
+                    var newRowContent = '<tr><td><input type="checkbox" onchange="Checkuncheck()" value='+value.id+' id='+value.id+'/> </td><td>' + i + '</td><td style="display:none">' + value.id + '</td><td>' + value.item + '</td><td>'
+                        + value.amount + '</td></tr>'
+
+                    $("#tableextraiemall tbody").append(newRowContent);
+
+
+
+                });
+                new DataTable('#tableextraiemall', {
+                    "bPaginate": true,"pageLength":7});
+
+            }
+        });
+    });
+    $('#btncloseordei').on('click', function () {
+        $('#modelExtraItemAll').modal('hide');
+    });
+
+
+    function Checkuncheck() {
+
+        var f = false;
+        $('#tableextraiemall tr input[type="checkbox"]').each(function () {
+            if (!$(this).prop('checked')) {
+                f = true;
+            }
+
+        });
+        if (f == true) {
+            $('#example-select-all').prop('checked', false);
+        } else {
+            $('#example-select-all').prop('checked', true);
+        }
+    }
+    $('#example-select-all').on('click', function () {
+
+        $('#tableextraiemall').DataTable().destroy();
+        var dataTable = $('#tableextraiemall').DataTable({
+            scrollY: '300px', // Set the height
+            scrolly: true,    // Enable horizontal scrolling
+            scrollCollapse: true,
+            paging: false      // Disable pagination (optional)
+        });
+        var d = $(this).is(':checked');
+        // Iterate over all pages
+        $('#tableextraiemall tr input[type="checkbox"]').each(function () {
+            // Select checkboxes on each page
+            if (d == true) {
+                $(this).prop('checked', true);
+            } else {
+                $(this).prop('checked', false);
+            }
+
+        });
+
+
+    });
+    $('#SaveAll').on('click', function () {
+        var checkedValues = '';
+        $('#tableextraiemall tr input[type="checkbox"]:checked').each(function () {
+            if (checkedValues == '') {
+                checkedValues = $(this).val();
+            } else {
+                checkedValues = checkedValues + "," + $(this).val();
+            }
+        });
+
+         var inqId = @ViewBag.InqueryId;
+        $.ajax({
+            url: "/Order/SaveSelectAll",
+            type: "GET",
+            data: {
+                Ids: checkedValues,
+                Type: 'ExtraItemOrd',
+                TranId: inqId
+            },
+            success: function (data) {
+                $('#modelExtraItemAll').modal('hide');
+                ReloadPartialView()
+
+            }
+        })
+    })
+    $('#tableextraiem').DataTable({
+        responsive: true,
+        paging: true,
+        searching: true
+        // Add other DataTable options as needed
+    });
+       // SaveData();
+
+    $.ajax({
+        url: "/Dropdown/GetExtraItem",
+        type: "POST",
+        dataType: "json",
+        success: function (data) {
+            console.log(data,'ExtraItem')
+            $("#txtExtraitem").autocomplete({
+                source: data,
+                minLength: 1,
+                select: function (event, ui) {
+                    // Set the selected item in the input field
+                    $("#txtExtraitem").val(ui.item.label);
+
+                    // Show the amount in a textbox (replace #txtAmount with the actual ID of your textbox)
+                    $("#txtetraitemAmount").val(ui.item.value);
+
+                    // Prevent the default behavior of the Autocomplete widget
+                    return false;
+                }
+            });
+        }
+    });
+
+
+        $('#bnaddExtra').on('click', function () {
+            SaveData();
+
+        });
+        function SaveData() {
+
+            // Get input values
+            var extraItemInput = document.getElementById("txtExtraitem");
+            var amountInput = document.getElementById("txtetraitemAmount");
+
+            // Get validation divs
+            var extraItemValidationDiv = document.getElementById("extraItemValidation");
+            var amountValidationDiv = document.getElementById("amountValidation");
+
+            // Clear previous validation messages
+            extraItemValidationDiv.innerHTML = "";
+            amountValidationDiv.innerHTML = "";
+
+            // Validate Extra Item
+            if (extraItemInput.value.trim() === "") {
+                extraItemValidationDiv.innerHTML = "Please enter an extra item.";
+                return;
+            }
+
+            // Validate Amount
+            if (isNaN(amountInput.value) || amountInput.value.trim() === "") {
+                amountValidationDiv.innerHTML = "Please enter a valid amount.";
+                return;
+            }
+
+
+            var item = $('#txtExtraitem').val();
+            var amount = $('#txtetraitemAmount').val();
+            var TranId =@ViewBag.InqueryId;
+            var Id = $("#extraitemId").val();
+            var data = {
+                InqId: TranId,
+                EtrVou: Id,
+                extraitem: item == '' ? "" : item,
+                amount: amount
+            }
+            $.ajax({
+                url: "/Order/ExraItemSave",
+                type: "POST",
+                dataType: "json",
+                data: data,
+                success: function (data) {
+                    if (data.obj == "1") {
+                        alert("Data Saved");
+                    } else if (data.obj == "2") {
+                        alert("Data Updated");
+                    }
+                    else if (data.obj == "2") {
+                        alert("Try again");
+                    }
+                    ReloadPartialView();
+                    $("#txtExtraitem").focus();
+                }
+            })
+
+
+    }
+        function ReloadPartialView()
+    {
+    var inqId = @ViewBag.InqueryId;
+
+    $.ajax({
+        url: "/Order/ExraitemsLoad",
+        type: "GET",
+        data: { id: inqId },
+        success: function (result) {
+            // Replace the content of the existing partial view container
+            $('#extraitemdetails').html(result);
+        }
+    });
+    }
+
+
+        // Click event for the edit button
+    $(document).ready(function () {
+
+        $('#btnextradelete').click(function () {
+            var extraItemId = $(this).data('extraitemid');
+            var currentRow = $(this).closest('tr');
+
+            // Make an AJAX request to delete the record
+            $.ajax({
+                url: '/Order/DeleteExtraItem',
+                type: 'POST',
+                data: { extraItemId: extraItemId },
+                dataType: 'json',
+                success: function (result) {
+                    if (result.success) {
+
+                        alert(result.message);
+                        ReloadPartialView();
+                    } else {
+                        alert(result.message);
+                    }
+                },
+                error: function () {
+                    alert('Error in the AJAX request');
+                }
+            });
+        })
+        $(document).on('click', '.edit-btn', function () {
+            // Your existing code for handling the click event
+            var sl = $(this).closest('tr').find('td:eq(0)').text();
+            var extraitem = $(this).closest('tr').find('td:eq(1)').text();
+            var amount = $(this).closest('tr').find('td:eq(2)').text();
+            var extraitemId = $(this).data('extraitemid');
+
+            // Populate the textboxes with the data
+            $('#txtExtraitem').val(extraitem);
+            $('#txtetraitemAmount').val(amount);
+            $('#extraitemId').val(extraitemId);
+        });
+    });
+        $('#btnIdExtracancel').click(function () {
+        // Clear the values of the textboxes
+        $('#txtExtraitem').val('');
+        $('#txtetraitemAmount').val('');
+        $('#extraitemId').val('');
+    });
+
+</script>

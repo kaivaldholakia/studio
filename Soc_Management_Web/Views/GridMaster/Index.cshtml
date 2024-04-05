@@ -1,0 +1,1099 @@
+﻿@using PIOAccount.Common;
+@model PIOAccount.Models.GridMasterModel
+@{
+    ViewData["Title"] = "Grid Master";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    List<PIOAccount.Models.GridMasterModel> gridMasterList = ViewBag.gridMasterList as List<PIOAccount.Models.GridMasterModel>;
+    var userRight = ViewBag.userRight as PIOAccount.Models.UserFormRightModel;
+    //ViewData["Title"] = userRight.ModuleNm;
+
+}
+
+
+<div class="card card-primary">
+    <div class="card-header" style="font-family:Verdana">
+        <h6> @ViewData["Title"]</h6>
+    </div>
+    <div class="card-body">
+        <div class="card card-primary card-tabs">
+            <div class="card-header p-0 pt-1">
+                <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="custom-tabs-three-list-tab" data-toggle="pill" href="#custom-tabs-three-list" role="tab" aria-controls="custom-tabs-three-list" aria-selected="true" style="font-family:Verdana;font-size:small">List (Alt+L)</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="custom-tabs-three-add-tab" data-toggle="pill" href="#custom-tabs-three-add" role="tab" aria-controls="custom-tabs-three-add" aria-selected="false" style="font-family:Verdana;font-size:small">Add/Update (F2)</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="col-md-12">
+                    <div class="tab-content" id="custom-tabs-three-tabContent">
+                        <div class="tab-pane fade show active" id="custom-tabs-three-list" role="tabpanel" aria-labelledby="custom-tabs-three-list-tab">
+                            <div class="table-responsive mt-3" style="font-family:Verdana;font-size:small;font-display:inherit">
+                                <table class="table table-bordered w-100" id="tblGridMaster">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:5% !important">
+                                                Sr.No
+                                            </th>
+                                            <th style="width:8% !important">
+                                                Actions
+                                            </th>
+                                            <th style="width:20% !important">
+                                                Menu Name
+                                            </th>
+                                            <th style="width:10% !important">
+                                                Grid Type
+                                            </th>
+                                            <th style="width:25% !important">
+                                                Layout
+                                            </th>
+                                            <th style="width:10% !important">
+                                                Multi Select Y/N
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="custom-tabs-three-add" role="tabpanel" aria-labelledby="custom-tabs-three-add-tab">
+                            <form method="post" class="mt-1">
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <input type="hidden" name="GrdSaveAs" id="txtGrdSaveAs" value="@Model.GrdSaveAs" />
+                                        <input type="hidden" name="GrdFlg" id="txtGrdFlg" value="@Model.GrdFlg" />
+                                        <input type="hidden" name="GrdVou" id="txtGrdVou" value="@Model.GrdVou" />
+                                        <label class="control-label col-xl-12 font-weight-bold customLabel" style="font-family:Verdana;font-size:small">
+                                            Menu <span class="required">*</span>
+                                        </label>
+
+                                        <div class="form-outline form-white mb-2">
+                                            @if (Model != null && Model.MenuList != null && Model.MenuList.Count > 0)
+                                            {
+                                                @Html.DropDownListFor(x => x.GrdMnuVou, Model.MenuList, "Select", new { @class = "form-control select2", @tabindex = "1", @style = "font-family: Verdana;font-size:small; height:35px; width: 250px", @required = "required", @id = "txtGrdMnuVou" }) }
+                                            else
+                                            {
+                                                @Html.DropDownListFor(x => x.GrdMnuVou, new List<SelectListItem>(), "Select", new { @class = "form-control select2", @tabindex = "1", @style = "font-family: Verdana;font-size:small; height:35px; width: 150px", @required = "required", @id = "txtGrdMnuVou" })}
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="control-label col-xl-12 font-weight-bold customLabel" style="font-family:Verdana;font-size:small">
+                                            Grid Type <span class="required">*</span>
+                                        </label>
+
+                                        <div class="form-outline form-white mb-2">
+                                            @Html.DropDownListFor(x => x.GrdType, Model.TypeList, "Select", new { @class = "form-control select2", @tabindex = "2", @style = "font-family: Verdana;font-size:small; height:35px; width: 150px", @required = "required", @id = "txtGrdType" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="control-label col-xl-12 font-weight-bold customLabel" style="font-family:Verdana;font-size:small">
+                                            Layout <span class="required">*</span>
+                                        </label>
+                                        <div class="form-outline form-white mb-2">
+                                            @Html.TextBoxFor(x => x.GrdName, new { @class = "form-control form-control-lg", @placeholder = "Layout Name", @tabindex = "3", @style = "font-family: Verdana;font-size:small; height:38px; width: 250px", @required = "required" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="control-label col-xl-12 font-weight-bold customLabel" style="font-family:Verdana;font-size:small">
+                                            Multi Select <span class="required"></span>
+                                        </label>
+                                        <div class="form-outline form-white mb-2">
+                                            @Html.DropDownListFor(x => x.GrdMultiSelYN, Model.MultiYNList, "Select", new { @class = "form-control select2", @tabindex = "4", @style = "font-family: Verdana;font-size:small; height:35px; width: 100px", @required = "required", @id = "txtGrdMultiSelYN" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="control-label col-xl-12 font-weight-bold customLabel" style="font-family:Verdana;font-size:small">
+                                            Default Y/N <span class="required"></span>
+                                        </label>
+                                        <div class="form-outline form-white mb-2">
+                                            <select class=" form-control select2" name="GrdDftYNo" style="font-family: Verdana;font-size:small; height:35px; width: 100px" required="required">
+                                                @if (Model.GrdDftYNo == 1)
+                                                {
+                                                    <option value="0">No</option>
+                                                    <option selected value="1">Yes</option>
+                                                }
+                                                else
+                                                {
+                                                    <option selected value="0">No</option>
+                                                    <option value="1">Yes</option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="control-label col-xl-12 font-weight-bold customLabel" style="font-family:Verdana;font-size:small">
+                                            Title <span class="required">*</span>
+                                        </label>
+                                        <div class="form-outline form-white mb-2">
+                                            @Html.TextBoxFor(x => x.GrdTitle, new { @class = "form-control form-control-lg", @placeholder = "Title", @tabindex = "3", @style = "font-family: Verdana;font-size:small; height:38px; width: 250px", @required = "required" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="control-label col-xl-12 font-weight-bold customLabel" style="font-family:Verdana;font-size:small">
+                                            Page Size <span class="required">*</span>
+                                        </label>
+                                        <div class="form-outline form-white mb-2">
+                                            @Html.DropDownListFor(x => x.PageSize, Html.GetEnumSelectList<EnumPageSize>(), "Select", new { @class = "form-control select2", @tabindex = "4", @style = "font-family: Verdana;font-size:small; height:35px; width: 180px", @required = "required" })
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="table-responsive mt-12" style="font-family:Verdana;font-size:small;font-display:inherit">
+                                    <table class="table table-bordered " id="tblGridTransaction">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:2% !important">
+                                                    Row.No
+                                                    @Html.HiddenFor(x => x.GrdAHideYNString)
+                                                    @Html.HiddenFor(x => x.canGrowString)
+                                                    @Html.HiddenFor(x => x.GrdALinkYNString)
+                                                    @Html.HiddenFor(x => x.GrdATotYNString)
+                                                </th>
+                                                <th style="width:15% !important">
+                                                    Field Name <span class="text-danger">*</span>
+                                                </th>
+                                                <th style="width:12% !important">
+                                                    Standard Column Name <span class="text-danger">*</span>
+                                                </th>
+                                                <th style="width:12% !important">
+                                                    New Column Name <span class="text-danger">*</span>
+                                                </th>
+                                                <th style="width:5% !important">
+                                                    Position
+                                                </th>
+                                                <th style="width:8% !important">
+                                                    DataType
+                                                </th>
+                                                <th style="width:3% !important">
+                                                    Width
+                                                </th>
+                                                <th style="width:3% !important">
+                                                    Decimal
+                                                </th>
+                                                <th style="width:8% !important">
+                                                    Align
+                                                </th>
+                                                <th style="width:3% !important">
+                                                    Total Y/N
+                                                </th>
+                                                <th style="width:3% !important">
+                                                    Link Y/N
+                                                </th>
+                                                <th style="width:3% !important">
+                                                    Hide Y/N
+                                                </th>
+                                                <th style="width:3% !important">
+                                                    Can Grow Y/N
+                                                </th>
+                                                <th style="width:3% !important">
+                                                    Suppress If Value
+                                                </th>
+                                                <th>
+                                                    Del.
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (Model != null && Model.GrdVou > 0)
+                                            {
+                                                for (int i = 0; i < Model.Gridtransaction.GrdAColNm.Length; i++)
+                                                {
+                                                    <tr class="AddRows">
+                                                        <td style="width:2% !important">
+                                                            @(i+1)
+                                                        </td>
+                                                        <td style="width:15% !important">
+                                                            @Html.TextBoxFor(x => x.Gridtransaction.GrdADbFld[i], new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px; text-align:left;" })
+                                                        </td>
+                                                        <td style="width:12% !important">
+                                                            @Html.TextBoxFor(x => x.Gridtransaction.GrdAColNm[i], new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px; text-align:left;" })
+                                                        </td>
+                                                        <td style="width:12% !important">
+                                                            @Html.TextBoxFor(x => x.Gridtransaction.GrdANewColNm[i], new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px; text-align:left;" })
+                                                        </td>
+                                                        <td style="width:5% !important">
+                                                            @Html.TextBoxFor(x => x.Gridtransaction.GrdAPosition[i], new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px; text-align:right;" })
+                                                        </td>
+                                                        <td style="width:8% !important">
+                                                            @Html.DropDownListFor(x => x.Gridtransaction.GrdADataType[i], Model.Gridtransaction.DataTypeList, "Select", new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px;" })
+                                                        </td>
+                                                        <td style="width:3% !important">
+                                                            @Html.TextBoxFor(x => x.Gridtransaction.GrdAWidth[i], new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px; text-align:right;" })
+                                                        </td>
+                                                        <td style="width:3% !important">
+                                                            @Html.TextBoxFor(x => x.Gridtransaction.GrdADecUpTo[i], new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px; text-align:right;" })
+                                                        </td>
+                                                        <td style="width:8% !important">
+                                                            @Html.DropDownListFor(x => x.Gridtransaction.GrdAAlign[i], Model.Gridtransaction.AlignList, "Select", new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px;" })
+                                                        </td>
+                                                        <td style="width:3% !important">
+                                                            @Html.CheckBoxFor(x => x.Gridtransaction.GrdATotYN[i], new { @class = "form-control ATotYN", @type = "checkbox", @style = "font-family: Verdana;font-size:small; height:35px;" })
+                                                        </td>
+                                                        <td style="width:3% !important">
+                                                            @Html.CheckBoxFor(x => x.Gridtransaction.GrdALinkYN[i], new { @class = "form-control ALinkYN", @type = "checkbox", @style = "font-family: Verdana;font-size:small; height:35px;" })
+                                                        </td>
+                                                        <td style="width:3% !important">
+                                                            @Html.CheckBoxFor(x => x.Gridtransaction.GrdAHideYN[i], new { @class = "form-control AHideYN", @type = "checkbox", @style = "font-family: Verdana;font-size:small; height:35px;" })
+                                                        </td>
+                                                        <td style="width:3% !important">
+                                                            @Html.CheckBoxFor(x => x.Gridtransaction.GrdCanGrow[i], new { @class = "form-control canGrow", @type = "checkbox", @style = "font-family: Verdana;font-size:small; height:35px;" })
+                                                        </td>
+                                                        <td style="width:3% !important">
+                                                            @Html.TextBoxFor(x => x.Gridtransaction.GrdASuppressIFVal[i], new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px; text-align:right;" })
+                                                        </td>
+                                                        <td style="width:5% !important">
+                                                            <a onclick="DeleteRows(this)"><i class="fa fa-trash fontCustom text-danger"></i></a>
+                                                        </td>
+                                                    </tr>
+                                                }
+
+                                            }
+                                            else
+                                            {
+                                                <tr class="AddRows">
+                                                    <td style="width:2% !important">
+                                                        1
+                                                    </td>
+                                                    <td style="width:15% !important">
+                                                        @Html.TextBoxFor(x => x.Gridtransaction.GrdADbFld, new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px;  text-align:left;" })
+                                                    </td>
+                                                    <td style="width:12% !important">
+                                                        @Html.TextBoxFor(x => x.Gridtransaction.GrdAColNm, new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px;  text-align:left;" })
+                                                    </td>
+                                                    <td style="width:12% !important">
+                                                        @Html.TextBoxFor(x => x.Gridtransaction.GrdANewColNm, new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px;  text-align:left;" })
+                                                    </td>
+                                                    <td style="width:5% !important">
+                                                        @Html.TextBoxFor(x => x.Gridtransaction.GrdAPosition, new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px; text-align:right;" })
+                                                    </td>
+                                                    <td style="width:8% !important">
+                                                        @Html.DropDownListFor(x => x.Gridtransaction.GrdADataType, Model.Gridtransaction.DataTypeList, "Select", new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px;" })
+                                                    </td>
+                                                    <td style="width:3% !important">
+                                                        @Html.TextBoxFor(x => x.Gridtransaction.GrdAWidth, new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px; text-align:right;" })
+                                                    </td>
+                                                    <td style="width:3% !important">
+                                                        @Html.TextBoxFor(x => x.Gridtransaction.GrdADecUpTo, new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px; text-align:right;" })
+                                                    </td>
+                                                    <td style="width:8% !important">
+                                                        @Html.DropDownListFor(x => x.Gridtransaction.GrdAAlign, Model.Gridtransaction.AlignList, "Select", new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px;" })
+                                                    </td>
+                                                    <td style="width:3% !important">
+                                                        @Html.CheckBoxFor(x => x.Gridtransaction.GrdATotYN[0], new { @class = "form-control ATotYN", @type = "checkbox", @style = "font-family: Verdana;font-size:small; height:35px;" })
+                                                    </td>
+                                                    <td style="width:3% !important">
+                                                        @Html.CheckBoxFor(x => x.Gridtransaction.GrdALinkYN[0], new { @class = "form-control ALinkYN", @type = "checkbox", @style = "font-family: Verdana;font-size:small; height:35px;" })
+                                                    </td>
+                                                    <td style="width:3% !important">
+                                                        @Html.CheckBoxFor(x => x.Gridtransaction.GrdAHideYN[0], new { @class = "form-control AHideYN", @type = "checkbox", @style = "font-family: Verdana;font-size:small; height:35px;" })
+                                                    </td>
+                                                    <td style="width:3% !important">
+                                                        @Html.CheckBoxFor(x => x.Gridtransaction.GrdCanGrow[0], new { @class = "form-control canGrow", @type = "checkbox", @style = "font-family: Verdana;font-size:small; height:35px;" })
+                                                    </td>
+                                                    <td style="width:3% !important">
+                                                        @Html.TextBoxFor(x => x.Gridtransaction.GrdASuppressIFVal, new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px; text-align:right;" })
+                                                    </td>
+                                                    <td style="width:5% !important">
+                                                        <a onclick="DeleteRows(this)"><i class="fa fa-trash fontCustom text-danger"></i></a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                            <tr class="lastRow">
+                                                <td colspan="14" class="text-center"><a onclick="AddRows()"><i class="fa fa-plus fontCustom text-primary"></i></a><b>(Alt+I)</b></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <button class="btn btn-success px-4 text-white" type="button" style="font-family:Verdana;font-size:small;" id="btnshowquery">
+                                            Show Query (Alt+S)
+                                        </button>
+                                        <button class="btn btn-dark px-4 text-white d-none" type="button" style="font-family:Verdana;font-size:small;" id="btnhidequery">
+                                            Show Query (Alt+H)
+                                        </button>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <button class="btn btn-info px-4 text-white" type="button" style="font-family: Verdana; font-size: small; " id="btnrunquery">
+                                            Run Query (Alt+Q)
+                                        </button>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button class="btn btn-info px-4 text-white" type="button" style="font-family: Verdana; font-size: small;" id="btnrunoutquery">
+                                            Run OutQuery (Alt+E)
+                                        </button>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button class="btn btn-secondary px-4 text-white" type="button" style="font-family: Verdana; font-size: small;" id="btnclear">
+                                            Clear Result (Alt+R)
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="divshowquery" class="d-none">
+
+                                    <div class="row">
+
+                                        <div class="col-md-12">
+                                            <div class="row">
+                                                <label class="control-label col-md-2 col-sm-2 col-xl-4 font-weight-bold customLabel" style="font-family:Verdana;font-size:medium;text-align:left">
+                                                    Main Query <span class="required">*</span>
+                                                </label>
+                                                <div class="form-outline form-white mb-2">
+                                                    <textarea id="GrdQryFields" name="GrdQryFields" class="form-control form-control-lg" placeholder="Main Query Fields" tabindex="4" cols="200" rows="7" style="font-family:Verdana;font-size:medium;">@Model.GrdQryFields </textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row">
+                                                <label class="control-label col-md-2 col-sm-2 col-xl-4 font-weight-bold customLabel" style="font-family:Verdana;font-size:medium;text-align:left">
+                                                    From / Join Qery <span class="required">*</span>
+                                                </label>
+                                                <div class="form-outline form-white mb-2">
+                                                    <textarea id="GrdQryJoin" name="GrdQryJoin" class="form-control form-control-lg" placeholder="Main Query Fields" tabindex="4" rows="10" cols="90" style="font-family:Verdana;font-size:medium;">@Model.GrdQryJoin </textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-5" style="margin-left:10px">
+                                            <div class="row">
+                                                <label class="control-label col-md-2 col-sm-2 col-xl-6 font-weight-bold customLabel" style="font-family:Verdana;font-size:medium;text-align:left">
+                                                    Order By Query <span class="required">*</span>
+                                                </label>
+                                                <div class="form-outline form-white mb-2">
+                                                    <textarea id="GrdQryOrderBy" name="GrdQryOrderBy" class="form-control form-control-lg" placeholder="Main Query Fields" tabindex="4" cols="90" rows="2" style="font-family:Verdana;font-size:medium;">@Model.GrdQryOrderBy </textarea>
+                                                </div>
+                                                <div class="table-responsive mt-6" style="font-family:Verdana;font-size:small;font-display:inherit">
+                                                    <table class="table table-bordered" id="tblGridShort">
+                                                        <thead>
+                                                            <tr>
+                                                                <th style="width:3% !important">
+                                                                    Row.No
+                                                                </th>
+                                                                <th style="width:8% !important">
+                                                                    Field Name <span class="text-danger">*</span>
+                                                                </th>
+                                                                <th style="width:8% !important">
+                                                                    Display Name <span class="text-danger">*</span>
+                                                                </th>
+                                                                <th style="width:3% !important">
+                                                                    Default Y/N <span class="text-danger"></span>
+                                                                </th>
+                                                                <th>
+                                                                    Del.
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @if (Model != null && Model.GrdVou > 0 && Model.Gridshort.GrdBDbFld.Length > 0)
+                                                            {
+                                                                if (Model.Gridshort.GrdBDbFld.Length > 0)
+                                                                {
+                                                                    for (int i = 0; i < Model.Gridshort.GrdBDbFld.Length; i++)
+                                                                    {
+                                                                        <tr class="GAddRows">
+                                                                            <td style="width:3% !important">
+                                                                                @(i+1)
+                                                                            </td>
+                                                                            <td style="width:8% !important">
+                                                                                @Html.TextBoxFor(x => x.Gridshort.GrdBDbFld[i], new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px; text-align:right;" })
+                                                                            </td>
+                                                                            <td style="width:8% !important">
+                                                                                @Html.TextBoxFor(x => x.Gridshort.GrdBColNm[i], new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px; text-align:right;" })
+                                                                            </td>
+                                                                            <td style="width:3% !important">
+                                                                                @Html.CheckBoxFor(x => x.Gridshort.GrdBDefYN[i], new { @class = "form-control", @type = "checkbox", @style = "font-family: Verdana;font-size:small; height:35px;" })
+                                                                            </td>
+                                                                            <td style="width:3% !important">
+                                                                                <a onclick="GDeleteRows(this)"><i class="fa fa-trash fontCustom text-danger"></i></a>
+                                                                            </td>
+                                                                        </tr>
+                                                                    }
+                                                                }
+
+
+                                                            }
+                                                            else
+                                                            {
+                                                                <tr class="GAddRows">
+                                                                    <td style="width:3% !important">
+                                                                        1
+                                                                    </td>
+                                                                    <td style="width:8% !important">
+                                                                        @Html.TextBoxFor(x => x.Gridshort.GrdBDbFld, new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px; text-align:right;" })
+                                                                    </td>
+                                                                    <td style="width:8% !important">
+                                                                        @Html.TextBoxFor(x => x.Gridshort.GrdBColNm, new { @class = "form-control", @style = "font-family: Verdana;font-size:small; height:35px; text-align:right;" })
+                                                                    </td>
+                                                                    <td style="width:3% !important">
+                                                                        @Html.CheckBoxFor(x => x.Gridshort.GrdBDefYN[0], new { @class = "form-control", @type = "checkbox", @style = "font-family: Verdana;font-size:small; height:35px;" })
+                                                                    </td>
+                                                                    <td style="width:5% !important">
+                                                                        <a onclick="GDeleteRows(this)"><i class="fa fa-trash fontCustom text-danger"></i></a>
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                            <tr class="lastRow">
+                                                                <td colspan="5" class="text-center"><a onclick="GAddRows()"><i class="fa fa-plus fontCustom text-primary"></i></a><b>(Alt+N)</b></td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="col-md-12 mt-2">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" id="tblDynamic"></table>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="col-md-12 " style="text-align:center">
+                                        <button class="btn btn-primary px-4 text-white" style="font-family:Verdana;font-size:medium;margin-right:10px" id="btnSave">
+                                            Save (F10)
+                                        </button>
+                                        <button class="btn btn-primary px-4 text-white" style="font-family:Verdana;font-size:medium;margin-right:10px" id="btnSaveAs">
+                                            Save As (Alt+F10)
+                                        </button>
+                                        <a href="/GridMaster/index" class="btn btn-warning px-4 text-dark" style="font-family:Verdana;font-size:medium">
+                                            Cancel (Alt+C)
+                                        </a>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function ShowQuery() {
+        $('#divshowquery').addClass('block');
+        $('#divshowquery').removeClass('d-none');
+        $('#btnhidequery').removeClass('d-none');
+        $('#btnhidequery').addClass('block');
+        $('#btnshowquery').addClass('d-none');
+    }
+
+    function HideQuery() {
+        $('#divshowquery').addClass('d-none');
+        $('#divshowquery').removeClass('block');
+        $('#btnshowquery').removeClass('d-none');
+        $('#btnhidequery').addClass('d-none');
+        $('#btnshowquery').addClass('block');
+    }
+
+    function RunQuery(Model) {
+        $.ajax({
+            url: '/GridMaster/GetDataFromRunQueryFromQuery',
+            type: 'POST',
+            data: { objReqPara: Model },
+            dataType: 'Json',
+            success: function (data) {
+                if (data != null && data.response == "1") {
+                    var htmlColumn = "<thead><tr>";
+                    for (var i = 0; i < data.columnName.length; i++) {
+                        htmlColumn += "<th>" + data.columnName[i] + "</th>"
+                    }
+                    htmlColumn += "</tr></thead>";
+                    var htmlRow = "<tbody>";
+                    for (var i = 0; i < data.rowsData.length; i++) {
+                        htmlRow += "<tr>";
+                        for (var j = 0; j < data.rowsData[i].length; j++) {
+                            htmlRow += "<td>" + data.rowsData[i][j] + "</td>"
+                        }
+                        htmlRow += "</tr>";
+                    }
+                    htmlRow += "</tbody>";
+                    var finaltable = htmlColumn + htmlRow;
+                    $('#tblDynamic').html(finaltable);
+                }
+                else {
+                    showErrorMessage(data.message);
+                }
+
+            },
+            failure: function (response) {
+                showErrorMessage(response);
+            }
+        });
+    }
+    $('#btnrunquery').click(function () {
+        var Query = $('#GrdQryFields').val();
+        if (Query != undefined && Query != null && Query != "" && Query != " ") {
+            Query += " " + $('#GrdQryJoin').val();
+            Query += " " + $('#GrdQryOrderBy').val();
+            var columnname = "";
+            var model = { Query: Query, ColumnName: columnname };
+            RunQuery(model);
+        }
+        else {
+            showErrorMessage("Query not found");
+        }
+    });
+    $('#btnclear').click(function () {
+        $('#tblDynamic').html('');
+    });
+    $('#btnrunoutquery').click(function () {
+        var Query = $('#GrdQryFields').val();
+        if (Query != undefined && Query != null && Query != "" && Query != " ") {
+            Query += " " + $('#GrdQryJoin').val();
+            Query += " " + $('#GrdQryOrderBy').val();
+            var columnname = "";
+            $("tr.AddRows").each(function () {
+                if (!$(this).children('td').eq(11).children('input').is(":checked")) {
+                    columnname += $(this).children('td').eq(1).children('input').val() + ",";
+                }
+            });
+            if (columnname == "") {
+                showErrorMessage("Please enter atleast one filed");
+                return;
+            }
+            var model = { Query: Query, ColumnName: columnname };
+            RunQuery(model);
+        }
+        else {
+            showErrorMessage("Query not found");
+        }
+    });
+    $('#btnshowquery').click(function () {
+        ShowQuery();
+    });
+    $('#btnhidequery').click(function () {
+        HideQuery();
+    });
+    function GoToAddTab() {
+        $('#custom-tabs-three-list-tab').removeClass('active');
+        $('#custom-tabs-three-add-tab').addClass('active');
+
+        $('#custom-tabs-three-list').removeClass('active');
+        $('#custom-tabs-three-add').addClass('active');
+        $('#custom-tabs-three-add').addClass('show');
+        $('#txtGrdMnuVou').focus();
+        SetSelect2()
+    }
+    function GoToListTab() {
+        $('#custom-tabs-three-list-tab').addClass('active');
+        $('#custom-tabs-three-add-tab').removeClass('active');
+
+        $('#custom-tabs-three-list').addClass('active');
+        $('#custom-tabs-three-add').removeClass('active');
+        $('#custom-tabs-three-add').removeClass('show');
+    }
+</script>
+<script>
+    $(document).ready(function () {
+        DisbleButton()
+        $('#GrdQryFields').keypress(function () {
+            DisbleButton();
+        });
+        $('#GrdQryFields').focusout(function () {
+            DisbleButton();
+        });
+    });
+
+    function DisbleButton() {
+        var Query = $('#GrdQryFields').val();
+        if (Query == undefined || Query == null || Query == "" || Query == " ") {
+            $('#btnrunquery').prop('disabled', true)
+            $('#btnrunoutquery').prop('disabled', true)
+        }
+        else {
+            $('#btnrunquery').prop('disabled', false)
+            $('#btnrunoutquery').prop('disabled', false)
+        }
+    }
+
+    var isRecentCalledEsc = false;
+    var isRecentCalledAddRows = false;
+    var isRecentCalledSave = false;
+    (function (code) {
+        code(window.jQuery, document, window);
+    }(function ($, document, window) {
+        $(function () {
+            $(window)
+                .initKeyboard({ debug: 1 })
+                .on('F2', function () {
+                    GoToAddTab()
+                }).on('F10', function () {
+                    if (!isRecentCalledSave) {
+                        $("#btnSave").click();
+                        isRecentCalledSave = true;
+                        setTimeout(function () {
+                            isRecentCalledSave = false;
+                        }, 1000)
+                    }
+                }).on('Alt+F10', function () {
+                    if (!isRecentCalledSave) {
+                        var grdsaveas = $('input[name="GrdSaveAs"]').val("1");
+                        if (grdsaveas == "1") {
+                            $("#btnSave").click();
+                        }
+                        isRecentCalledSave = true;
+                        setTimeout(function () {
+                            isRecentCalledSave = false;
+                        }, 1000)
+                    }
+                })
+                .on('Alt+L', function () {
+                    GoToListTab();
+                })
+                .on('Alt+C', function () {
+                    GoToListTab();
+                })
+                .on('Alt+I', function () {
+                    AddRows();
+                })
+                .on('Alt+N', function () {
+                    GAddRows();
+                })
+                .on('Alt+S', function () {
+                    ShowQuery();
+                })
+                .on('Alt+H', function () {
+                    HideQuery();
+                })
+                .on('Alt+Q', function () {
+                    $("#btnrunquery").click();
+                })
+                .on('Alt+E', function () {
+                    $("#btnrunoutquery").click();
+                })
+                .on('Alt+R', function () {
+                    $("#btnclear").click();
+                })
+        });
+    }));
+</script>
+
+
+<script>
+    $(function () {
+        //$('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(4).children('input').val('0');
+        //$('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(6).children('input').val('0');
+        //$('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(7).children('input').val('0');
+        var id = $('#GrdName').val();
+        if (id) {
+            GoToAddTab();
+        }
+        else {
+            GoToListTab();
+        }
+        SetName();
+        var gridmstDataTable;
+        gridmstDataTable = $('#tblGridMaster').DataTable({
+            "paging": true,
+            "ordering": false,
+            "filter": true,
+            "destroy": true,
+            "orderMulti": false,
+            "serverSide": true,
+            "Processing": true,
+            "lengthMenu": [10, 20, 30, 40, 50, 100, 500],
+            "pageLength": 10,
+            "language": {
+                "infoFiltered": ""
+            },
+            "order": [[0, "desc"]],
+            "columnDefs": [{
+                "render": function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                },
+                "targets": 0,
+                'orderable': false
+            },
+            {
+
+                "render": function (data, type, row) {
+                    var html = `<a href="/GridMaster/index/` + row.grdVou + `"> <i class="fa fa-pen text-primary"></i></a>
+                                                                                        <a href="/GridMaster/delete/`+ row.grdVou + `"> <i class="fa fa-trash text-danger ml-3"></a></i>`;
+                    return html;
+                },
+                "targets": 1
+            },
+            {
+                "render": function (data, type, row) {
+                    return row.mnuName;
+                },
+                "targets": 2
+            },
+            {
+                "render": function (data, type, row) {
+                    if (row.grdType == '1') {
+                        return 'View';
+                    }
+                    else if (row.grdType == '2') {
+                        return 'Report';
+                    }
+                },
+                "targets": 3
+            },
+            {
+                "render": function (data, type, row) {
+                    return row.grdName;
+                },
+                "targets": 4
+            },
+            {
+                "render": function (data, type, row) {
+                    if (row.grdMultiSelYN == '1') {
+                        return 'Yes';
+                    }
+                    else if (row.grdMultiSelYN == '0') {
+                        return 'No';
+                    }
+                },
+                "targets": 5
+            }
+            ],
+            "ajax":
+            {
+                "url": "/GridMaster/GetGridMasterList",
+                "type": "POST",
+                "dataType": "JSON"
+            },
+            "aoColumns": [
+                { "mDataProp": "GrdVou" },
+                { "mDataProp": "MnuName" },
+                { "mDataProp": "GrdType" },
+                { "mDataProp": "GrdMultiSelYN" },
+            ],
+            drawCallback: function (resultData) {
+            },
+        });
+
+
+        $('#tblGridMaster_filter input').addClass('searchTextTable');
+        $('#tblGridMaster_filter input').attr('id', 'searchTextTable');
+        $('#searchTextTable').focus();
+    })
+</script>
+<script>
+
+    var isCalled = false;
+
+    function AddRows() {
+        if (!isCalled) {
+            var previousRow = $('#tblGridTransaction').children().find('tr.lastRow').prev();
+            if (previousRow != null) {
+                var DbFld = $(previousRow).children('td').eq(1).children('input').val();
+                var ColNm = $(previousRow).children('td').eq(2).children('input').val();
+                var NewColNm = $(previousRow).children('td').eq(3).children('input').val();
+                var posi = $(previousRow).children('td').eq(4).children('input').val();
+                var dtTyp = $(previousRow).children('td').eq(5).children('select').val();
+                var wdth = $(previousRow).children('td').eq(6).children('input').val();
+                var dec = $(previousRow).children('td').eq(7).children('input').val();
+                var aln = $(previousRow).children('td').eq(8).children('select').val();
+                if (DbFld != null && ColNm != null && NewColNm != null && posi != null && dtTyp != null && wdth != null && aln != null && dec != null && DbFld != "" && ColNm != "" && NewColNm != "" && posi != "" && dtTyp != "" && wdth != "" && aln != "" && dec != null) {
+                    var html = $('#tblGridTransaction').children().find('tr.AddRows').html();
+                    $('#tblGridTransaction').children().find('tr.lastRow').before("<tr>" + html + "</tr>");
+                    $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(2).children('input').val('0');
+                    $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(1).children('input').val('');
+                    $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(3).children('input').val('');
+                    $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(6).children('input').val('');
+                    $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(1).children('input').focus();
+                    SetSerialNumber();
+                    SetName();
+                    SetSelect2()
+                }
+                else {
+                    showErrorMessage("Please enter all required fields");
+                }
+            }
+            isCalled = true;
+
+            setTimeout(function () {
+                isCalled = false;
+            }, 500)
+        }
+
+
+    }
+
+    function DeleteRows(obj) {
+        if ($('#tblGridTransaction').children('tbody').children('tr:not(tr.lastRow)').length > 1) {
+            Swal.fire({
+                title: 'Are you sure want to delete row?',
+                showCancelButton: true,
+                confirmButtonText: 'Delete',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $(obj).closest('tr').remove();
+                    SetSerialNumber();
+                } else if (result.isDenied) {
+                }
+            })
+        }
+        else {
+            showErrorMessage('Cannot delete first row');
+        }
+    }
+
+    function SetSerialNumber() {
+        var count = 1;
+        $('#tblGridTransaction').children('tbody').children('tr:not(tr.lastRow)').each(function () {
+            $(this).children('td').eq(0).html(count);
+            count = parseInt(count) + 1;
+        });
+    }
+
+    function SetName() {
+
+        $('#tblGridTransaction').children('tbody').children('tr:not(tr.lastRow)').each(function () {
+            $(this).children("td").eq(1).children("input").attr("name", "Gridtransaction.GrdADbFld");
+            $(this).children("td").eq(2).children("input").attr("name", "Gridtransaction.GrdAColNm");
+            $(this).children("td").eq(3).children("input").attr("name", "Gridtransaction.GrdANewColNm");
+            $(this).children("td").eq(4).children("input").attr("name", "Gridtransaction.GrdAPosition");
+            $(this).children("td").eq(5).children("select").attr("name", "Gridtransaction.GrdADataType");
+            $(this).children("td").eq(6).children("input").attr("name", "Gridtransaction.GrdAWidth");
+            $(this).children("td").eq(7).children("input").attr("name", "Gridtransaction.GrdADecUpTo");
+            $(this).children("td").eq(8).children("select").attr("name", "Gridtransaction.GrdAAlign");
+            $(this).children("td").eq(9).children("input").attr("name", "Gridtransaction.GrdATotYN");
+            $(this).children("td").eq(10).children("input").attr("name", "Gridtransaction.GrdALinkYN");
+            $(this).children("td").eq(11).children("input").attr("name", "Gridtransaction.GrdAHideYN");
+            $(this).children("td").eq(12).children("input").attr("name", "Gridtransaction.CanGrow");
+            $(this).children("td").eq(13).children("input").attr("name", "Gridtransaction.GrdASuppressIFVal");
+        });
+
+    }
+
+    function GSetName() {
+
+        $('#tblGridShort').children('tbody').children('tr:not(tr.lastRow)').each(function () {
+            $(this).children("td").eq(1).children("input").attr("name", "Gridshort.GrdBDbFld");
+            $(this).children("td").eq(2).children("input").attr("name", "Gridshort.GrdBColNm");
+            $(this).children("td").eq(3).children("input").attr("name", "Gridshort.GrdBDefYN");
+        });
+
+    }
+</script>
+
+<script>
+
+    function GAddRows() {
+        var previousRow = $('#tblGridShort').children().find('tr.lastRow').prev();
+        if (previousRow != null) {
+            var GDbFld = $(previousRow).children('td').eq(1).children('input').val();
+            var GColNm = $(previousRow).children('td').eq(2).children('input').val();
+            if (GDbFld != null && GColNm != null && GDbFld != "" && GColNm != "") {
+                var html = $('#tblGridShort').children().find('tr.GAddRows').html();
+                $('#tblGridShort').children().find('tr.lastRow').before("<tr>" + html + "</tr>");
+                $('#tblGridShort').children().find('tr.lastRow').prev().children('td').eq(3).children('select').val('0');
+                $('#tblGridShort').children().find('tr.lastRow').prev().children('td').eq(1).children('input').val("");
+                $('#tblGridShort').children().find('tr.lastRow').prev().children('td').eq(2).children('input').val("");
+                GSetSerialNumber();
+                GSetName();
+            }
+            else {
+                showErrorMessage("Please enter all required fields");
+            }
+        }
+
+    }
+
+    function GDeleteRows(obj) {
+        if ($('#tblGridShort').children('tbody').children('tr:not(tr.lastRow)').length > 1) {
+            Swal.fire({
+                title: 'Are you sure want to delete row?',
+                showCancelButton: true,
+                confirmButtonText: 'Delete',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $(obj).closest('tr').remove();
+                    GSetSerialNumber();
+                } else if (result.isDenied) {
+                }
+            })
+        }
+        else {
+            showErrorMessage('Cannot delete first row');
+        }
+
+    }
+
+    function GSetSerialNumber() {
+        var count = 1;
+        $('#tblGridShort').children('tbody').children('tr:not(tr.lastRow)').each(function () {
+            $(this).children('td').eq(0).html(count);
+            count = parseInt(count) + 1;
+        });
+    }
+
+    function GSetName() {
+
+        $('#tblGridShort').children('tbody').children('tr:not(tr.lastRow)').each(function () {
+            $(this).children("td").eq(1).children("input").attr("name", "Gridshort.GrdBDbFld");
+            $(this).children("td").eq(2).children("input").attr("name", "Gridshort.GrdBColNm");
+            $(this).children("td").eq(3).children("input").attr("name", "Gridshort.GrdBDefYN");
+
+        });
+    }
+
+    $("#btnSaveAs").click(function () {
+        var ATotYN = $('.ATotYN');
+        var AHideYN = $('.AHideYN');
+        var canGrow = $('.canGrow');
+        var ALinkYN = $('.ALinkYN');
+
+        var ATotYNString = ''
+        var AHideYNString = ''
+        var ALinkYNString = ''
+        var canGrowString = ''
+
+        $(ATotYN).each(function () {
+            if ($(this).is(":checked")) {
+                ATotYNString += '1,';
+            }
+            else {
+                ATotYNString += '0,';
+            }
+        });
+
+        $(AHideYN).each(function () {
+            if ($(this).is(":checked")) {
+                AHideYNString += '1,';
+            }
+            else {
+                AHideYNString += '0,';
+            }
+        });
+        $(canGrow).each(function () {
+            if ($(this).is(":checked")) {
+                canGrowString += '1,';
+            }
+            else {
+                canGrowString += '0,';
+            }
+        });
+
+        $(ALinkYN).each(function () {
+            if ($(this).is(":checked")) {
+                ALinkYNString += '1,';
+            }
+            else {
+                ALinkYNString += '0,';
+            }
+        });
+
+        $('#GrdAHideYNString').val(AHideYNString);
+        $('#canGrowString').val(canGrowString);
+        $('#GrdALinkYNString').val(ALinkYNString);
+        $('#GrdATotYNString').val(ATotYNString);
+        var grdsaveas = $('input[name="GrdSaveAs"]').val("1");
+        if (grdsaveas == "1") {
+            $("#btnSave").click();
+        }
+    });
+
+    $("#btnSave").click(function () {
+        var ATotYN = $('.ATotYN');
+        var AHideYN = $('.AHideYN');
+        var canGrow = $('.canGrow');
+        var ALinkYN = $('.ALinkYN');
+
+        var ATotYNString = ''
+        var AHideYNString = ''
+        var ALinkYNString = ''
+        var canGrowString = ''
+
+        $(ATotYN).each(function () {
+            if ($(this).is(":checked")) {
+                ATotYNString += '1,';
+            }
+            else {
+                ATotYNString += '0,';
+            }
+        });
+
+        $(AHideYN).each(function () {
+            if ($(this).is(":checked")) {
+                AHideYNString += '1,';
+            }
+            else {
+                AHideYNString += '0,';
+            }
+        });
+        $(canGrow).each(function () {
+            if ($(this).is(":checked")) {
+                canGrowString += '1,';
+            }
+            else {
+                canGrowString += '0,';
+            }
+        });
+
+        $(ALinkYN).each(function () {
+            if ($(this).is(":checked")) {
+                ALinkYNString += '1,';
+            }
+            else {
+                ALinkYNString += '0,';
+            }
+        });
+
+        $('#GrdAHideYNString').val(AHideYNString);
+        $('#canGrowString').val(canGrowString);
+        $('#GrdALinkYNString').val(ALinkYNString);
+        $('#GrdATotYNString').val(ATotYNString);
+    })
+
+    $('#txtGrdMultiSelYN').focusout(function () {
+        $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(1).children('input').focus();
+    })
+
+    $('#txtGrdMultiSelYN').focusout(function () {
+        $('#tblGridTransaction').children().find('tr.lastRow').prev().children('td').eq(1).children('input').focus();
+    })
+
+
+    //function SaveAsGridMaster() {
+    //    var mnuVou = $('#txtGrdMnuVou').children('option:selected').val();
+    //    var grdnm = $('#GrdName').val();
+    //    var grdvou = $('#GrdVou').val();
+    //    if (grdnm != null && grdnm != "") {
+    //        $.ajax({
+    //            type: "POST",
+    //            url: '/GridMaster/SaveAsGridMst',
+    //            data: { 'grdnm': grdnm, 'mnuVou': mnuVou, 'grdvou': grdvou },
+    //            dataType: "JSON",
+    //            success: function (response) {
+    //                if (response.data) {
+    //                    if (data.status == 0) {
+    //                        success("Layout Already Exists")
+    //                    }
+    //                    else {
+    //                        $('#GrdFlg').val(0);
+    //                    }
+    //                }
+    //                else {
+    //                    showErrorMessage(response.message);
+    //                }
+    //            },
+    //            error: function (response) {
+    //                errorMessage(response);;
+    //            }
+    //        });
+    //    }
+    //};
+
+    function SetSelect2() {
+        $(".select2").select2({
+            placeholder: "---Select---",
+        });
+    }
+
+</script>

@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <UserSecretsId>e969a04d-a5ad-436d-9711-b4931526f592</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="bin\**" />
+    <Compile Remove="Views\Member\**" />
+    <Compile Remove="Views\User\**" />
+    <Content Remove="bin\**" />
+    <Content Remove="Views\Member\**" />
+    <Content Remove="Views\User\**" />
+    <EmbeddedResource Remove="bin\**" />
+    <EmbeddedResource Remove="Views\Member\**" />
+    <EmbeddedResource Remove="Views\User\**" />
+    <None Remove="bin\**" />
+    <None Remove="Views\Member\**" />
+    <None Remove="Views\User\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\AccountMasterController.cs" />
+    <Compile Remove="Controllers\GenLedgerController.cs" />
+    <Compile Remove="Controllers\MemberController.cs" />
+    <Compile Remove="Controllers\UserController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Views\AccountMaster\Index.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle" Version="1.8.9" />
+    <PackageReference Include="ClosedXML" Version="0.102.1" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.20.0" />
+    <PackageReference Include="itext7" Version="8.0.2" />
+    <PackageReference Include="iTextSharp" Version="5.5.13.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Graph" Version="5.24.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Report\" />
+    <Folder Include="Views\AccountMaster\" />
+    <Folder Include="wwwroot\Banner\" />
+    <Folder Include="wwwroot\Reports\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\Custom_Js\TearmsAndCondtion.js" />
+    <None Include="wwwroot\jquery-ui-1.13.2\external\jquery\jquery.js" />
+    <None Include="wwwroot\jquery-ui-1.13.2\jquery-ui.js" />
+    <None Include="wwwroot\jquery-ui-1.13.2\jquery-ui.min.js" />
+  </ItemGroup>
+
+</Project>

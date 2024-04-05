@@ -1,0 +1,601 @@
+﻿<!--@model PIOAccount.Models.AccountMasterModel
+@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int isAdministrator = HttpContextAccessor.HttpContext.Session.GetInt32("IsAdministrator").Value;
+    List<PIOAccount.Models.AccountMasterModel> accountmasterList = ViewBag.accountmasterList as List<PIOAccount.Models.AccountMasterModel>;
+    List<SelectListItem> layoutList = ViewBag.layoutList as List<SelectListItem>;
+    List<SelectListItem> pageNoList = ViewBag.pageNoList as List<SelectListItem>;
+    var userRight = ViewBag.userRight as PIOAccount.Models.UserFormRightModel;
+    ViewData["Title"] = userRight.ModuleNm;
+    string headerAdd = "";
+    string headerList = "";
+    string gridAdd = "";
+    string gridList = "";
+    bool headerAddTrue = false;
+    bool headerListTrue = false;
+
+    if (userRight != null && (userRight.IsAdd || userRight.IsEdit) && userRight.IsList)
+    {
+        headerList = "active";
+        gridList = "show active";
+        headerAddTrue = true;
+    }
+    else if (userRight != null && (userRight.IsAdd || userRight.IsEdit))
+    {
+        headerAdd = "active";
+        gridAdd = "show active";
+        headerAddTrue = true;
+    }
+    else if (userRight != null && userRight.IsList)
+    {
+        headerList = "active";
+        gridList = "show active";
+        headerAddTrue = true;
+    }
+    List<SelectListItem> statenameList = ViewBag.statename as List<SelectListItem>;
+}
+
+
+<div class="card card-primary" style="background-color:antiquewhite">
+    <div class="card-header" style="font-family:Nina">
+        <h6> @ViewData["Title"]</h6>
+    </div>
+    <div class="card-body">
+        <div class="card card-primary card-tabs">
+            <div class="card-header p-0 pt-1">
+                <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                    @if (userRight != null && userRight.IsList)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @headerList" id="custom-tabs-three-list-tab" data-toggle="pill" href="#custom-tabs-three-list" role="tab" aria-controls="custom-tabs-three-list" aria-selected="@headerListTrue" style="font-family:Nina;font-size:medium" onclick="GoToListTab()">List (Alt+L)</a>
+                        </li>
+                    }
+                    @if (userRight != null && (userRight.IsAdd || userRight.IsEdit))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @headerAdd" id="custom-tabs-three-add-tab" data-toggle="pill" href="#custom-tabs-three-add" role="tab" aria-controls="custom-tabs-three-add" aria-selected="@headerAddTrue" style="font-family:Nina;font-size:medium" onclick="GoToAddTab()">Add/Update (F2)</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+            <div class="card-body" style="background-color:aliceblue">
+                <div class="col-md-12">
+                    <div class="tab-content" id="custom-tabs-three-tabContent">
+                        @if (userRight != null && userRight.IsList)
+                        {
+                            <div class="tab-pane fade  @gridList" id="custom-tabs-three-list" role="tabpanel" aria-labelledby="custom-tabs-three-list-tab">
+                                <div class="table-responsive mt-2" style="font-display:inherit">
+                                    <div class="col-md-12 col-12 mb-2 mt-2">
+                                        <div class="row">
+                                            <div class="col-md-1 mb-2 float-left">
+                                                <select class="form-control form-control-sm" onchange="loadData()" id="drpReportPageNoDatable">
+                                                    @for (int i = 0; i < pageNoList.Count; i++)
+                                                    {
+                                                        string checkedd = "checked";
+                                                        <option checked="@checkedd" value="@pageNoList[i].Value">@pageNoList[i].Text</option>
+                                                        checkedd = string.Empty;
+                                                    }
+
+                                                </select>
+                                            </div>
+                                            <div class="col-md-5 col-12">
+                                                <div class="row">
+                                                    <div class="col-md-6 col">
+                                                        <select class="form-control select2 drpReportLayout" onchange="loadData()">
+                                                            <option value="" ; style="width:200px">--Select Layout--</option>
+                                                            @if (layoutList != null && layoutList.Count > 0)
+                                                            {
+                                                                foreach (var item in layoutList)
+                                                                {
+                                                                    <option value="@item.Value">@item.Text </option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-2 col-auto mb-2 custommt-2-3">
+                                                        @if (isAdministrator == 1)
+                                                        {
+                                                            <button class="btn btn-dark btn-sm text-white" style="font-family:Nina;font-size:medium" onclick="window.open('/GridMaster/Index/' + $('.drpReportLayout').val(), '_blank');">
+                                                                Edit
+                                                            </button>
+                                                        }
+                                                    </div>
+                                                    <div class="col-md-4 mb-2 custommt-2-3">
+                                                        <button class="btn btn-primary btn-sm" id="btnExportToExcel">Excel</button>
+                                                        <button class="btn btn-primary btn-sm ml-6" id="btnExportToPDF">PDF</button>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3"></div>
+                                            <div class="col-md-3 col-12 float-right">
+                                                <input type="text" class="form-control form-control-sm" placeholder="Search" id="txtReportSearchDataTable" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="dataTable">
+
+                                    </div>
+                                    <div class="pager float-right"></div>
+                                </div>
+                            </div>
+                        }
+                        @if (userRight != null && (userRight.IsAdd || userRight.IsEdit))
+                        {
+                            <div class="tab-pane fade @gridAdd" id="custom-tabs-three-add" role="tabpanel" aria-labelledby="custom-tabs-three-add-tab">
+                                <form method="post" class="mt-1">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="row">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2" style="font-family:Nina;font-size:medium">
+                                                    Account Name <span class="required">*</span>
+                                                </label>
+
+                                                <div class="col-md-auto col-12 form-outline form-white mb-2">
+                                                    <input type="text" id="txtAccName" name="AccName" class="form-control form-control-lg" placeholder="Account Name" tabindex="1" value="@Model.AccName" style="height:35px;width:300px" required />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2" style="font-family:Nina;font-size:medium">
+                                                    Code <span class="required"></span>
+                                                </label>
+
+                                                <div class="col-md-auto col-12 form-outline form-white mb-2">
+                                                    <input type="text" id="txtAccCd" name="AccCd" class="form-control form-control-lg uppercaseWithoutSpace" maxlength="10" placeholder="Code" tabindex="2" value="@Model.AccCd" style="height:35px; width: 100px" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2" style="font-family:Nina;font-size:medium">
+                                                    Group <span class="required">*</span>
+                                                </label>
+                                                <div class="col-md-9 d-flex form-outline form-white mb-2">
+                                                    @Html.DropDownListFor(x => x.AccGrpVou, Model.GroupList, "Select", new { @class = "form-control select2 AccGrpVou", @tabindex = "4", style = "height:35px; width:200px", @id = "txtAccGrpVou", @required = "required" })
+                                                    <a class="btn btn-outline-info ml-2" href="/AccountGroup/index" target="_blank"><i class="fa fa-plus"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2" style="font-family:Nina;font-size:medium">
+                                                            Address <span class="required"></span>
+                                                        </label>
+
+                                                        <div class="col-md-auto col-12 form-outline form-white mb-2">
+                                                            <textarea id="txtAccAdd" name="AccAdd" class="form-control form-control-lg" placeholder="Address" tabindex="5" rows="4" style="width:300px ">@Model.AccAdd </textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2" style="font-family:Nina;font-size:medium">
+                                                    City <span class="required"></span>
+                                                </label>
+                                                <input type="hidden" name="AccCity" id="txtAccCity" value="@Model.AccCity" />
+                                                <div class="col-md-9 d-flex form-outline form-white mb-2">-->
+                                                    <select class="form-control AccCtyVou" tabindex="5" style = "height:35px; width:200px " onchange = "GetCityState(this)" id="AccCtyVou">
+
+                                                        </select>
+                                                    <!--@Html.DropDownListFor(x => x.AccCtyVou, new SelectList(Model.CityList, "Value", "Text"), "Select", new { @class = "form-control select2 AccCtyVou", @tabindex = "6", style = "height:35px; width:200px", @onchange= "GetCityState(this)" })
+                                                    <a class="btn btn-outline-info ml-2" href="/City/index" target="_blank"><i class="fa fa-plus"></i></a>-->
+                                                    @*<a class="btn btn-outline-info ml-2" onclick="OpenCityModal()"><i class="fa fa-plus"></i></a>*@
+                                                <!--</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2" style="font-family:Nina;font-size:medium">
+                                                    State <span class="required"></span>
+                                                </label>
+                                                <div class="col-md-9 d-flex form-outline form-white mb-2">
+                                                    <input type="text" id="txtAccState" name="AccState" class="form-control form-control-lg" placeholder="State" tabindex="7" value="@Model.AccState" style="height:35px; width: 200px" readonly="readonly" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2" style="font-family:Nina;font-size:medium">
+                                                    Phone <span class="required"></span>
+                                                </label>
+                                                <div class="col-md-auto col-12 form-outline form-white mb-2">
+                                                    <input type="text" id="txtAccPhone" name="AccPhone" class="form-control form-control-lg" placeholder="Phone No" tabindex="9" value="@Model.AccPhone" style="height:35px;width:300px" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2" style="font-family:Nina;font-size:medium">
+                                                    Mobile <span class="required"></span>
+                                                </label>
+                                                <div class="col-md-auto col-12 form-outline form-white mb-2">
+                                                    <input type="text" id="txtAccMob" name="AccMOb" class="form-control form-control-lg" placeholder="Mobile" tabindex="10" value="@Model.AccMob" style="height:35px;width:300px" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="row">
+                                                        <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2" style="font-family:Nina;font-size:medium">
+                                                            Email <span class="required"></span>
+                                                        </label>
+                                                        <div class="col-md-auto col-12 form-outline form-white mb-2">
+                                                            <input type="text" id="txtAccEmail" name="AccEmail" class="form-control form-control-lg" placeholder="Email" tabindex="11" value="@Model.AccEmail" style="height:35px;width:300px" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2" style="font-family:Nina;font-size:medium">
+                                                    GST No <span class="required"></span>
+                                                </label>
+                                                <div class="col-md-auto col-12 form-outline form-white mb-2">
+                                                    <input type="text" id="txtAccGST" name="AccGST" class="form-control form-control-lg" placeholder="GSTIN No" tabindex="12" value="@Model.AccGST" style="height:35px;width:300px" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12 font-weight-bold customLabel mt-2" style="font-family:Nina;font-size:medium">
+                                                    PAN No <span class="required"></span>
+                                                </label>
+                                                <div class="col-md-auto col-12 form-outline form-white mb-2">
+                                                    <input type="text" id="txtAccPAN" name="AccPAN" class="form-control form-control-lg" placeholder="PAN No" tabindex="13" value="@Model.AccPAN" style="height:35px;width:300px" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="row">
+                                                <div class="col-md-12 text-center">
+                                                    @if (userRight.IsEdit && Model != null && Model.AccVou > 0)
+                                                    {
+                                                        <button class="btn btn-primary px-md-4 mb-2 text-white" style="font-family:Nina;font-size:medium" id="btnSave">
+                                                            Save (F10)
+                                                        </button>
+                                                        <a href="/AccountMaster/index" class="btn btn-warning px-md-4 mb-2 text-dark" style="font-family:Nina;font-size:medium">
+                                                            Cancel (Esc)
+                                                        </a>
+                                                    }
+                                                    else if (userRight.IsAdd && Model.AccVou == 0)
+                                                    {
+                                                        <button class="btn btn-primary px-md-4 mb-2 text-white" style="font-family:Nina;font-size:medium" id="btnSave">
+                                                            Save (F10)
+                                                        </button>
+                                                        <a href="/AccountMaster/index" class="btn btn-warning px-md-4 mb-2 text-dark" style="font-family:Nina;font-size:medium">
+                                                            Cancel (Esc)
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>-->
+
+@*<div class="modal fade" id="cityMasterModal" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Add City</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="control-label">City Name</label>
+                            <input type="text" class="form-control" placeholder="City Name" id="txtCityNameModel" style="width: 200px" />
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="control-label">State</label>
+                            <input type="hidden" name="State" id="txtStateNmModel" />
+                            <select class=" form-control select2" id="drpStateNameModel" style="width: 200px">
+                                <option value="">---Select---</option>
+                                @if (statenameList != null && statenameList.Count > 0)
+                                {
+                                    foreach (var item in statenameList)
+                                    {
+                                        <option value="@item.Value">@item.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="SaveCity()">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+<!--<script>
+        $(document).ready(function () {
+            var accName = '@Html.Raw(Model.AccName)';
+            if (accName != null && accName != '') {
+                GoToAddTab()
+            }
+            else {
+                GoToListTab()
+            }
+            var status = '@Html.Raw(ViewBag.FocusType)';
+            if (status != null && status != '') {
+                if (status == "0") {
+                    $("#txtAccName").focus();
+                }
+                if (status == "1") {
+                    $("#txtAccName").focus();
+                }
+            }
+            else {
+                $("#txtAccName").focus();
+            }
+        });
+
+    function GoToAddTab() {
+        $('#custom-tabs-three-list-tab').removeClass('active');
+        $('#custom-tabs-three-add-tab').addClass('active');
+
+        $('#custom-tabs-three-list').removeClass('active');
+        $('#custom-tabs-three-add').addClass('active');
+        $('#custom-tabs-three-add').addClass('show');
+        document.getElementById('txtAccName').focus();
+    }
+    function GoToListTab() {
+        $('#custom-tabs-three-list-tab').addClass('active');
+        $('#custom-tabs-three-add-tab').removeClass('active');
+
+        $('#custom-tabs-three-list').addClass('active');
+        $('#custom-tabs-three-list').addClass('show');
+        $('#custom-tabs-three-add').removeClass('active');
+        $('#custom-tabs-three-add').removeClass('show');
+        $('#txtReportSearchDataTable').focus();
+    }
+</script>
+<script>
+    var isRecentCalledEsc = false;
+    (function (code) {
+        code(window.jQuery, document, window);
+    }(function ($, document, window) {
+        $(function () {
+            $(window)
+                .initKeyboard({ debug: 1 })
+                .on('F2', function () {
+                    GoToAddTab()
+                }).on('F10', function () {
+                    $("#btnSave").click();
+                })
+                .on('Alt+L', function () {
+                    GoToListTab();
+                })
+                .on('Alt+C', function () {
+                    if (confirm("Do you want to exit without save?")) {
+                        location.href = '/AccountMaster/Index'
+                    }
+                    else {
+                        $('#txtAccName').focus();
+                    }
+
+                }).on('Escape', function () {
+                    if (!isRecentCalledEsc) {
+                        isRecentCalledEsc = true;
+                        if (confirm("Do you want to exit without save?")) {
+                            location.href = '/AccountMaster/Index'
+                        }
+                        //else {
+                        //    $('#txtAccName').focus();
+                        //}
+                        setTimeout(function () {
+                            isRecentCalledEsc = false;
+                        }, 500)
+                    }
+
+                })
+        });
+    }));
+</script>
+
+<script>
+
+    var isRecentCalled = false;
+    var cityList = JSON.parse('@Html.Raw(Json.Serialize(Model.CityList))');
+
+    $(function () {
+
+        loadData();
+        var pageIndex = '';
+        var pageSize = '';
+        var totalRecord = '';
+        var isDelete = '@Html.Raw(userRight.IsDelete)';
+        var isEdit = '@Html.Raw(userRight.IsEdit)';
+    })
+
+    var timer = null;
+    $('#txtReportSearchDataTable').keyup(function (e) {
+        if (e.keyCode >= 112 && e.keyCode <= 123) {
+            e.preventDefault();
+            return false;
+        }
+        else {
+            clearTimeout(timer);
+
+            timer = setTimeout(loadData, 1000)
+        }
+
+    });
+
+    function GetCityState(obj) {
+        var statevalue = $(obj).val();
+        if (statevalue) {
+            if (cityList != null && cityList.length > 0) {
+                for (var x = 0; x < cityList.length; x++) {
+                    if (cityList[x].value == statevalue) {
+                        var stateName = cityList[x].value1;
+                        var cityName = cityList[x].value;
+                        $('#txtAccState').val(cityList[x].value1)
+                        $('#txtAccCity').val(cityList[x].text)
+                    }
+                }
+            }
+        }
+    }
+
+
+    function loadData(pageIndex, columnName, sortBy) {
+            isRecentCalled = true;
+            if (pageIndex == undefined || pageIndex == "" || pageIndex == "0" || pageIndex == 0) {
+                pageIndex = 1;
+            }
+            var layoutId = $('.drpReportLayout').val();
+
+            if (!layoutId) {
+                $('.drpReportLayout').val($('.drpReportLayout').children('option').eq(1).prop('value'));
+                //SetSelect2()
+
+            }
+            if (!columnName) {
+                columnName = '';
+            }
+            if (!sortBy) {
+                sortBy = '';
+            }
+            $('.dataTable').html();
+            $.ajax({
+                url: '/AccountMaster/GetReportView',
+                type: 'GET',
+                data: { pageIndex: pageIndex, pageSize: $('#drpReportPageNoDatable').val(), searchValue: $('#txtReportSearchDataTable').val(), gridMstId: $('.drpReportLayout').val(), columnName: columnName, sortby: sortBy },
+                dataType: 'HTML',
+                traditional: true, // add this
+                success: function (data) {
+                    $('.dataTable').html(data);
+                    setTimeout(function () {
+                        isRecentCalled = false;
+                    }, 2000)
+                },
+                failure: function (response) {
+                    errorMessage(response);
+                }
+            });
+    }
+
+    $('#btnExportToExcel').click(function () {
+        window.location.href = "/AccountMaster/ExportToExcelPDF?gridMstId=" + $('.drpReportLayout').val() + "&searchValue=" + $('#txtReportSearchDataTable').val() + "&type=1";
+    })
+    $('#btnExportToPDF').click(function () {
+        window.location.href = "/AccountMaster/ExportToExcelPDF?gridMstId=" + $('.drpReportLayout').val() + "&searchValue=" + $('#txtReportSearchDataTable').val() + "&type=2";
+    })
+</script>
+
+
+<script>
+    $(function () {
+        var statename = $('#drpStateNameModel').children('option:selected').text()
+        if (statename)
+            $('input[name="State"]').val(statename);
+    })
+
+    $('#drpStateNameModel').change(function () {
+        var statename = $('#drpStateNameModel').children('option:selected').text()
+        if (statename)
+            $('input[name="State"]').val(statename);
+    })
+
+    $(function () {
+        var typenm = $('#AccType').children('option:selected').text()
+        if (typenm)
+            $('input[name="TypeNm"]').val(typenm);
+    })
+
+    $('#AccType').change(function () {
+        var typenm = $('#AccType').children('option:selected').text()
+        if (typenm)
+            $('input[name="TypeNm"]').val(typenm);
+    })
+
+</script>-->
+
+@*<script>
+        $(function () {
+            var cityname = $('#AccCtyVou').children('option:selected').text()
+            if (cityname)
+                $('input[name="AccCity"]').val(cityname);
+        })
+
+        $('#AccCtyId').change(function () {
+            var cityname = $('#AccCtyVou').children('option:selected').text()
+            if (cityname)
+                $('input[name="AccCity"]').val(cityname);
+        })
+    </script>*@
+
+<!--<script>
+    $(document).ready(function () {
+        $(".AccCtyVou").select2({
+            placeholder: "---Select---",
+            ajax: {
+                url: '/accountmaster/city-list',
+                data: function (params) {
+                    return {
+                        q: params.term// search term
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.items
+                    }
+                },
+
+            }
+        });
+
+        $(".AccGrpVou").select2({
+            placeholder: "---Select---",
+            ajax: {
+                url: '/accountmaster/group-list',
+                data: function (params) {
+                    return {
+                        q: params.term// search term
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.items
+                    }
+                },
+
+            }
+        });
+
+        $(".AccType").select2({
+            placeholder: "---Select---",
+        });
+
+        $('.drpReportLayout').select2({
+            placeholder: "---Select---",
+        });
+    });
+
+</script>-->
