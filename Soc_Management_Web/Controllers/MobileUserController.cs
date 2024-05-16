@@ -93,6 +93,8 @@ namespace Soc_Management_Web.Controllers
         {
             try
             {
+                string message = "";
+                bool datastatus = false;
                 bool isreturn = false;
                 INIT(ref isreturn);
                 if (isreturn)
@@ -126,12 +128,17 @@ namespace Soc_Management_Web.Controllers
                             if (id > 0)
                             {
                                 SetSuccessMessage("Update Sucessfully");
+                                message = "Update Sucessfully";
+                                datastatus = true;
                             }
                             else
                             {
                                 SetSuccessMessage("Inserted Sucessfully");
+                                message = "Inserted Sucessfully";
+                                datastatus = true;
                             }
-                            return RedirectToAction("index", "MobileUser", new { id = cm.userid });
+                            return Json(new { status= datastatus, msg= message });
+                            //return RedirectToAction("index", "MobileUser", new { id =0 });
                         }
                     }
                     else

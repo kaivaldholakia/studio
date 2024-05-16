@@ -6,6 +6,7 @@ using PIOAccount.Classes;
 using PIOAccount.Controllers;
 using PIOAccount.Models;
 using Soc_Management_Web.Classes;
+using Soc_Management_Web.Common;
 using Soc_Management_Web.Models;
 using System;
 using System.Collections.Generic;
@@ -109,7 +110,12 @@ namespace Soc_Management_Web.Controllers
 
                 // Add an event handler to add page numbers
                 pdfWriter.PageEvent = new PageNumberEventHandler();
-
+                if (reportmodel.layout == "Letterpad")
+                {
+                    MyPageEventHandler pageEventHandler = new MyPageEventHandler();
+                    pdfWriter.PageEvent = pageEventHandler;
+                    reportmodel.layout = "Header";
+                }
                 doc.Open();
 
                 PdfPTable tableLayout = new PdfPTable(6);

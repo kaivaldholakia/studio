@@ -12,20 +12,19 @@ using System.IO;
 
 namespace Soc_Management_Web.Controllers
 {
-	public class WebCategoryController : BaseController
+    public class MenuBannerController : BaseController
     {
         DbConnection ObjDBConnection = new DbConnection();
         ProductHelpers objProductHelper = new ProductHelpers();
         private readonly IWebHostEnvironment _hostingEnvironment;
 
-
-        public WebCategoryController(IWebHostEnvironment hostingEnvironment)
+        public MenuBannerController(IWebHostEnvironment hostingEnvironment)
         {
             _hostingEnvironment = hostingEnvironment;
         }
         public IActionResult Index(long id)
         {
-            Webcategory model = new Webcategory();
+            MenuBanner model = new MenuBanner();
             bool isreturn = false;
             INIT(ref isreturn);
             if (isreturn)
@@ -39,31 +38,19 @@ namespace Soc_Management_Web.Controllers
             int clientId = 0;
             if (id > 0)
             {
-                SqlParameter[] sqlParameters = new SqlParameter[8];
+                SqlParameter[] sqlParameters = new SqlParameter[6];
                 sqlParameters[0] = new SqlParameter("@id", id);
-                sqlParameters[1] = new SqlParameter("@CatNm", "");
-                sqlParameters[2] = new SqlParameter("@decsription", "");
-                sqlParameters[3] = new SqlParameter("@Filepath", "");
-                sqlParameters[4] = new SqlParameter("@FileNames", "");                
+                sqlParameters[1] = new SqlParameter("@MenuId", "");
+               sqlParameters[4] = new SqlParameter("@FileNames", "");
                 sqlParameters[5] = new SqlParameter("@FLG", "3");
-                sqlParameters[6] = new SqlParameter("@parentID", "0");
-                sqlParameters[7] = new SqlParameter("@VideoURL", "");
-
-                DataTable DtEmp = ObjDBConnection.CallStoreProcedure("usp_webCatMaster_Insert", sqlParameters);
+                DataTable DtEmp = ObjDBConnection.CallStoreProcedure("usp_MenuBanner_Insert", sqlParameters);
                 if (DtEmp.Rows.Count > 0)
-                {                     
+                {
                     model.Id = id;
-                    model.path = DtEmp.Rows[0]["FilePath"].ToString();
-                    model.Catname = DtEmp.Rows[0]["CatName"].ToString();
-                    model.Description = DtEmp.Rows[0]["CatDescription"].ToString();
-                    model.VideoURL = DtEmp.Rows[0]["VideoURL"].ToString();
-                    model.filename = DtEmp.Rows[0]["FileNames"].ToString();
-                    model.Pid = Convert.ToInt64( DtEmp.Rows[0]["parentID"].ToString());
-
+                   
+                    //model.filename = DtEmp.Rows[0]["MenuBanner"].ToString();
                 }
             }
-             model.parentCat = objProductHelper.GetCategoryList(0,1);
-
             return View(model);
         }
 
@@ -105,7 +92,7 @@ namespace Soc_Management_Web.Controllers
                 if (obj.file != null && obj.file.Length > 0)
                 {
 
-                    var uploadsFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, "Banner");
+                    var uploadsFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, "MenuBanner");
                     string uniqueFileName = Guid.NewGuid().ToString() + "_" + obj.file.FileName;
                     string filePath = Path.Combine(uploadsFolderPath, uniqueFileName);
                     obj.filename = uniqueFileName;
@@ -117,23 +104,20 @@ namespace Soc_Management_Web.Controllers
 
                     // Set obj.path to the full path of the saved file
                     obj.path = filePath;
-                }
 
+
+
+                }
                 long userId = GetIntSession("UserId");
                 int companyId = Convert.ToInt32(GetIntSession("CompanyId"));
                 if (!string.IsNullOrWhiteSpace(Convert.ToString(obj.Catname)))
                 {
-                    SqlParameter[] sqlParameters = new SqlParameter[8];
+                    SqlParameter[] sqlParameters = new SqlParameter[6];
                     sqlParameters[0] = new SqlParameter("@id", obj.Id);
-                    sqlParameters[1] = new SqlParameter("@CatNm", obj.Catname);
-                    sqlParameters[2] = new SqlParameter("@decsription", obj.Description);
-                    sqlParameters[3] = new SqlParameter("@Filepath", obj.path);
+                    sqlParameters[0] = new SqlParameter("@MenuId", obj.Id);
                     sqlParameters[4] = new SqlParameter("@FileNames", obj.filename);
                     sqlParameters[5] = new SqlParameter("@FLG", "1");
-                    sqlParameters[6] = new SqlParameter("@parentID", obj.Pid);
-                    sqlParameters[7] = new SqlParameter("@VideoURL", obj.VideoURL);
-
-                    DataTable DtCat = ObjDBConnection.CallStoreProcedure("usp_webCatMaster_Insert", sqlParameters);
+                    DataTable DtCat = ObjDBConnection.CallStoreProcedure("usp_MenuBanner_Insert", sqlParameters);
                     if (DtCat != null && DtCat.Rows.Count > 0)
                     {
                         int status = DbConnection.ParseInt32(DtCat.Rows[0][0].ToString());
@@ -266,15 +250,13 @@ namespace Soc_Management_Web.Controllers
                 {
                     long userId = GetIntSession("UserId");
                     int companyId = Convert.ToInt32(GetIntSession("CompanyId"));
-                    SqlParameter[] sqlParameters = new SqlParameter[8];
+                    SqlParameter[] sqlParameters = new SqlParameter[6];
                     sqlParameters[0] = new SqlParameter("@id", id);
-                    sqlParameters[1] = new SqlParameter("@CatNm","");
-                    sqlParameters[2] = new SqlParameter("@decsription","");
+                    sqlParameters[1] = new SqlParameter("@CatNm", "");
+                    sqlParameters[2] = new SqlParameter("@decsription", "");
                     sqlParameters[3] = new SqlParameter("@Filepath", "");
-                    sqlParameters[4] = new SqlParameter("@FileNames","");
+                    sqlParameters[4] = new SqlParameter("@FileNames", "");
                     sqlParameters[5] = new SqlParameter("@FLG", "2");
-                    sqlParameters[6] = new SqlParameter("@parentID", "");
-                    sqlParameters[7] = new SqlParameter("@VideoURL", "");
                     DataTable DtCity = ObjDBConnection.CallStoreProcedure("usp_webCatMaster_Insert", sqlParameters);
                     if (DtCity != null && DtCity.Rows.Count > 0)
                     {

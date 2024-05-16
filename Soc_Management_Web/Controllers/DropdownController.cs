@@ -3,6 +3,7 @@ using PIOAccount.Classes;
 using Soc_Management_Web.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -183,6 +184,20 @@ namespace Soc_Management_Web.Controllers
                 return Json(null);
             }
         }
+
+        public JsonResult Cateegory()
+        {
+            try
+            {
+                var data = mddhelper.GetDrop("Category");
+                return Json(data.Select(x => new { label = x.TextName, value = x.Value }));
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception appropriately
+                return Json(null);
+            }
+        }
         public JsonResult GetPersonwithcategory(string Category,long Id)
         {
             try
@@ -281,5 +296,72 @@ namespace Soc_Management_Web.Controllers
 
 
         }
+        public JsonResult OrderNo()
+        {
+            try
+            {
+                var data = mddhelper.GetDrop("OrderNo");
+                return Json(data.Select(x => new { label = x.TextName, value = x.Value }));
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception appropriately
+                return Json(null);
+            }
+
+
+
+        }
+        public JsonResult VPLocation()
+        {
+            try
+            {
+                var data = mddhelper.GetDrop("VPLocation");
+                return Json(data.Select(x => new { label = x.TextName, value = x.Value }));
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception appropriately
+                return Json(null);
+            }
+
+
+
+        }
+        public JsonResult messagecontent(long id,string templatetype, string fors)
+        {
+            try
+            {
+                var data = mddhelper.getsmstemplate(id,templatetype,fors);
+                return Json(data);
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception appropriately
+                return Json(null);
+            }
+
+
+
+        }
+
+        public PartialViewResult Showsmstemplateview(int customerid = 0,string types="",long Id=0)
+        {
+
+
+            List<SMSTemplate> SelectAll = new List<SMSTemplate>();
+            try
+            {
+                SelectAll = mddhelper.Showsmstemplatedata(customerid, types,Id);
+                
+            }
+            catch (Exception ex)
+            {
+                
+                throw;
+            }
+            return PartialView("_SmsTemplate", SelectAll);
+        }
+
     }
 }

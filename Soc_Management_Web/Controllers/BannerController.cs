@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Soc_Management_Web.Controllers
 {
-    public class ProductMasterController : BaseController
+	public class BannerController : BaseController
     {
         DbConnection ObjDBConnection = new DbConnection();
         ProductHelpers objProductHelper = new ProductHelpers();
@@ -29,27 +29,30 @@ namespace Soc_Management_Web.Controllers
                 long userId = GetIntSession("UserId");
                 int companyId = Convert.ToInt32(GetIntSession("CompanyId"));
                 int administrator = 0;
-                ProductMaster prdMaster = new ProductMaster();
+                CategoryModel ctgyModel = new CategoryModel();
                 if (id > 0)
                 {
-                    prdMaster.productVou = Convert.ToInt32(id);
-                    SqlParameter[] sqlParameters = new SqlParameter[2];
-                    sqlParameters[0] = new SqlParameter("@ProdVou", id);
+                    ctgyModel.CategoryId = Convert.ToInt32(id);
+                    SqlParameter[] sqlParameters = new SqlParameter[7];
+                    sqlParameters[0] = new SqlParameter("@CatVou", id);
                     sqlParameters[1] = new SqlParameter("@FLG", "3");
-                    DataTable DtEmp = ObjDBConnection.CallStoreProcedure("Usp_ProductMaster_Insert", sqlParameters);
+                    sqlParameters[2] = new SqlParameter("@CatFlag", "0");
+                    sqlParameters[3] = new SqlParameter("@CatSrvIntVou", "0");
+                    sqlParameters[4] = new SqlParameter("@CatMobVou", "0");
+                    sqlParameters[5] = new SqlParameter("@CatPrefix", "0");
+                    sqlParameters[6] = new SqlParameter("@CatSamTimeYN", "0");
+                    DataTable DtEmp = ObjDBConnection.CallStoreProcedure("usp_CatMaster_Insert", sqlParameters);
                     if (DtEmp != null && DtEmp.Rows.Count > 0)
                     {
-                        prdMaster.productname = DtEmp.Rows[0]["ProdName"].ToString();
-                        prdMaster.productcode = DtEmp.Rows[0]["ProdCd"].ToString();
-                        prdMaster.productgroupid = Convert.ToInt32(DtEmp.Rows[0]["ProdGrVou"].ToString());
-                        prdMaster.purchaserate = Convert.ToDecimal(DtEmp.Rows[0]["ProdPurRt"].ToString());
-                        prdMaster.salerate = Convert.ToDecimal(DtEmp.Rows[0]["ProdSalRt"].ToString());
-                        prdMaster.productdescription = DtEmp.Rows[0]["ProdDesc"].ToString();
+                        ctgyModel.CategoryName = DtEmp.Rows[0]["CatNm"].ToString();
+                        ctgyModel.ShortCode = DtEmp.Rows[0]["CatCd"].ToString();
+                        ctgyModel.CategoryType = DtEmp.Rows[0]["CatType"].ToString() == "General" ? 1 : 2;
+                        ctgyModel.sameAllow = Convert.ToBoolean(DtEmp.Rows[0]["CatSamTimeYN"].ToString());
                     }
                 }
-                prdMaster.lstProductGroup = objProductHelper.GetProductGroupDropdown().OrderBy(x => x.Text).ToList();
+                ctgyModel.lstcategory = objProductHelper.GetCategoryType();
 
-                return View(prdMaster);
+                return View(ctgyModel);
             }
             catch (Exception ex)
             {
@@ -86,7 +89,7 @@ namespace Soc_Management_Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult Index(long id, ProductMaster prdModel)
+        public IActionResult Index(long id, CategoryModel catModel)
         {
             try
             {
@@ -98,28 +101,28 @@ namespace Soc_Management_Web.Controllers
                 }
                 long userId = GetIntSession("UserId");
                 int companyId = Convert.ToInt32(GetIntSession("CompanyId"));
-                int administrator = 0;
-                if (!string.IsNullOrWhiteSpace(prdModel.productname) && !string.IsNullOrWhiteSpace(DbConnection.ParseInt32(prdModel.productgroupid).ToString()))
+                if (!string.IsNullOrWhiteSpace(catModel.CategoryName))
                 {
-                    SqlParameter[] sqlParameters = new SqlParameter[8];
-                    sqlParameters[0] = new SqlParameter("@ProdNm", prdModel.productname);
-                    sqlParameters[1] = new SqlParameter("@ProdCd", prdModel.productcode);
-                    sqlParameters[2] = new SqlParameter("@ProdGrVou", prdModel.productgroupid);
-                    sqlParameters[3] = new SqlParameter("@ProdVou", id);
-                    sqlParameters[4] = new SqlParameter("@ProdPurRt", prdModel.purchaserate);
-                    sqlParameters[5] = new SqlParameter("@ProdSalRt", prdModel.salerate);
-                    sqlParameters[6] = new SqlParameter("@ProdDesc", prdModel.productdescription);
-                    sqlParameters[7] = new SqlParameter("@FLG", "1");
-                    DataTable DtCity = ObjDBConnection.CallStoreProcedure("Usp_ProductMaster_Insert", sqlParameters);
-                    if (DtCity != null && DtCity.Rows.Count > 0)
+                    SqlParameter[] sqlParameters = new SqlParameter[10];
+                    sqlParameters[0] = new SqlParameter("@CatVou", id);
+                    sqlParameters[1] = new SqlParameter("@CatNm", catModel.CategoryName);
+                    sqlParameters[2] = new SqlParameter("@CatCd", catModel.ShortCode);
+                    sqlParameters[3] = new SqlParameter("@CatType", catModel.CategoryType == 1 ? "General" : "Extra");
+                    sqlParameters[4] = new SqlParameter("@CatFlag", "0");
+                    sqlParameters[5] = new SqlParameter("@CatSrvIntVou", "0");
+                    sqlParameters[6] = new SqlParameter("@CatMobVou", "0");
+                    sqlParameters[7] = new SqlParameter("@CatPrefix", "0");
+                    sqlParameters[8] = new SqlParameter("@CatSamTimeYN", catModel.sameAllow);
+                    sqlParameters[9] = new SqlParameter("@FLG", "1");
+                    DataTable DtCat = ObjDBConnection.CallStoreProcedure("usp_CatMaster_Insert", sqlParameters);
+                    if (DtCat != null && DtCat.Rows.Count > 0)
                     {
-                        int status = DbConnection.ParseInt32(DtCity.Rows[0][0].ToString());
+                        int status = DbConnection.ParseInt32(DtCat.Rows[0][0].ToString());
                         if (status == -1)
                         {
-                            SetErrorMessage("Dulplicate Product Details");
-                            ViewBag.FocusType = "-1";
-                            prdModel.lstProductGroup = objProductHelper.GetProductGroupDropdown().OrderBy(x => x.Text).ToList();
-                            return View(prdModel);
+                            SetErrorMessage("Dulplicate Category Details");
+                            ViewBag.FocusType = "-2";
+                            catModel.lstcategory = objProductHelper.GetCategoryType(); return View(catModel);
                         }
                         else
                         {
@@ -131,55 +134,63 @@ namespace Soc_Management_Web.Controllers
                             {
                                 SetSuccessMessage("Inserted Sucessfully");
                             }
-                            return RedirectToAction("index", "ProductMaster", new { id = 0 });
+                            return RedirectToAction("index", "Banner", new { id = 0 });
                         }
                     }
                     else
                     {
                         SetErrorMessage("Please Enter the Value");
                         ViewBag.FocusType = "-1";
-                        prdModel.lstProductGroup = objProductHelper.GetProductGroupDropdown().OrderBy(x => x.Text).ToList();
-                        return View(prdModel);
+                        catModel.lstcategory = objProductHelper.GetCategoryType();
+                        return View(catModel);
                     }
                 }
                 else
                 {
                     SetErrorMessage("Please Enter the Value");
                     ViewBag.FocusType = "-1";
-                    prdModel.lstProductGroup = objProductHelper.GetProductGroupDropdown().OrderBy(x => x.Text).ToList();
-                    return View(prdModel);
+                    catModel.lstcategory = objProductHelper.GetCategoryType();
+                    return View(catModel);
                 }
             }
             catch (Exception ex)
             {
                 throw;
             }
-            return View(new ProductMaster());
+            return View(new CategoryModel());
         }
 
         public IActionResult Delete(long id)
         {
             try
             {
-                ProductMaster PrdModel = new ProductMaster();
+                CategoryModel catModel = new CategoryModel();
                 if (id > 0)
                 {
                     long userId = GetIntSession("UserId");
                     int companyId = Convert.ToInt32(GetIntSession("CompanyId"));
-                    SqlParameter[] sqlParameters = new SqlParameter[2];
-                    sqlParameters[0] = new SqlParameter("@ProdVou", id);
-                    sqlParameters[1] = new SqlParameter("@FLG", "2");
-                    DataTable DtPrd = ObjDBConnection.CallStoreProcedure("Usp_ProductMaster_Insert", sqlParameters);
-                    if (DtPrd != null && DtPrd.Rows.Count > 0)
+                    SqlParameter[] sqlParameters = new SqlParameter[10];
+                    sqlParameters[0] = new SqlParameter("@CatVou", id);
+                    sqlParameters[1] = new SqlParameter("@CatNm", catModel.CategoryName);
+                    sqlParameters[2] = new SqlParameter("@CatCd", catModel.CategoryId);
+                    sqlParameters[3] = new SqlParameter("@CatType", catModel.CategoryType);
+                    sqlParameters[4] = new SqlParameter("@CatFlag", "0");
+                    sqlParameters[5] = new SqlParameter("@CatSrvIntVou", "0");
+                    sqlParameters[6] = new SqlParameter("@CatMobVou", "0");
+                    sqlParameters[7] = new SqlParameter("@CatPrefix", "0");
+                    sqlParameters[8] = new SqlParameter("@CatSamTimeYN", "0");
+                    sqlParameters[9] = new SqlParameter("@FLG", "2");
+                    DataTable DtCity = ObjDBConnection.CallStoreProcedure("usp_CatMaster_Insert", sqlParameters);
+                    if (DtCity != null && DtCity.Rows.Count > 0)
                     {
-                        int @value = DbConnection.ParseInt32(DtPrd.Rows[0][0].ToString());
+                        int @value = DbConnection.ParseInt32(DtCity.Rows[0][0].ToString());
                         if (value == 0)
                         {
                             SetErrorMessage("You Can Not Delete Records This Record is Included Some Trasaction");
                         }
                         else
                         {
-                            SetSuccessMessage("Product Deleted Successfully");
+                            SetSuccessMessage("Banner Deleted Successfully");
                         }
                     }
                 }
@@ -188,7 +199,7 @@ namespace Soc_Management_Web.Controllers
             {
                 throw;
             }
-            return RedirectToAction("index", "ProductMaster");
+            return RedirectToAction("index", "Banner");
         }
         public IActionResult GetReportView(int gridMstId, int pageIndex, int pageSize, string searchValue, string columnName, string sortby)
         {
@@ -200,7 +211,7 @@ namespace Soc_Management_Web.Controllers
                     #region User Rights
                     long userId = GetIntSession("UserId");
                     UserFormRightModel userFormRights = new UserFormRightModel();
-                    string currentURL = "/ProductMaster/Index";
+                    string currentURL = "/Banner/Index";
                     userFormRights = GetUserRights(userId, currentURL);
                     if (userFormRights == null)
                     {
@@ -223,7 +234,7 @@ namespace Soc_Management_Web.Controllers
                         return PartialView("_reportView");
                     }
                     getReportDataModel.pageIndex = pageIndex;
-                    getReportDataModel.ControllerName = "ProductMaster";
+                    getReportDataModel.ControllerName = "Banner";
                 }
             }
             catch (Exception ex)
@@ -352,4 +363,3 @@ namespace Soc_Management_Web.Controllers
 
     }
 }
-

@@ -17,6 +17,7 @@ using iTextSharp.text.pdf;
 using iTextSharp.text;
 using System.Data.SqlClient;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Soc_Management_Web.Common;
 
 namespace Soc_Management_Web.Controllers
 {
@@ -34,11 +35,17 @@ namespace Soc_Management_Web.Controllers
 			string fileName = "static/NotoSans-Regular.ttf";
 			fontpath = Path.Combine(folderPath1, fileName);
 		}
-		public IActionResult Index(long id)
+		public IActionResult Index(long id,string type=null)
 		{
 			InqueryMasterModel model = new InqueryMasterModel();
+					
 			bool isreturn = false;
 			INIT(ref isreturn);
+
+			if (!string.IsNullOrEmpty(type))
+			{
+				model.IsContact = true;
+			}
 			if (isreturn)
 			{
 				return RedirectToAction("index", "dashboard");
@@ -187,7 +194,7 @@ namespace Soc_Management_Web.Controllers
 								SetSuccessMessage("Inserted Sucessfully");
 
 							}
-
+							//Request.HttpContext.Session["id"] = id;
 							return RedirectToAction("index", "InquiryTransaction", new { id = id });
 						}
 					}
@@ -206,7 +213,7 @@ namespace Soc_Management_Web.Controllers
 				throw;
 			}
 
-			return Json(new { obj1 });
+			return RedirectToAction("index", "InquiryTransaction", new { id = 0 });
 		}
 
 		public IActionResult GetReportView(int gridMstId, int pageIndex, int pageSize, string searchValue, string columnName, string sortby)
@@ -1026,7 +1033,12 @@ namespace Soc_Management_Web.Controllers
 
 				// Add an event handler to add page numbers
 				pdfWriter.PageEvent = new PageNumberEventHandler();
-
+				if (Headertype == "Letterpad")
+				{
+					MyPageEventHandler pageEventHandler = new MyPageEventHandler();
+					pdfWriter.PageEvent = pageEventHandler;
+					Headertype = "With Header";
+				}
 				doc.Open();
 
 				PdfPTable tableLayout = new PdfPTable(5);
@@ -1185,7 +1197,7 @@ namespace Soc_Management_Web.Controllers
 			float[] headers = { 15, 40, 10, 20, 15 };  //Header Widths
 			tableLayout.SetWidths(headers);        //Set the pdf headers
 			tableLayout.WidthPercentage = 100;       //Set the PDF File witdh percentage
-			if (Headertype != "Header")
+			if (Headertype == "Without Header")
 			{
 				tableLayout.AddCell(new PdfPCell(new Phrase("  ", new Font(Font.FontFamily.HELVETICA, 17, 1, new iTextSharp.text.BaseColor(System.Drawing.Color.Black)))) { Colspan = 5, Border = 0, PaddingTop = -4, PaddingBottom = 10, HorizontalAlignment = Element.ALIGN_CENTER });
 				tableLayout.AddCell(new PdfPCell(new Phrase("  ", new Font(Font.FontFamily.HELVETICA, 10, 0, new iTextSharp.text.BaseColor(System.Drawing.Color.Black)))) { Colspan = 5, Border = 0, PaddingBottom = 35, HorizontalAlignment = Element.ALIGN_CENTER });
@@ -1194,7 +1206,7 @@ namespace Soc_Management_Web.Controllers
 
 			}
 			//Add Title to the PDF file at the top
-			if (Headertype == "Header")
+			if (Headertype == "With Header")
 			{
 				tableLayout.AddCell(new PdfPCell(new Phrase(Inquery[0].Studio, new Font(Font.FontFamily.HELVETICA, 17, 1, new iTextSharp.text.BaseColor(System.Drawing.Color.Black)))) { Colspan = 5, Border = 0, PaddingTop = -4, PaddingBottom = 2, HorizontalAlignment = Element.ALIGN_CENTER });
 				tableLayout.AddCell(new PdfPCell(new Phrase(Inquery[0].Add1, new Font(Font.FontFamily.HELVETICA, 10, 0, new iTextSharp.text.BaseColor(System.Drawing.Color.Black)))) { Colspan = 5, Border = 0, PaddingBottom = 2, HorizontalAlignment = Element.ALIGN_CENTER });
@@ -1511,6 +1523,8 @@ namespace Soc_Management_Web.Controllers
 			return Json(new { success = true, result = "Send" });
 
 		}
+
+
 
 	}
 

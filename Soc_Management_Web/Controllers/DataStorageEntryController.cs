@@ -21,7 +21,7 @@ namespace Soc_Management_Web.Controllers
         {
             _hostingEnvironment = hostingEnvironment;
         }
-        public IActionResult Index(long id)
+        public IActionResult Index(long id=0,long orderid=0)
         {
             LocationOrderModel model = new LocationOrderModel();
             bool isreturn = false;
@@ -35,11 +35,12 @@ namespace Soc_Management_Web.Controllers
             int companyId = Convert.ToInt32(GetIntSession("CompanyId"));
             int administrator = Convert.ToInt32(GetIntSession("IsAdministrator"));
             int clientId = 0;
-            if (id > 0)
+            long d = id + orderid;
+            if (d > 0)
             {
                 SqlParameter[] sqlParameters = new SqlParameter[15];
                 sqlParameters[0] = new SqlParameter("@Id", id);
-                sqlParameters[1] = new SqlParameter("@orderId", id);
+                sqlParameters[1] = new SqlParameter("@orderId", orderid);
                 sqlParameters[2] = new SqlParameter("@RecorType", "");
                 sqlParameters[3] = new SqlParameter("@AllPhotos", "");
                 sqlParameters[4] = new SqlParameter("@Allvieos", "");
@@ -113,6 +114,7 @@ namespace Soc_Management_Web.Controllers
             {
                 bool isreturn = false;
                 INIT(ref isreturn);
+                 
 
                 long userId = GetIntSession("UserId");
                 int companyId = Convert.ToInt32(GetIntSession("CompanyId"));
@@ -182,6 +184,31 @@ namespace Soc_Management_Web.Controllers
             return Json(new { obj1 });
         }
 
+
+        public IActionResult Delete(long id)
+        {
+            try
+            {
+                DepartmentMasterModel departmentMasterModel = new DepartmentMasterModel();
+                if (id > 0)
+                {
+                    int companyId = Convert.ToInt32(GetIntSession("CompanyId"));
+                    SqlParameter[] sqlParameters = new SqlParameter[2];
+                    sqlParameters[0] = new SqlParameter("@Id", id);
+                    sqlParameters[1] = new SqlParameter("@flag", 3);
+                    DataTable DtDepartment = ObjDBConnection.CallStoreProcedure("usp_locationdetails", sqlParameters);
+                    if (DtDepartment != null && DtDepartment.Rows.Count > 0)
+                    {
+                        SetSuccessMessage("Storage deleted successfully");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            return RedirectToAction("index", "DataStorageEntry");
+        }
         public IActionResult GetReportView(int gridMstId, int pageIndex, int pageSize, string searchValue, string columnName, string sortby)
         {
             GetReportDataModel getReportDataModel = new GetReportDataModel();

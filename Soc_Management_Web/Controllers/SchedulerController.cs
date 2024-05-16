@@ -159,10 +159,137 @@ namespace Soc_Management_Web.Controllers
 
         public JsonResult sendonWhatsApp(string mobile, string data)
         {
-           mobile = "9228263943";
+            // mobile = "9228263943";
             WatsappNotification watsapp = new WatsappNotification();
-            var datas= watsapp.SendWhatAppMessage(mobile, data, "", "");
-            return Json(new { datas });
+            string[] numbersArray = mobile.Split(',');
+            foreach (string number in numbersArray)
+            {
+                var datas = watsapp.SendWhatAppMessage(number, data, "", "");
+            }
+            string da = "saved";
+            return Json(new { da });
+        }
+        public JsonResult sendonWhatsApp1(string mobile, string data, int self,string messagetype,string template,string idlst)
+        {
+            // mobile = "9228263943";
+            WatsappNotification watsapp = new WatsappNotification();
+            if(messagetype== "Single")
+            {
+                 if(mobile==null)
+                {
+                    mobile = "";
+                }
+                
+                string[] numbersArray = mobile.Split(',');
+                foreach (string number in numbersArray)
+                {
+                    string mb = "";
+                    if (self == 1)
+                    {
+                        mb = "9228263943";
+                    }
+                    else
+                    {
+                        mb = number;
+                    }
+                    var datas = watsapp.SendWhatAppMessage(mb, data, "", "");
+                }
+            }
+            else
+            {
+                string[] idlists = idlst.Split(",");
+                foreach (var item in idlists)
+                {
+                    SqlParameter[] sqlParameters = new SqlParameter[2];
+                    sqlParameters[0] = new SqlParameter("@id", item);
+                    sqlParameters[1] = new SqlParameter("@tosend", template);
+                    DataTable DtEmp = ObjDBConnection.CallStoreProcedure("prc_sendsms", sqlParameters);
+                    if (DtEmp.Rows.Count > 0)
+                    {
+
+                      
+                        string[] numbersArray = DtEmp.Rows[0]["mobile"].ToString().Split(',');
+                        foreach (string number in numbersArray)
+                        {
+                            string mb = "";
+                            if (self == 1)
+                            {
+                                mb = "9228263943";
+                            }
+                            else
+                            {
+                                mb = number;
+                            }
+                            var datas = watsapp.SendWhatAppMessage(mb, DtEmp.Rows[0]["result"].ToString(), "", "");
+                        }
+                      
+                    }
+                }
+                
+            }
+              
+
+            string da = "saved";
+            return Json(new { da });
+        }
+
+        [HttpGet]
+        public JsonResult saveschedule(string date, string data,int self,string types,long id,
+           string messagetype, string  template, string idlst)
+        {
+        
+            schedulemessage sm = new schedulemessage();
+            if (messagetype == "Single")
+            {
+                SqlParameter[] sqlParameters = new SqlParameter[6];
+                sqlParameters[0] = new SqlParameter("@id", id);
+                sqlParameters[1] = new SqlParameter("@tosend", date);
+                sqlParameters[2] = new SqlParameter("@self", self);
+                sqlParameters[3] = new SqlParameter("@types", types);
+                sqlParameters[4] = new SqlParameter("@data", data);
+                sqlParameters[5] = new SqlParameter("@mode", 1);
+                DataTable DtEmp = ObjDBConnection.CallStoreProcedure("Sendmessagesave", sqlParameters);
+            }else
+            {
+                string[] idlsts = idlst.Split(",");
+                foreach (var item in idlsts)
+                {
+                    SqlParameter[] sqlParameters = new SqlParameter[2];
+                    sqlParameters[0] = new SqlParameter("@id", item);
+                    sqlParameters[1] = new SqlParameter("@tosend", template);
+                    DataTable DtEmp = ObjDBConnection.CallStoreProcedure("prc_sendsms", sqlParameters);
+                    if (DtEmp.Rows.Count > 0)
+                    {
+                          
+                        SqlParameter[] sqlParameters1 = new SqlParameter[6];
+                        sqlParameters1[0] = new SqlParameter("@id", item);
+                        sqlParameters1[1] = new SqlParameter("@tosend", date);
+                        sqlParameters1[2] = new SqlParameter("@self", self);
+                        sqlParameters1[3] = new SqlParameter("@types", types);
+                        sqlParameters1[4] = new SqlParameter("@data", DtEmp.Rows[0]["result"].ToString());
+                        sqlParameters1[5] = new SqlParameter("@mode", 1);
+                        DataTable DtEmp1 = ObjDBConnection.CallStoreProcedure("Sendmessagesave", sqlParameters1);
+                    }
+                }
+                
+            }
+            
+            return Json(new { sm });
+        }
+
+        [HttpGet]
+        public JsonResult savetime(long id, string to, string from, long flag)
+        {
+
+            schedulemessage sm = new schedulemessage();
+            SqlParameter[] sqlParameters = new SqlParameter[4];
+            sqlParameters[0] = new SqlParameter("@id", id);
+            sqlParameters[1] = new SqlParameter("@to", to);
+            sqlParameters[2] = new SqlParameter("@from", from);
+            sqlParameters[3] = new SqlParameter("@flag", flag);             
+            DataTable DtEmp = ObjDBConnection.CallStoreProcedure("prcsavetime", sqlParameters);
+
+            return Json(new { sm });
         }
     }
 }

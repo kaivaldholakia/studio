@@ -6,6 +6,7 @@ using PIOAccount.Classes;
 using PIOAccount.Controllers;
 using PIOAccount.Models;
 using Soc_Management_Web.Classes;
+using Soc_Management_Web.Common;
 using Soc_Management_Web.Models;
 using System;
 using System.Collections.Generic;
@@ -88,20 +89,21 @@ namespace Soc_Management_Web.Controllers
         }
 
 
-        public PartialViewResult PartWiseEventReport(ReportmodelParameterpost reportmodel)
+        public PartialViewResult PartWiseEventReport(ReportmodelParameterpost rm)
         {
 
             Document doc = new Document();
             string filePath = "";
             ReportFileInfo fileInfo = new ReportFileInfo();
-            if (reportmodel.layout == "" || reportmodel.layout == null)
+            if (rm.layout == "" || rm.layout == null || rm.layout == "Select")
             {
-                reportmodel.layout = "Header";
+                rm.layout = "Header";
             }
+            
 
             using (MemoryStream memoryStream = new MemoryStream())
             {
-                List<PartyWiseEventReportModel> Inquery = getReportcontent(reportmodel);
+                List<PartyWiseEventReportModel> Inquery = getReportcontent(rm);
 
                 if (Inquery.Count > 0)
                 {
@@ -110,12 +112,17 @@ namespace Soc_Management_Web.Controllers
 
                     // Add an event handler to add page numbers
                     pdfWriter.PageEvent = new PageNumberEventHandler();
-
+                    if (rm.layout == "Letterpad")
+                    {
+                        MyPageEventHandler pageEventHandler = new MyPageEventHandler();
+                        pdfWriter.PageEvent = pageEventHandler;
+                        rm.layout = "Header";
+                    }
                     doc.Open();
 
                     PdfPTable tableLayout = new PdfPTable(5);
 
-                    tableLayout = Add_Content_To_PDF(tableLayout, Inquery, reportmodel.layout, reportmodel);
+                    tableLayout = Add_Content_To_PDF(tableLayout, Inquery, rm.layout, rm);
                     tableLayout.HeaderRows = 7;
                     doc.Add(tableLayout);
 

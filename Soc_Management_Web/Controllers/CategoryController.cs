@@ -47,6 +47,7 @@ namespace Soc_Management_Web.Controllers
                         ctgyModel.CategoryName = DtEmp.Rows[0]["CatNm"].ToString();
                         ctgyModel.ShortCode = DtEmp.Rows[0]["CatCd"].ToString();
                         ctgyModel.CategoryType = DtEmp.Rows[0]["CatType"].ToString() == "General" ? 1 : 2;
+                        ctgyModel.sameAllow = Convert.ToBoolean(DtEmp.Rows[0]["CatSamTimeYN"].ToString());
                     }
                 }
                 ctgyModel.lstcategory = objProductHelper.GetCategoryType();
@@ -111,7 +112,7 @@ namespace Soc_Management_Web.Controllers
                     sqlParameters[5] = new SqlParameter("@CatSrvIntVou", "0");
                     sqlParameters[6] = new SqlParameter("@CatMobVou", "0");
                     sqlParameters[7] = new SqlParameter("@CatPrefix", "0");
-                    sqlParameters[8] = new SqlParameter("@CatSamTimeYN", "0");
+                    sqlParameters[8] = new SqlParameter("@CatSamTimeYN", catModel.sameAllow);
                     sqlParameters[9] = new SqlParameter("@FLG", "1");
                     DataTable DtCat = ObjDBConnection.CallStoreProcedure("usp_CatMaster_Insert", sqlParameters);
                     if (DtCat != null && DtCat.Rows.Count > 0)

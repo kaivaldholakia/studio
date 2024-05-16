@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using PIOAccount.Classes;
 using PIOAccount.Controllers;
 using PIOAccount.Models;
@@ -8,6 +9,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
+
 namespace Soc_Management_Web.Controllers
 {
 	public class WebCategoryDetailsController : BaseController
@@ -37,7 +39,7 @@ namespace Soc_Management_Web.Controllers
 			int clientId = 0;
 			if (id > 0)
 			{
-				SqlParameter[] sqlParameters = new SqlParameter[8];
+				SqlParameter[] sqlParameters = new SqlParameter[9];
 				sqlParameters[0] = new SqlParameter("@id", id);
 				sqlParameters[1] = new SqlParameter("@CatId", id);
 				sqlParameters[2] = new SqlParameter("@tittle", "");
@@ -46,19 +48,22 @@ namespace Soc_Management_Web.Controllers
 				sqlParameters[5] = new SqlParameter("@Filepath", "");
 				sqlParameters[6] = new SqlParameter("@FileNames", "");
 				sqlParameters[7] = new SqlParameter("@FLG", "3");
+				sqlParameters[8] = new SqlParameter("@SubCatId", "");
 				DataTable DtEmp = ObjDBConnection.CallStoreProcedure("usp_webCatdetails_Insert", sqlParameters);
 				if (DtEmp.Rows.Count > 0)
 				{
 					model.Id = id;
 					model.iamgepath = DtEmp.Rows[0]["ImagePath"].ToString();
-					model.catid =Convert.ToInt32( DtEmp.Rows[0]["CategoryId"].ToString());
-					model.Description = DtEmp.Rows[0]["Description"].ToString();
+					model.catid = Convert.ToInt32( DtEmp.Rows[0]["CategoryId"].ToString());
+					model.Subcatid = Convert.ToInt32(DtEmp.Rows[0]["SubCatId"].ToString());
+					model.description = DtEmp.Rows[0]["Description"].ToString();
 					model.filename = DtEmp.Rows[0]["FileNames"].ToString();
 					model.videopath = DtEmp.Rows[0]["VideoPath"].ToString();
-					model.tittle = DtEmp.Rows[0]["VideoPath"].ToString();
+					model.tittle = DtEmp.Rows[0]["Tittle"].ToString();
 				}
 			}
 			model.Caltlst = master.GetDropgen("Webcategory");
+			model.subCaltlst = objProductHelper.GetCategoryList(model.catid, 1);
 			return View(model);
 		}
 
@@ -97,34 +102,46 @@ namespace Soc_Management_Web.Controllers
 			{
 				bool isreturn = false;
 				INIT(ref isreturn);
-				if (obj.file != null && obj.file.Length > 0)
+				if (obj.bannerfile != null && obj.bannerfile.Count > 0)
 				{
-
 					var uploadsFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, "Banner");
-					obj.filename = "img"+obj.file.FileName;
 
-					using (var stream = new FileStream(Path.Combine(uploadsFolderPath, obj.filename), FileMode.CreateNew))
-					{  						
-						await obj.file.CopyToAsync(stream);
-					}  
+					foreach (var file in obj.bannerfile)
+					{
+						var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
 
-					obj.iamgepath = Path.Combine(uploadsFolderPath, obj.filename);
-
-
+						var filePath = Path.Combine(uploadsFolderPath, uniqueFileName);
+						using (var stream = new FileStream(filePath, FileMode.Create))
+						{
+							await file.CopyToAsync(stream);
+						}
+					    if(obj.filename=="")
+                        {
+							obj.filename = uniqueFileName + ",";
+						}
+                        else
+                        {
+							obj.filename = obj.filename +","+uniqueFileName;
+						}
+						
+					}
 				}
+
 				long userId = GetIntSession("UserId");
 				int companyId = Convert.ToInt32(GetIntSession("CompanyId"));
 				if (!string.IsNullOrWhiteSpace(Convert.ToString(obj.tittle)))
 				{
-					SqlParameter[] sqlParameters = new SqlParameter[8];
+					SqlParameter[] sqlParameters = new SqlParameter[9];
 					sqlParameters[0] = new SqlParameter("@id", id);
 					sqlParameters[1] = new SqlParameter("@CatId", obj.catid);
 					sqlParameters[2] = new SqlParameter("@tittle", obj.tittle);
-					sqlParameters[3] = new SqlParameter("@decsription", obj.Description);
+					sqlParameters[3] = new SqlParameter("@decsription", obj.description);
 					sqlParameters[4] = new SqlParameter("@videopath", obj.videopath);
 					sqlParameters[5] = new SqlParameter("@Filepath", obj.iamgepath);
 					sqlParameters[6] = new SqlParameter("@FileNames", obj.filename);
 					sqlParameters[7] = new SqlParameter("@FLG", "1");
+					sqlParameters[8] = new SqlParameter("@SubCatId", obj.Subcatid);
+
 					DataTable DtCat = ObjDBConnection.CallStoreProcedure("usp_webCatdetails_Insert", sqlParameters);
 
 					if (DtCat != null && DtCat.Rows.Count > 0)
@@ -153,13 +170,13 @@ namespace Soc_Management_Web.Controllers
 
 							}
 
-							return RedirectToAction("index", "WebCategoryDetails", new { id = id });
+							//return RedirectToAction("index", "WebCategoryDetails", new { id = id });
 						}
 					}
 					else
 					{
 						obj1 = "Inserted Sucessfully";
-						return RedirectToAction("index", "WebCategoryDetails", new { id = id });
+						//return RedirectToAction("index", "WebCategoryDetails", new { id = id });
 					}
 				}
 				else
@@ -216,6 +233,54 @@ namespace Soc_Management_Web.Controllers
 				throw;
 			}
 			return PartialView("_reportView", getReportDataModel);
+		}
+
+		public JsonResult GetSubcat(long catid)
+		{
+			var customlst = objProductHelper.GetCategoryList(catid, 2);
+			var selectList = new SelectList(customlst, "Value", "Text");
+			return Json(selectList);
+			
+		}
+		public IActionResult Delete(long id)
+		{
+			try
+			{
+				CategoryModel catModel = new CategoryModel();
+				if (id > 0)
+				{
+					long userId = GetIntSession("UserId");
+					int companyId = Convert.ToInt32(GetIntSession("CompanyId"));
+					SqlParameter[] sqlParameters = new SqlParameter[9];
+					sqlParameters[0] = new SqlParameter("@id", id);
+					sqlParameters[1] = new SqlParameter("@CatId",0);
+					sqlParameters[2] = new SqlParameter("@tittle","");
+					sqlParameters[3] = new SqlParameter("@decsription","");
+					sqlParameters[4] = new SqlParameter("@videopath","");
+					sqlParameters[5] = new SqlParameter("@Filepath","");
+					sqlParameters[6] = new SqlParameter("@FileNames", "");
+					sqlParameters[7] = new SqlParameter("@FLG", "2");
+					sqlParameters[8] = new SqlParameter("@SubCatId", "");
+					DataTable DtCity = ObjDBConnection.CallStoreProcedure("usp_webCatdetails_Insert", sqlParameters);
+					if (DtCity != null && DtCity.Rows.Count > 0)
+					{
+						int @value = DbConnection.ParseInt32(DtCity.Rows[0][0].ToString());
+						if (value == 0)
+						{
+							SetErrorMessage("You Can Not Delete Records This Record is Included Some Trasaction");
+						}
+						else
+						{
+							SetSuccessMessage("Category details Deleted Successfully");
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+			return RedirectToAction("index", "WebCategoryDetails");
 		}
 
 	}

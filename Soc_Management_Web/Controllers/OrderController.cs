@@ -2,10 +2,13 @@
 using iTextSharp.text.pdf;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PIOAccount.Classes;
 using PIOAccount.Controllers;
 using PIOAccount.Models;
 using Soc_Management_Web.Classes;
+using Soc_Management_Web.Common;
 using Soc_Management_Web.Models;
 using System;
 using System.Collections.Generic;
@@ -54,7 +57,7 @@ namespace Soc_Management_Web.Controllers
                 if (DtEmp != null && DtEmp.Rows.Count > 0)
                 {
                     model.OrderId = Convert.ToInt32(id);
-                    model.OdrNo = id.ToString();
+                    model.OdrNo = DtEmp.Rows[0]["OrdNo"].ToString(); ;
                     model.InquiryNo = Convert.ToInt32(DtEmp.Rows[0]["OrdInqNo"].ToString());
                     model.OrderDate = DtEmp.Rows[0]["OrdDt"].ToString();
                     model.Customerid = Convert.ToInt32(DtEmp.Rows[0]["OrdAccVou"].ToString());
@@ -69,6 +72,7 @@ namespace Soc_Management_Web.Controllers
                     model.DiscountAmount = Convert.ToDecimal(DtEmp.Rows[0]["DiscounAmount"].ToString());
                     model.NetAmount = Convert.ToDecimal(DtEmp.Rows[0]["NetAmount"].ToString());
                     model.manual = Convert.ToBoolean(DtEmp.Rows[0]["OrdManualYN"].ToString());
+                    model.filename =DtEmp.Rows[0]["FileNameuploaded"].ToString();
                 }
             }
             else if (inqid > 0)
@@ -159,7 +163,7 @@ namespace Soc_Management_Web.Controllers
         }
 
         [HttpPost]
-        public ActionResult Index(long id, OrderModel obj)
+        public async System.Threading.Tasks.Task<ActionResult> IndexAsync(long id, OrderModel obj)
         {
             string obj1 = "";
             try
@@ -171,12 +175,28 @@ namespace Soc_Management_Web.Controllers
                 int companyId = Convert.ToInt32(GetIntSession("CompanyId"));
                 if (!string.IsNullOrWhiteSpace(Convert.ToString(obj.InquiryNo)))
                 {
+                    if (obj.file != null && obj.file.Length > 0)
+                    {
+                        var uploadsFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, "OrdUpload");
+                        obj.filename = obj.OdrNo + "-" + obj.file.FileName;
+                        var filePath = Path.Combine(uploadsFolderPath, obj.filename);
+                        if (System.IO.File.Exists(filePath))
+                        {
+                            System.IO.File.Delete(filePath);
+                        }
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await obj.file.CopyToAsync(stream);
+                        }
+                    }
+
                     if (id == 0)
                     {
                         id = obj.OrderId;
 
                     }
-                    SqlParameter[] sqlParameters = new SqlParameter[16];
+                    SqlParameter[] sqlParameters = new SqlParameter[17];
                     sqlParameters[0] = new SqlParameter("@ordVou", id);
                     sqlParameters[1] = new SqlParameter("@InqNo", obj.InquiryNo);
                     sqlParameters[2] = new SqlParameter("@ordDate", obj.OrderDate);
@@ -193,6 +213,7 @@ namespace Soc_Management_Web.Controllers
                     sqlParameters[13] = new SqlParameter("@FLG", "1");
                     sqlParameters[14] = new SqlParameter("@ManualFlag", obj.manual == true ? 1 : 0);
                     sqlParameters[15] = new SqlParameter("@Mobile", obj.MobileNo);
+                    sqlParameters[16] = new SqlParameter("@filename", obj.filename);
                     DataTable DtCat = ObjDBConnection.CallStoreProcedure("usp_OrderMst_Insert", sqlParameters);
                     if (DtCat != null && DtCat.Rows.Count > 0)
                     {
@@ -200,7 +221,7 @@ namespace Soc_Management_Web.Controllers
                         if (status == -1)
                         {
                             id = status;
-                            obj1 = "Dulplicate Category Details";
+                            obj1 = "Dulplicate  Details";
                             return RedirectToAction("index", "Order", new { id = 0 });
                         }
                         else
@@ -609,9 +630,9 @@ namespace Soc_Management_Web.Controllers
             LocationOrderModel model = new LocationOrderModel();
             MasterDropdownHelper masterDropdownHelper = new MasterDropdownHelper();
             ViewBag.InqueryId = id;
-            model.TypeList = masterDropdownHelper.GetRecordingType();
+            model.TypeList = objProductHelper.GetVideoTypeList();
             SqlParameter[] sqlParameters = new SqlParameter[12];
-            sqlParameters[0] = new SqlParameter("@Id", id);
+            sqlParameters[0] = new SqlParameter("@Id", 0);
             sqlParameters[1] = new SqlParameter("@orderId", id);
             sqlParameters[2] = new SqlParameter("@RecorType", id);
             sqlParameters[3] = new SqlParameter("@AllPhotos", 0);
@@ -631,8 +652,8 @@ namespace Soc_Management_Web.Controllers
                 model.RecType = DtEmp.Rows[0]["TypeName"].ToString();
                 model.AllPhotos = Convert.ToBoolean(DtEmp.Rows[0]["AllPhotos"].ToString());
                 model.Allvieos = Convert.ToBoolean(DtEmp.Rows[0]["AllVideos"].ToString());
-                model.VideoLocaton = DtEmp.Rows[0]["VideoLocation"].ToString();
-                model.PhotosLocation = DtEmp.Rows[0]["PhotosLocation"].ToString();
+                //model.VideoLocaton = DtEmp.Rows[0]["VideoLocation"].ToString();
+                //model.PhotosLocation = DtEmp.Rows[0]["PhotosLocation"].ToString();
                 model.VideoQty = Convert.ToInt32(DtEmp.Rows[0]["VideosQty"].ToString());
                 model.PhotosQty = Convert.ToInt32(DtEmp.Rows[0]["PhotosQty"].ToString());
                 model.Fileformatedetails = DtEmp.Rows[0]["FileFormateSize"].ToString();
@@ -783,6 +804,11 @@ namespace Soc_Management_Web.Controllers
             DataTable DtEmp = ObjDBConnection.CallStoreProcedure("Add_Ord_Jobdetails", sqlParameters);
 
             string obj = DtEmp.Rows[0]["Result"].ToString();
+
+            SqlParameter[] sqlParameters1 = new SqlParameter[2];
+            sqlParameters1[0] = new SqlParameter("@OrderId", data.IndId);
+            sqlParameters1[1] = new SqlParameter("@Job", data.Job);
+            DataTable DtEmp1 = ObjDBConnection.CallStoreProcedure("savejobandperson", sqlParameters1);
             return Json(new { obj });
         }
 
@@ -1180,7 +1206,13 @@ namespace Soc_Management_Web.Controllers
 
                 // Add an event handler to add page numbers
                 pdfWriter.PageEvent = new PageNumberEventHandler();
-
+                if(Headertype== "Letterpad")
+                {
+                    MyPageEventHandler pageEventHandler = new MyPageEventHandler();
+                    pdfWriter.PageEvent = pageEventHandler;
+                    Headertype = "With Header";
+                }
+               
                 doc.Open();
 
                 PdfPTable tableLayout = new PdfPTable(5);
@@ -1337,7 +1369,10 @@ namespace Soc_Management_Web.Controllers
             float[] headers = { 15, 40, 10, 20, 15 };  //Header Widths
             tableLayout.SetWidths(headers);        //Set the pdf headers
             tableLayout.WidthPercentage = 100;       //Set the PDF File witdh percentage
-            if (Headertype != "Header")
+            
+
+
+            if (Headertype == "Without Header")
             {
                 tableLayout.AddCell(new PdfPCell(new Phrase("  ", new Font(Font.FontFamily.HELVETICA, 17, 1, new iTextSharp.text.BaseColor(System.Drawing.Color.Black)))) { Colspan = 5, Border = 0, PaddingTop = -4, PaddingBottom = 10, HorizontalAlignment = Element.ALIGN_CENTER });
                 tableLayout.AddCell(new PdfPCell(new Phrase("  ", new Font(Font.FontFamily.HELVETICA, 10, 0, new iTextSharp.text.BaseColor(System.Drawing.Color.Black)))) { Colspan = 5, Border = 0, PaddingBottom = 35, HorizontalAlignment = Element.ALIGN_CENTER });
@@ -1346,7 +1381,7 @@ namespace Soc_Management_Web.Controllers
 
             }
             //Add Title to the PDF file at the top
-            if (Headertype == "Header")
+            if (Headertype == "With Header")
             {
                 tableLayout.AddCell(new PdfPCell(new Phrase(Inquery[0].Studio, new Font(Font.FontFamily.HELVETICA, 17, 1, new iTextSharp.text.BaseColor(System.Drawing.Color.Black)))) { Colspan = 5, Border = 0, PaddingTop = -4, PaddingBottom = 2, HorizontalAlignment = Element.ALIGN_CENTER });
                 tableLayout.AddCell(new PdfPCell(new Phrase(Inquery[0].Add1, new Font(Font.FontFamily.HELVETICA, 10, 0, new iTextSharp.text.BaseColor(System.Drawing.Color.Black)))) { Colspan = 5, Border = 0, PaddingBottom = 2, HorizontalAlignment = Element.ALIGN_CENTER });
@@ -1542,8 +1577,7 @@ namespace Soc_Management_Web.Controllers
 
 
             }
-            //tableLayout.AddCell(new PdfPCell(new Phrase("Customer Remarks :", new Font(Font.FontFamily.HELVETICA, 12, 1, new iTextSharp.text.BaseColor(System.Drawing.Color.Black)))) { Colspan = 10, Border = 0, PaddingTop = 15, PaddingBottom = 5, HorizontalAlignment = Element.ALIGN_LEFT });
-            //tableLayout.AddCell(new PdfPCell(new Phrase(Inquery[0].customerremarks, new Font(Font.FontFamily.HELVETICA, 8, 0, new iTextSharp.text.BaseColor(System.Drawing.Color.Black)))) { Colspan = 10, Border = 0, PaddingBottom = 2, HorizontalAlignment = Element.ALIGN_LEFT });
+        
 
 
 
@@ -1552,6 +1586,8 @@ namespace Soc_Management_Web.Controllers
 
             tableLayout.AddCell(new PdfPCell(new Phrase("", new Font(Font.FontFamily.HELVETICA, 8, 1, new iTextSharp.text.BaseColor(System.Drawing.Color.Black)))) { Colspan = 2, Border = 0, PaddingBottom = 2, HorizontalAlignment = Element.ALIGN_LEFT });
 
+
+           
 
 
             return tableLayout;
@@ -1769,6 +1805,70 @@ namespace Soc_Management_Web.Controllers
 
             return Json("Record Deleted");
         }
+
+        [HttpGet] 
+        public JsonResult Addextraperson(string category, string person, string remarks, long id)
+        {
+
+            SqlParameter[] PrsqlParameters = new SqlParameter[4];
+            PrsqlParameters[0] = new SqlParameter("@category", category);
+            PrsqlParameters[1] = new SqlParameter("@person", person);
+            PrsqlParameters[2] = new SqlParameter("@remarks", remarks);
+            PrsqlParameters[3] = new SqlParameter("@id", id);
+            DataTable PrDtEmp = ObjDBConnection.CallStoreProcedure("sp_addextraperson", PrsqlParameters);
+
+            return Json("");
+        }
+
+        [HttpGet]
+        public JsonResult getproductandorderdetails(long id, string producrid)
+        {
+            List<ProductMaster> products = new List<ProductMaster>();
+            SqlParameter[] PrsqlParameters = new SqlParameter[2];
+            PrsqlParameters[0] = new SqlParameter("@id", id);
+            PrsqlParameters[1] = new SqlParameter("@types", "Get");
+            DataTable PrDtEmp = ObjDBConnection.CallStoreProcedure("sp_getandsaveextraproduct", PrsqlParameters);
+            if(PrDtEmp.Rows.Count>0)
+            {
+                for (int i = 0; i < PrDtEmp.Rows.Count; i++)
+                {
+                    ProductMaster model = new ProductMaster();
+                    model.productVou = Convert.ToInt32(PrDtEmp.Rows[i]["ProdVou"].ToString());
+                    model.productname = PrDtEmp.Rows[i]["ProdName"].ToString();
+                    model.productdescription = PrDtEmp.Rows[i]["ProdDesc"].ToString();
+                    model.productgroupid = Convert.ToInt32(PrDtEmp.Rows[i]["Qty"].ToString());
+                    products.Add(model);
+                }
+                
+            }
+
+            return Json(new { success = true, result = products });
+        }
+        [HttpPost]
+        public JsonResult ReceiveJsonArray([FromBody] List<saveextraproduct> jsonArray)
+        {
+            if(jsonArray.Count>0)
+            {
+                foreach (var item in jsonArray)
+                {
+                    SqlParameter[] PrsqlParameters = new SqlParameter[5];
+                    PrsqlParameters[0] = new SqlParameter("@orderid", item.orderid);
+                    PrsqlParameters[1] = new SqlParameter("@pname", item.pname);
+                    PrsqlParameters[2] = new SqlParameter("@qty", item.qty);
+                    PrsqlParameters[3] = new SqlParameter("@remarks", item.remarks);
+                    PrsqlParameters[4] = new SqlParameter("@jobid", item.jobid);
+                    DataTable PrDtEmp = ObjDBConnection.CallStoreProcedure("sp_saveproductextra", PrsqlParameters);
+                }
+               
+            }
+
+            return Json(new { success = true, result = "Data Saved" });
+        }
+      
+
     }
+
+
+    
 }
 

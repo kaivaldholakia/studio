@@ -18,7 +18,7 @@ namespace Soc_Management_Web.Controllers
         ProductHelpers objProductHelper = new ProductHelpers();
 
 
-        public IActionResult Index(long id)
+        public IActionResult Index(long id, string type = null)
         {
             try
             {
@@ -36,10 +36,14 @@ namespace Soc_Management_Web.Controllers
                 int clientId = 0;
                 ContactModel contactmodel = new ContactModel();
                 contactmodel.Code = getrenadomkey();
-                //if (administrator == 0)
-                //{
-                //    clientId = Convert.ToInt32(GetIntSession("ClientId"));
-                //}
+                if (!string.IsNullOrEmpty(type))
+                {
+                    contactmodel.IsContact = false;
+                }
+				else
+				{
+                    contactmodel.IsContact = true;
+                }
 
                 if (id > 0)
                 {
@@ -274,6 +278,10 @@ namespace Soc_Management_Web.Controllers
                             else
                             {
                                 SetSuccessMessage("Inserted Sucessfully");
+                            }
+                            if (contactmodel.IsContact == false)
+                            {
+                                return RedirectToAction("index", "InquiryTransaction", new { type = "contact" });
                             }
                             return RedirectToAction("index", "ContactMaster", new { id = 0 });
                         }
